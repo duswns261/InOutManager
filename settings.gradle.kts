@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "InOutManager"
+rootProject.name = "InOutManger"
 include(":app")
  
