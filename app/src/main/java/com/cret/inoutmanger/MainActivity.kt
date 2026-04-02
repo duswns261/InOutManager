@@ -21,14 +21,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // 1. 데이터베이스 생성 (이름: inventory-db)
-        val db = Room.databaseBuilder(
-            applicationContext, //ApplicationContext는 앱의 라이프 사이클과 연결되어 있으며 데이터베이스 역시 앱의 생성 기간 동안 형태를 유지해야 하기 때문에 applicationContext 활용
-            AppDatabase::class.java,
-            "inventory-db"
-        ).build()
+//        val db = Room.databaseBuilder(
+//            applicationContext, //ApplicationContext는 앱의 라이프 사이클과 연결되어 있으며 데이터베이스 역시 앱의 생성 기간 동안 형태를 유지해야 하기 때문에 applicationContext 활용
+//            AppDatabase::class.java,
+//            "inventory-db"
+//        ).build()
+        // MainActivity -> AppDatabase 로 이동, AppDatabase class 의 주석 참고
 
         // 2. Repository 생성 (DAO를 넣어줌)
-        val repository = ProductRepository(db.productDao())
+        val repository = ProductRepository(AppDatabase.getDatabase(this).productDao())
+//        val repository = ProductRepository(db.productDao())
 
         // 3. ViewModel 생성 공장(Factory) 만들기
         // (ViewModel이 Dao를 필요로 하므로 수동으로 만들어줘야 함)
