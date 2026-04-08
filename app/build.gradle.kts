@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.cret.inoutmanger"
+    namespace = "com.cret.inoutmanager"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.cret.inoutmanger"
+        applicationId = "com.cret.inoutmanager"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
