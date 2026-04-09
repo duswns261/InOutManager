@@ -14,31 +14,6 @@
 Jetpack Compose에서 발생한 사용자 이벤트가 ViewModel을 거쳐 Room Database까지 도달하고 다시 UI로 상태가 갱신되는 흐름을 나타냅니다.
 
 ```mermaid
-classDiagram
-    class InOutManagerApplication
-    class DefaultAppContainer
-    class MainActivity
-    class InventoryViewModelFactory
-    class InventoryViewModel
-    class ProductRepository
-    class ProductDao
-    class AppDatabase
-    class Product
-
-    InOutManagerApplication --> DefaultAppContainer : initializes
-    MainActivity --> InOutManagerApplication : gets container
-    MainActivity --> InventoryViewModelFactory : uses
-    InventoryViewModelFactory --> InventoryViewModel : creates
-    InventoryViewModelFactory --> ProductRepository : depends on
-    InventoryViewModel --> ProductRepository : uses
-    DefaultAppContainer --> ProductRepository : provides
-    DefaultAppContainer --> AppDatabase : provides
-    ProductRepository --> ProductDao : uses
-    AppDatabase --> ProductDao : provides
-    ProductDao --> Product : manages
-```
-
-```mermaid
 flowchart TD
     MA["MainActivity"]
     APP["InOutManagerApplication"]

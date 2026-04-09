@@ -33,55 +33,12 @@ flowchart LR
     DB -- "Data Stream (Flow)" --> Repo
 ```
 
-```mermaid
-flowchart TD
-    subgraph UI_Layer["UI Layer (Presentation)"]
-        MA["MainActivity"]
-        UI["InventoryApp Composables"]
-        VM["InventoryViewModel"]
-
-        MA -->|setContent| UI
-        UI -->|UI events / state collection| VM
-    end
-
-    subgraph DI_Layer["Dependency Provision Layer"]
-        APP["InOutManagerApplication"]
-        CONT["DefaultAppContainer"]
-
-        APP -->|initializes| CONT
-        MA -.->|gets dependencies from| CONT
-    end
-
-    subgraph DATA_Layer["Data Layer"]
-        REPO["ProductRepository"]
-        DAO["ProductDao"]
-        DB["AppDatabase"]
-        ENTITY["Product Entity"]
-
-        REPO -->|Flow / suspend calls| DAO
-        DB -->|provides| DAO
-        DAO -->|CRUD| ENTITY
-    end
-
-    VM -->|uses| REPO
-    CONT -->|provides| REPO
-    CONT -->|provides| DB
-
-    UI -.->|1. add / update / delete event| VM
-    VM -.->|2. business logic| REPO
-    REPO -.->|3. DAO call| DAO
-    DAO -.->|4. database operation| DB
-    DB -.->|5. changed data| DAO
-    DAO -.->|6. Flow emission| REPO
-    REPO -.->|7. collected in ViewModel| VM
-    VM -.->|8. state update| UI
-```
-
 <details>
 <summary><b>🔍 상세 아키텍처 및 UML 클래스 다이어그램 보기</b></summary>
 <br>
 
 클래스 간의 의존성 주입(DI), 싱글톤 패턴이 적용된 상세 구현 내용 및 전체 UML 다이어그램은 아래 문서에서 확인할 수 있습니다.
-- [Architecture & Class Diagram 상세 보기](./docs/architecture.md)
+- [UML Class Diagram - Simple](./docs/architecture/InOutManager_UML_Simple.md)
+- [UML Class Diagram - Detailed](./docs/architecture/InOutManager_UML_Detailed.md)
 
 </details>
