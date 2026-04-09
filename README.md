@@ -33,6 +33,50 @@ flowchart LR
     DB -- "Data Stream (Flow)" --> Repo
 ```
 
+```mermaid
+flowchart TD
+    subgraph UI_Layer["UI Layer (Presentation)"]
+        MA["MainActivity"]
+        UI["InventoryApp Composables"]
+        VM["InventoryViewModel"]
+
+        MA -->|setContent| UI
+        UI -->|UI events / state collection| VM
+    end
+
+    subgraph DI_Layer["Dependency Provision Layer"]
+        APP["InOutManagerApplication"]
+        CONT["DefaultAppContainer"]
+
+        APP -->|initializes| CONT
+        MA -.->|gets dependencies from| CONT
+    end
+
+    subgraph DATA_Layer["Data Layer"]
+        REPO["ProductRepository"]
+        DAO["ProductDao"]
+        DB["AppDatabase"]
+        ENTITY["Product Entity"]
+
+        REPO -->|Flow / suspend calls| DAO
+        DB -->|provides| DAO
+        DAO -->|CRUD| ENTITY
+    end
+
+    VM -->|uses| REPO
+    CONT -->|provides| REPO
+    CONT -->|provides| DB
+
+    UI -.->|1. add / update / delete event| VM
+    VM -.->|2. business logic| REPO
+    REPO -.->|3. DAO call| DAO
+    DAO -.->|4. database operation| DB
+    DB -.->|5. changed data| DAO
+    DAO -.->|6. Flow emission| REPO
+    REPO -.->|7. collected in ViewModel| VM
+    VM -.->|8. state update| UI
+```
+
 <details>
 <summary><b>🔍 상세 아키텍처 및 UML 클래스 다이어그램 보기</b></summary>
 <br>
