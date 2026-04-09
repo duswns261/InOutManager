@@ -38,6 +38,31 @@ classDiagram
     ProductDao --> Product : manages
 ```
 
+```mermaid
+flowchart TD
+    MA["MainActivity"]
+    APP["InOutManagerApplication"]
+    CONT["DefaultAppContainer"]
+    VMF["InventoryViewModelFactory"]
+    VM["InventoryViewModel"]
+    REPO["ProductRepository"]
+    DAO["ProductDao"]
+    DB["AppDatabase"]
+    ENTITY["Product"]
+
+    MA -->|uses| VMF
+    MA -->|gets container| APP
+    APP -->|initializes| CONT
+    VMF -->|creates| VM
+    VMF -->|depends on| REPO
+    VM -->|uses| REPO
+    CONT -->|provides| REPO
+    CONT -->|provides| DB
+    REPO -->|uses| DAO
+    DB -->|provides| DAO
+    DAO -->|manages| ENTITY
+```
+
 ---
 
 ## 2. UML Class Diagram (클래스 다이어그램)
