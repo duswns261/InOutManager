@@ -6,15 +6,11 @@
 # Local configuration (contains machine-specific SDK path)
 local.properties
 
-# IntelliJ / Android Studio — local-only IDE files
-/.idea/caches/
-/.idea/libraries/
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-/.idea/deploymentTargetSelector.xml
-/.idea/compiler.xml
+# IDE — Android Studio / IntelliJ (auto-generated on open)
+.idea/
+
+# IDE — VS Code (editor-specific settings)
+.vscode/
 
 # macOS
 .DS_Store
