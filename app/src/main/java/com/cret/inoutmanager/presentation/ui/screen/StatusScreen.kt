@@ -30,7 +30,6 @@ fun StatusScreen(
     val totalTypes = products.size
     val totalQuantity = products.sumOf { it.quantity }
 
-    // 삭제 확인 다이얼로그 상태
     var showDeleteDialog by remember { mutableStateOf(false) }
     var productToDelete by remember { mutableStateOf<Product?>(null) }
 
@@ -48,8 +47,9 @@ fun StatusScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .combinedClickable(
-                            onClick = { /* 짧게 누르면 상세정보 보기 등을 넣을 수 있음 */ },
+                            onClick = {},
                             onLongClick = {
+                                // 삭제는 실수 방지를 위해 길게 누른 뒤 확인 다이얼로그를 거치도록 합니다.
                                 productToDelete = product
                                 showDeleteDialog = true
                             }
@@ -69,7 +69,6 @@ fun StatusScreen(
             }
         }
     }
-    // 삭제 확인 다이얼로그
     if (showDeleteDialog && productToDelete != null) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -82,7 +81,7 @@ fun StatusScreen(
                         showDeleteDialog = false
                         productToDelete = null
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red) // 삭제는 위험하므로 빨간색
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Text("삭제")
                 }

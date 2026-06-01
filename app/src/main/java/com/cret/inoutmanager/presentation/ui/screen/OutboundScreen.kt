@@ -58,6 +58,6 @@ fun OutboundScreenPreview() {
 
     OutboundScreen(
         products = sampleProducts,
-        onOutboundClick = {} // 클릭해도 아무 일 안 일어나게 설정
+        onOutboundClick = {}
     )
 }

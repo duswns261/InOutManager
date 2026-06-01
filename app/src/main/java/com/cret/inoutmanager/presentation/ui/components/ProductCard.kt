@@ -54,7 +54,6 @@ fun SummaryCard(title: String, value: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewProductCard() {
-    // 프리뷰용 더미 데이터 생성
     val dummyProduct = Product(
         id = 1,
         name = "프리뷰용 제품",
@@ -62,7 +61,6 @@ fun PreviewProductCard() {
         quantity = 99
     )
 
-    // 패딩을 주어 실제 리스트에서의 모습을 흉내냄
     Box(modifier = Modifier.padding(10.dp)) {
         ProductCard(product = dummyProduct)
     }

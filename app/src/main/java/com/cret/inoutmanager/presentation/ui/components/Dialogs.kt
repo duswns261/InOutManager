@@ -21,7 +21,6 @@ import androidx.compose.ui.window.Dialog
 
 val SkyBlue = Color(0xFF03A9F4)
 
-// 신규 등록 다이얼로그
 @Composable
 fun NewProductDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit) {
     var name by remember { mutableStateOf("") }
@@ -77,7 +76,6 @@ fun NewProductDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) 
     }
 }
 
-// 출고 수량 입력 다이얼로그
 @Composable
 fun OutboundQuantityDialog(
     productName: String,
@@ -112,6 +110,7 @@ fun OutboundQuantityDialog(
                     Button(
                         onClick = {
                             val qty = inputQty.toIntOrNull() ?: 0
+                            // 출고 수량은 재고 차감 정책에 직접 영향을 주므로 다이얼로그에서 먼저 검증합니다.
                             if (qty <= 0) {
                                 Toast.makeText(context, "1개 이상 입력해주세요.", Toast.LENGTH_SHORT).show()
                             } else if (qty > currentQty) {

@@ -40,14 +40,12 @@ fun InboundScreen(products: List<Product>, onAddClick: () -> Unit) {
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 fun InboundScreenPreview() {
-    // 1. 프리뷰용 가짜 데이터 만들기
     val sampleProducts = listOf(
         Product(1, "프리뷰 제품 1", "A-1 창고", 50),
         Product(2, "프리뷰 제품 2", "B-2 창고", 10),
         Product(3, "프리뷰 제품 3", "C-3 창고", 0)
     )
 
-    // 2. 실제 화면 함수 호출 (이벤트는 비워둠 {})
     InboundScreen(
         products = sampleProducts,
         onAddClick = {}

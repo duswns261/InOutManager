@@ -34,10 +34,9 @@ fun InventoryApp(
     viewModel: InventoryViewModel = viewModel()
 ) {
     val products = viewModel.products
-    var selectedTab by remember { mutableStateOf(0) }
     var showAddDialog by remember { mutableStateOf(false) }
 
-    // 출고 관련 상태
+    // 출고 플로우 상태: 제품 선택 -> 수량 입력 -> 최종 확인 순서로 다이얼로그를 전환합니다.
     var showOutboundInput by remember { mutableStateOf(false) }
     var showConfirmDialog by remember { mutableStateOf(false) }
     var selectedProductForOutbound by remember { mutableStateOf<Product?>(null) }
@@ -70,7 +69,6 @@ fun InventoryApp(
                     containerColor = Color.White,
                     contentColor = Color.Black,
                     indicator = { tabPositions ->
-//                        TabRowDefaults.Indicator(
                         TabRowDefaults.SecondaryIndicator(
                             modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
                             color = skyBlueColor
@@ -88,8 +86,8 @@ fun InventoryApp(
                             text = {
                                 Text(
                                     title,
-                                    color = if (selectedTab == index) skyBlueColor else Color.Gray,
-                                    fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
+                                    color = if (pagerState.currentPage == index) skyBlueColor else Color.Gray,
+                                    fontWeight = if (pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
                         )
@@ -126,7 +124,7 @@ fun InventoryApp(
             }
         }
 
-        // 다이얼로그 처리
+        // 화면 전역 다이얼로그는 Scaffold 안에서 조건부로 노출해 현재 탭과 독립적으로 동작시킵니다.
         if (showAddDialog) {
             NewProductDialog(
                 onDismiss = { showAddDialog = false },
@@ -177,8 +175,6 @@ fun InventoryApp(
     }
 }
 
-// ▼▼▼ [수정된 프리뷰 코드] ▼▼▼
-
 @Preview(
     name = "메인 화면 미리보기",
     showBackground = true,
@@ -188,7 +184,7 @@ fun InventoryApp(
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable
 fun PreviewInventoryApp() {
-    // 1. 가짜 DAO 생성
+    // Compose Preview에서 실제 DB 없이 화면을 확인하기 위한 가짜 DAO입니다.
     val fakeDao = object : ProductDao {
         override fun getAllProducts(): Flow<List<Product>> {
             return flowOf(
@@ -204,13 +200,9 @@ fun PreviewInventoryApp() {
         override suspend fun deleteProduct(product: Product) {}
     }
 
-    // 2. [핵심 수정] 가짜 DAO를 품은 '가짜 Repository' 생성
     val fakeRepository = ProductRepository(fakeDao)
-
-    // 3. 뷰모델에 Repository 전달 (이제 에러가 사라집니다)
     val fakeViewModel = InventoryViewModel(fakeRepository)
 
-    // 4. 테마 적용하여 렌더링
     InOutManagerTheme {
         InventoryApp(viewModel = fakeViewModel)
     }
