@@ -1,15 +1,26 @@
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
+
+# Gradle build cache & lock files (local machine only)
+.gradle/
+
+# Local configuration (contains machine-specific SDK path)
+local.properties
+
+# IntelliJ / Android Studio — local-only IDE files
+/.idea/caches/
+/.idea/libraries/
 /.idea/modules.xml
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+/.idea/deploymentTargetSelector.xml
+/.idea/compiler.xml
+
+# macOS
 .DS_Store
+
+# Build outputs
 /build
 /captures
 .externalNativeBuild
 .cxx
-local.properties
