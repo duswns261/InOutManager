@@ -10,7 +10,7 @@ import com.cret.inoutmanager.data.model.Product
 @Database(
     entities = [Product::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun productDao(): ProductDao
