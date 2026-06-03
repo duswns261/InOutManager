@@ -1,22 +1,45 @@
 *.iml
-
-# Gradle build cache & lock files (local machine only)
-.gradle/
-
-# Local configuration (contains machine-specific SDK path)
-local.properties
-
-# IDE — Android Studio / IntelliJ (auto-generated on open)
-.idea/
-
-# IDE — VS Code (editor-specific settings)
-.vscode/
-
-# macOS
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
 .DS_Store
-
-# Build outputs
 /build
 /captures
 .externalNativeBuild
 .cxx
+/google-services.json
+
+# User-specific stuff
+.idea/shelf
+.idea/dictionaries
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services client secrets
+google-services.json
+
+# Android Studio 3.1+ caches
+.google_apis
+
+# Log files
+*.log
+
+# Crashlytics symbols
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# Version control
+.svn
+.git
+
+# Schema export
+/app/schemas
