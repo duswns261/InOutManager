@@ -15,7 +15,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cret.inoutmanager.data.model.ProductEntity
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.repository.ProductRepository
 import com.cret.inoutmanager.presentation.ui.components.NewProductDialog
