@@ -44,12 +44,19 @@ flowchart LR
     VM -- "State Updates" --> View
     VM -- "Logic & Requests" --> Repo[Repository]
     Repo -- "Data Stream (Flow)" --> VM
-    Repo -- "CRUD operations" --> DB[(Room Database)]
-    DB -- "Data Stream (Flow)" --> Repo
+    Repo -- "Data Operations" --> DS[LocalDataSource]
+    DS -- "CRUD operations" --> DB[(Room Database)]
+    DB -- "Data Stream (Flow)" --> DS
+    DS -- "Data Stream (Flow)" --> Repo
 ```
 
 ## 📂 프로젝트 구조 (Modules & Structure)
 - `presentation/`: UI 및 ViewModel (Screen, Component, Theme)
 - `domain/`: 비즈니스 로직 및 모델 (현재 `data` 레이어와 일부 혼재되어 있으며 개선 예정)
-- `data/`: 데이터 소스 (Room Database, Repository implementation)
+- `data/`: 데이터 소스 및 저장소 구현
+    - `repository/`: Repository 구현체
+    - `datasource/`: Local/Remote 데이터 소스 (현재 RoomDataSource 구현)
+    - `model/`: Room Entity 모델
+    - `mapper/`: 엔티티와 도메인 모델 간 변환기
+    - `database/`: Room Database 설정
 - `di/`: 의존성 주입 (AppContainer)
