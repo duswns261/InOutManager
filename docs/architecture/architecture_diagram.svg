@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1520" height="680" viewBox="0 72 1520 680" font-family="&#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif">
+<defs>
+  <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="160%">
+    <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#161e2c" flood-opacity="0.10"></feDropShadow>
+  </filter>
+  <marker id="hSolid" markerWidth="11" markerHeight="11" refX="8.5" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#5b6573"></path></marker>
+  <marker id="hDash" markerWidth="11" markerHeight="11" refX="8.5" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#a0a8b4"></path></marker>
+</defs>
+<rect x="0" y="0" width="1520" height="772" fill="#ffffff"></rect>
+<rect x="48" y="96" width="300" height="470" rx="16" fill="#eef4fd" stroke="#cfe0fa" stroke-width="1.5"></rect>
+<circle cx="70" cy="121" r="4.5" fill="#2f6fe0"></circle>
+<text x="82" y="121" font-size="16" font-weight="700" fill="#1f5fd0" dominant-baseline="central">Presentation</text>
+<text x="330" y="121" font-family="ui-monospace, &#39;SF Mono&#39;, SFMono-Regular, Menlo, Consolas, &#39;Liberation Mono&#39;, monospace" font-size="10.5" font-weight="500" letter-spacing="1" fill="#1f5fd0" fill-opacity="0.62" text-anchor="end" dominant-baseline="central">UI LAYER</text>
+<rect x="388" y="96" width="300" height="470" rx="16" fill="#ecf7f0" stroke="#c7e8d4" stroke-width="1.5"></rect>
+<circle cx="410" cy="121" r="4.5" fill="#1e9e57"></circle>
+<text x="422" y="121" font-size="16" font-weight="700" fill="#178a46" dominant-baseline="central">Domain</text>
+<text x="670" y="121" font-family="ui-monospace, &#39;SF Mono&#39;, SFMono-Regular, Menlo, Consolas, &#39;Liberation Mono&#39;, monospace" font-size="10.5" font-weight="500" letter-spacing="1" fill="#178a46" fill-opacity="0.62" text-anchor="end" dominant-baseline="central">ABSTRACTION</text>
+<rect x="728" y="96" width="392" height="470" rx="16" fill="#fbf3e3" stroke="#f0ddb6" stroke-width="1.5"></rect>
+<circle cx="750" cy="121" r="4.5" fill="#d98a12"></circle>
+<text x="762" y="121" font-size="16" font-weight="700" fill="#a96f12" dominant-baseline="central">Data</text>
+<text x="1102" y="121" font-family="ui-monospace, &#39;SF Mono&#39;, SFMono-Regular, Menlo, Consolas, &#39;Liberation Mono&#39;, monospace" font-size="10.5" font-weight="500" letter-spacing="1" fill="#a96f12" fill-opacity="0.62" text-anchor="end" dominant-baseline="central">REPOSITORIES</text>
+<rect x="1196" y="96" width="276" height="470" rx="16" fill="#f3edfb" stroke="#dccbf2" stroke-width="1.5"></rect>
+<circle cx="1218" cy="121" r="4.5" fill="#7c4dcc"></circle>
+<text x="1230" y="121" font-size="16" font-weight="700" fill="#6a3cc0" dominant-baseline="central">Local Storage</text>
+<text x="1454" y="121" font-family="ui-monospace, &#39;SF Mono&#39;, SFMono-Regular, Menlo, Consolas, &#39;Liberation Mono&#39;, monospace" font-size="10.5" font-weight="500" letter-spacing="1" fill="#6a3cc0" fill-opacity="0.62" text-anchor="end" dominant-baseline="central">ROOM</text>
+<path d="M198 250 L198 360" fill="none" stroke="#5b6573" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#hSolid)"></path>
+<path d="M320 391 L527 391 Q538 391 538 380 L538 346" fill="none" stroke="#5b6573" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#hSolid)"></path>
+<path d="M756 181 L549 181 Q538 181 538 192 L538 268" fill="none" stroke="#a0a8b4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#hDash)"></path>
+<path d="M924 212 L924 268" fill="none" stroke="#5b6573" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#hSolid)"></path>
+<path d="M924 404 L924 346" fill="none" stroke="#a0a8b4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#hDash)"></path>
+<path d="M1092 435 L1137 435 Q1148 435 1148 424 L1148 230 Q1148 219 1159 219 L1224 219" fill="none" stroke="#5b6573" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#hSolid)"></path>
+<path d="M1334 250 L1334 360" fill="none" stroke="#5b6573" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#hSolid)"></path>
+<path d="M1092 692 L1157 692 Q1168 692 1168 681 L1168 192 Q1168 181 1157 181 L1092 181" fill="none" stroke="#a0a8b4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#hDash)"></path>
+<path d="M924 660 L924 466" fill="none" stroke="#a0a8b4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#hDash)"></path>
+<rect x="76" y="188" width="244" height="62" rx="11" fill="#ffffff" stroke="#b7d1f6" stroke-width="1.5" filter="url(#cardShadow)"></rect>
+<text x="198" y="219" font-size="15.5" font-weight="600" letter-spacing="-0.1" fill="#222a38" text-anchor="middle" dominant-baseline="central">Compose Screen</text>
+<rect x="76" y="360" width="244" height="62" rx="11" fill="#ffffff" stroke="#b7d1f6" stroke-width="1.5" filter="url(#cardShadow)"></rect>
+<text x="198" y="391" font-size="15.5" font-weight="600" letter-spacing="-0.1" fill="#222a38" text-anchor="middle" dominant-baseline="central">InventoryViewModel</text>
+<rect x="416" y="268" width="244" height="78" rx="11" fill="#ffffff" stroke="#aedcc1" stroke-width="1.5" filter="url(#cardShadow)"></rect>
+<text x="538" y="298" font-size="15.5" font-weight="600" letter-spacing="-0.1" fill="#222a38" text-anchor="middle" dominant-baseline="central">ProductRepository</text>
+<text x="538" y="321" font-family="ui-monospace, &#39;SF Mono&#39;, SFMono-Regular, Menlo, Consolas, &#39;Liberation Mono&#39;, monospace" font-size="11" font-weight="500" letter-spacing="0.3" fill="#178a46" text-anchor="middle" dominant-baseline="central">«interface»</text>
+<rect x="756" y="150" width="336" height="62" rx="11" fill="#ffffff" stroke="#ead0a0" stroke-width="1.5" filter="url(#cardShadow)"></rect>
+<text x="924" y="181" font-size="15.5" font-weight="600" letter-spacing="-0.1" fill="#222a38" text-anchor="middle" dominant-baseline="central">DefaultProductRepository</text>
+<rect x="756" y="268" width="336" height="78" rx="11" fill="#ffffff" stroke="#ead0a0" stroke-width="1.5" filter="url(#cardShadow)"></rect>
+<text x="924" y="298" font-size="15.5" font-weight="600" letter-spacing="-0.1" fill="#222a38" text-anchor="middle" dominant-baseline="central">ProductLocalDataSource</text>
+<text x="924" y="321" font-family="ui-monospace, &#39;SF Mono&#39;, SFMono-Regular, Menlo, Consolas, &#39;Liberation Mono&#39;, monospace" font-size="11" font-weight="500" letter-spacing="0.3" fill="#a96f12" text-anchor="middle" dominant-baseline="central">«interface»</text>
+<rect x="756" y="404" width="336" height="62" rx="11" fill="#ffffff" stroke="#ead0a0" stroke-width="1.5" filter="url(#cardShadow)"></rect>
+<text x="924" y="435" font-size="15.5" font-weight="600" letter-spacing="-0.1" fill="#222a38" text-anchor="middle" dominant-baseline="central">RoomProductLocalDataSource</text>
+<rect x="1224" y="188" width="220" height="62" rx="11" fill="#ffffff" stroke="#cdb6ef" stroke-width="1.5" filter="url(#cardShadow)"></rect>
+<text x="1334" y="219" font-size="15.5" font-weight="600" letter-spacing="-0.1" fill="#222a38" text-anchor="middle" dominant-baseline="central">ProductDao</text>
+<rect x="1224" y="360" width="220" height="62" rx="11" fill="#ffffff" stroke="#cdb6ef" stroke-width="1.5" filter="url(#cardShadow)"></rect>
+<text x="1334" y="391" font-size="15.5" font-weight="600" letter-spacing="-0.1" fill="#222a38" text-anchor="middle" dominant-baseline="central">Room Database</text>
+<rect x="756" y="660" width="336" height="64" rx="12" fill="#272d39" stroke="#6f7888" stroke-width="1.5" stroke-dasharray="5 4"></rect>
+<text x="924" y="683" font-size="15.5" font-weight="600" fill="#f4f6fa" text-anchor="middle" dominant-baseline="central">AppContainer</text>
+<text x="924" y="705" font-family="ui-monospace, &#39;SF Mono&#39;, SFMono-Regular, Menlo, Consolas, &#39;Liberation Mono&#39;, monospace" font-size="11" letter-spacing="0.4" fill="#aab2c0" text-anchor="middle" dominant-baseline="central">manual DI</text>
+<rect x="48" y="632" width="470" height="92" rx="12" fill="#fbfcfd" stroke="#e6e9ee" stroke-width="1.5"></rect>
+<text x="66" y="654" font-family="ui-monospace, &#39;SF Mono&#39;, SFMono-Regular, Menlo, Consolas, &#39;Liberation Mono&#39;, monospace" font-size="10" font-weight="600" letter-spacing="1.6" fill="#98a1af">LEGEND</text>
+<line x1="68" y1="678" x2="98" y2="678" stroke="#5b6573" stroke-width="2"></line><path d="M96 674 L106 678 L96 682 Z" fill="#5b6573"></path>
+<text x="120" y="678" font-size="13" fill="#4a5160" dominant-baseline="central"><tspan font-weight="600" fill="#2a3140">Runtime dependency</tspan> — uses / calls</text>
+<line x1="68" y1="704" x2="96" y2="704" stroke="#a0a8b4" stroke-width="2" stroke-dasharray="6 5"></line><path d="M96 700 L106 704 L96 708 Z" fill="#a0a8b4"></path>
+<text x="120" y="704" font-size="13" fill="#4a5160" dominant-baseline="central"><tspan font-weight="600" fill="#2a3140">Implements / provides</tspan> — interface or DI</text>
+</svg>
