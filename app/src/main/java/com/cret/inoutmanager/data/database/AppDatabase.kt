@@ -5,10 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.cret.inoutmanager.data.dao.ProductDao
-import com.cret.inoutmanager.data.model.Product
+import com.cret.inoutmanager.data.model.ProductEntity
 
 @Database(
-    entities = [Product::class],
+    entities = [ProductEntity::class],
     version = 1,
     exportSchema = true
 )

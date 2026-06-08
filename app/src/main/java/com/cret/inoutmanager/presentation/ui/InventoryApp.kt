@@ -15,9 +15,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cret.inoutmanager.data.dao.ProductDao
-import com.cret.inoutmanager.data.model.Product
-import com.cret.inoutmanager.data.repository.ProductRepository
+import com.cret.inoutmanager.domain.model.Product
+import com.cret.inoutmanager.domain.repository.ProductRepository
 import com.cret.inoutmanager.presentation.ui.components.NewProductDialog
 import com.cret.inoutmanager.presentation.ui.components.OutboundQuantityDialog
 import com.cret.inoutmanager.presentation.ui.screens.InboundScreen
@@ -184,23 +183,20 @@ fun InventoryApp(
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable
 fun PreviewInventoryApp() {
-    // Compose Preview에서 실제 DB 없이 화면을 확인하기 위한 가짜 DAO입니다.
-    val fakeDao = object : ProductDao {
-        override fun getAllProducts(): Flow<List<Product>> {
-            return flowOf(
-                listOf(
-                    Product(1, "프리뷰 제품 1", "A-1 창고", 82),
-                    Product(2, "프리뷰 제품 2", "B-2 창고", 10),
-                    Product(3, "프리뷰 제품 3", "C-3 창고", 0)
-                )
+    // Compose Preview에서 실제 DB 없이 화면을 확인하기 위한 가짜 Repository입니다.
+    val fakeRepository = object : ProductRepository {
+        override val allProducts: Flow<List<Product>> = flowOf(
+            listOf(
+                Product(1, "프리뷰 제품 1", "A-1 창고", 82),
+                Product(2, "프리뷰 제품 2", "B-2 창고", 10),
+                Product(3, "프리뷰 제품 3", "C-3 창고", 0)
             )
-        }
-        override suspend fun insertProduct(product: Product) {}
-        override suspend fun updateProduct(product: Product) {}
-        override suspend fun deleteProduct(product: Product) {}
+        )
+        override suspend fun insert(product: Product) {}
+        override suspend fun update(product: Product) {}
+        override suspend fun delete(product: Product) {}
     }
 
-    val fakeRepository = ProductRepository(fakeDao)
     val fakeViewModel = InventoryViewModel(fakeRepository)
 
     InOutManagerTheme {

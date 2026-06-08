@@ -2,7 +2,8 @@ package com.cret.inoutmanager.di
 
 import android.content.Context
 import com.cret.inoutmanager.data.database.AppDatabase
-import com.cret.inoutmanager.data.repository.ProductRepository
+import com.cret.inoutmanager.data.repository.DefaultProductRepository
+import com.cret.inoutmanager.domain.repository.ProductRepository
 
 /**
  * 앱에서 필요한 의존성을 한곳에서 제공하기 위한 수동 DI 진입점입니다.
@@ -20,6 +21,6 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
     }
 
     override val productRepository: ProductRepository by lazy {
-        ProductRepository(database.productDao())
+        DefaultProductRepository(database.productDao())
     }
 }

@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.cret.inoutmanager.data.model.Product
+import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.presentation.ui.components.ProductCard
 
 @Composable

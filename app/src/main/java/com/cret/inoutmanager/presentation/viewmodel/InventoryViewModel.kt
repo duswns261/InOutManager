@@ -4,8 +4,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.cret.inoutmanager.data.model.Product
-import com.cret.inoutmanager.data.repository.ProductRepository
+import com.cret.inoutmanager.domain.model.Product
+import com.cret.inoutmanager.domain.repository.ProductRepository
 import kotlinx.coroutines.launch
 
 /**

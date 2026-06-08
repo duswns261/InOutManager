@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cret.inoutmanager.data.model.Product
+import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.presentation.ui.components.SummaryCard
 
 import androidx.compose.foundation.ExperimentalFoundationApi
