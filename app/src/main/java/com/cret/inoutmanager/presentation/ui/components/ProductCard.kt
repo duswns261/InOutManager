@@ -10,70 +10,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cret.inoutmanager.data.model.Product
+import com.cret.inoutmanager.domain.model.Product
 
 @Composable
 fun ProductCard(product: Product) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = product.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(text = product.location, color = Color.Gray, fontSize = 14.sp)
+                Text(text = product.name, fontWeight = FontWeight.Bold)
+                Text(text = product.location, fontSize = 12.sp, color = Color.Gray)
             }
-            Text(
-                text = "${product.quantity}개",
-                color = SkyBlue,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-        }
-    }
-}
-
-@Composable
-fun SummaryCard(title: String, value: String, modifier: Modifier = Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        modifier = modifier
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, fontSize = 12.sp, color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(text = "${product.quantity}개", color = Color(0xFF03A9F4), fontWeight = FontWeight.Bold)
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewProductCard() {
-    val dummyProduct = Product(
-        id = 1,
-        name = "프리뷰용 제품",
-        location = "A-1 창고",
-        quantity = 99
-    )
-
-    Box(modifier = Modifier.padding(10.dp)) {
-        ProductCard(product = dummyProduct)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewSummaryCard() {
-    Box(modifier = Modifier.padding(10.dp)) {
-        SummaryCard(
-            title = "총 재고 수량",
-            value = "1,234개",
-            modifier = Modifier.width(150.dp) // 임의의 너비 지정
-        )
-    }
+fun ProductCardPreview() {
+    val sampleProduct = Product(1, "프리뷰 제품 1", "A-1 창고", 82)
+    ProductCard(product = sampleProduct)
 }

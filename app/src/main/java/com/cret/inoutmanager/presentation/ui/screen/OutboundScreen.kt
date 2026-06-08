@@ -1,46 +1,54 @@
 package com.cret.inoutmanager.presentation.ui.screens
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cret.inoutmanager.data.model.Product
+import com.cret.inoutmanager.domain.model.Product
 
 @Composable
-fun OutboundScreen(products: List<Product>, onOutboundClick: (Product) -> Unit) {
-    LazyColumn(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(products) { product ->
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+fun OutboundScreen(
+    products: List<Product>,
+    onOutboundClick: (Product) -> Unit
+) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(products) { product ->
+                Card(
+                    onClick = { onOutboundClick(product) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = product.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Text(text = "${product.quantity}개", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    }
-                    Text(text = product.location, color = Color.Gray, fontSize = 14.sp)
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedButton(
-                        onClick = { onOutboundClick(product) },
-                        modifier = Modifier.fillMaxWidth(),
-                        border = BorderStroke(1.dp, Color.Red),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
-                    ) {
-                        Text("- 출고 하기")
+                        Column {
+                            Text(text = product.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text(text = "현재 재고: ${product.quantity}개", fontSize = 12.sp, color = Color.Gray)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFE3F2FD), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(text = product.location, fontSize = 10.sp, color = Color(0xFF0D47A1))
+                        }
                     }
                 }
             }
@@ -48,14 +56,13 @@ fun OutboundScreen(products: List<Product>, onOutboundClick: (Product) -> Unit) 
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
 @Composable
 fun OutboundScreenPreview() {
     val sampleProducts = listOf(
-        Product(1, "프리뷰 제품 1", "A-1 창고", 82),
-        Product(2, "프리뷰 제품 2", "B-2 창고", 10)
+        Product(1, "아이폰 15", "A-1 구역", 25),
+        Product(2, "갤럭시 S24", "B-3 구역", 12)
     )
-
     OutboundScreen(
         products = sampleProducts,
         onOutboundClick = {}
