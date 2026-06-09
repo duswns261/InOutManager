@@ -31,6 +31,5 @@ abstract class AppDatabase : RoomDatabase() {
                 instance
             }
         }
-        //질문, hilt 적용 후 double checked locking 확인할 것.
     }
 }
