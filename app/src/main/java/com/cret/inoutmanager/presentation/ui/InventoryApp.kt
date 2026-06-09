@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cret.inoutmanager.domain.model.Product
-import com.cret.inoutmanager.domain.repository.ProductRepository
+import com.cret.inoutmanager.domain.usecase.*
 import com.cret.inoutmanager.presentation.ui.components.NewProductDialog
 import com.cret.inoutmanager.presentation.ui.components.OutboundQuantityDialog
 import com.cret.inoutmanager.presentation.ui.screens.InboundScreen
@@ -183,21 +183,22 @@ fun InventoryApp(
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable
 fun PreviewInventoryApp() {
-    // Compose Preview에서 실제 DB 없이 화면을 확인하기 위한 가짜 Repository입니다.
-    val fakeRepository = object : ProductRepository {
-        override val allProducts: Flow<List<Product>> = flowOf(
-            listOf(
-                Product(1, "프리뷰 제품 1", "A-1 창고", 82),
-                Product(2, "프리뷰 제품 2", "B-2 창고", 10),
-                Product(3, "프리뷰 제품 3", "C-3 창고", 0)
-            )
-        )
+    // Compose Preview를 위한 가짜 UseCases
+    val fakeRepository = object : com.cret.inoutmanager.domain.repository.ProductRepository {
+        override val allProducts: Flow<List<Product>> = flowOf(emptyList())
         override suspend fun insert(product: Product) {}
         override suspend fun update(product: Product) {}
         override suspend fun delete(product: Product) {}
     }
+    
+    val fakeUseCases = ProductUseCases(
+        getProducts = GetProductsUseCase(fakeRepository),
+        addProduct = AddProductUseCase(fakeRepository),
+        decreaseProductQuantity = DecreaseProductQuantityUseCase(fakeRepository),
+        deleteProduct = DeleteProductUseCase(fakeRepository)
+    )
 
-    val fakeViewModel = InventoryViewModel(fakeRepository)
+    val fakeViewModel = InventoryViewModel(fakeUseCases)
 
     InOutManagerTheme {
         InventoryApp(viewModel = fakeViewModel)

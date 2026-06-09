@@ -51,10 +51,15 @@ fun NewProductDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) 
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = quantity,
-                    onValueChange = { quantity = it },
+                    onValueChange = { input ->
+                        if (input.all { char -> char.isDigit() }) {
+                            quantity = input
+                        }
+                    },
                     label = { Text("수량") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -98,7 +103,11 @@ fun OutboundQuantityDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = inputQty,
-                    onValueChange = { if (it.all { char -> char.isDigit() }) inputQty = it },
+                    onValueChange = { input ->
+                        if (input.all { char -> char.isDigit() }) {
+                            inputQty = input
+                        }
+                    },
                     label = { Text("출고 수량") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
