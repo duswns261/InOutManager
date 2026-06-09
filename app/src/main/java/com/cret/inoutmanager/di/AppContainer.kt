@@ -6,13 +6,16 @@ import com.cret.inoutmanager.data.datasource.local.ProductLocalDataSource
 import com.cret.inoutmanager.data.datasource.local.RoomProductLocalDataSource
 import com.cret.inoutmanager.data.repository.DefaultProductRepository
 import com.cret.inoutmanager.domain.repository.ProductRepository
-import com.cret.inoutmanager.domain.usecase.*
+import com.cret.inoutmanager.domain.usecase.AddProductUseCase
+import com.cret.inoutmanager.domain.usecase.DecreaseProductQuantityUseCase
+import com.cret.inoutmanager.domain.usecase.DeleteProductUseCase
+import com.cret.inoutmanager.domain.usecase.GetProductsUseCase
+import com.cret.inoutmanager.domain.usecase.ProductUseCases
 
 /**
  * 앱에서 필요한 의존성을 한곳에서 제공하기 위한 수동 DI 진입점입니다.
  */
 interface AppContainer {
-    val productRepository: ProductRepository
     val productUseCases: ProductUseCases
 }
 
@@ -28,7 +31,7 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
         RoomProductLocalDataSource(database.productDao())
     }
 
-    override val productRepository: ProductRepository by lazy {
+    private val productRepository: ProductRepository by lazy {
         DefaultProductRepository(productLocalDataSource)
     }
 
