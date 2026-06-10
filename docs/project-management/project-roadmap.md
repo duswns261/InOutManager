@@ -4,8 +4,11 @@
 
 각 Issue 본문에서는 제외 범위를 과도하게 나열하지 않고, 필요한 경우 이 문서를 참조한다.
 
-최종 수정 기준: 2026-06-10  
-Repository: https://github.com/duswns261/InOutManager
+공통 문서 위치는 다음을 기준으로 한다.
+
+```text
+docs/project-management/
+```
 
 ---
 
@@ -24,48 +27,39 @@ InOutManager는 Android 재고 관리 앱 프로젝트이다.
 - Hilt DI 적용
 - Navigation Compose 적용
 - 테스트 및 문서화 강화
+- AI Agent 기반 작업 하네스 구성
 
 ---
 
 ## 2. Milestone 1: Architecture Foundation
 
-Milestone URL:
-
-- https://github.com/duswns261/InOutManager/milestone/1
-
 목표:
 
-- 앱의 내부 계층 구조를 아키텍처적으로 안정화한다.
+- 현재 앱 구조를 아키텍처적으로 안정화한다.
 - UI, ViewModel, Domain, Data 계층의 책임을 명확히 분리한다.
-- Hilt와 Navigation을 적용하기 전에 ViewModel 상태 API와 도메인 접근 구조를 정리한다.
+- 이후 DI와 Navigation을 적용하기 좋은 상태로 만든다.
 
 포함 Issue:
 
 - Issue #4: ProductEntity와 domain Product 분리
 - Issue #5: LocalDataSource 추가 및 Repository 책임 분리
 - Issue #6: UseCase 계층 추가 및 ViewModel 책임 분리
-- Issue #7: ViewModel 상태 관리를 StateFlow 기반 UiState로 전환
+- Issue #7: ViewModel을 UiState + StateFlow 기반으로 변경
 
-Milestone 1의 완료 기준:
+완료 기준:
 
-- Room Entity와 domain model이 분리되어 있다.
-- Repository가 DAO를 직접 다루는 책임을 LocalDataSource로 분리했다.
-- ViewModel이 Repository를 직접 의존하지 않고 UseCase를 통해 도메인 작업을 처리한다.
-- ViewModel이 Compose 전용 상태 리스트를 직접 노출하지 않고 `StateFlow<InventoryUiState>` 기반 상태 API를 제공한다.
+- ViewModel이 안정적인 상태 API를 제공한다.
+- Presentation, Domain, Data 계층의 기본 경계가 정리되어 있다.
+- Hilt와 Navigation 적용 전 내부 아키텍처가 안정화되어 있다.
 
 ---
 
 ## 3. Milestone 2: DI & Navigation Foundation
 
-Milestone URL:
-
-- https://github.com/duswns261/InOutManager/milestone/2
-
 목표:
 
-- Milestone 1에서 정리한 내부 계층 구조를 기반으로 앱의 의존성 주입 방식과 화면 이동 구조를 안정화한다.
-- 기존 수동 DI 구조를 Hilt 기반으로 전환한다.
-- 화면 이동 흐름을 Navigation Compose 기반으로 정리한다.
+- 수동 DI 구조를 Hilt 기반으로 전환한다.
+- 화면 이동 구조를 Navigation Compose 기반으로 정리한다.
 - 앱 최초 진입 화면인 HomeScreen을 추가한다.
 
 포함 Issue:
@@ -74,55 +68,46 @@ Milestone URL:
 - Issue #12: Navigation Compose 적용
 - Issue #13: HomeScreen 추가
 
-Issue 진행 순서:
+작업 순서:
 
 1. Issue #11: Hilt DI 적용
 2. Issue #12: Navigation Compose 적용
 3. Issue #13: HomeScreen 추가
 
-순서 기준:
+주의:
 
-- Hilt DI를 먼저 적용하여 ViewModel과 의존성 생성 방식을 정리한다.
-- Navigation Compose를 적용하여 화면 이동 구조를 명시화한다.
-- HomeScreen은 Navigation 구조 위에서 앱 최초 진입점으로 추가한다.
+- Hilt 적용 중 Navigation 또는 UI 흐름 개편을 함께 진행하지 않는다.
+- Navigation 적용 중 비즈니스 로직 또는 Room schema 변경을 함께 진행하지 않는다.
+- HomeScreen 추가는 Navigation Compose 적용 이후 진행한다.
+- Issue #7에서 정리한 `StateFlow<InventoryUiState>` 구조를 유지한다.
 
-Milestone 2의 완료 기준:
+완료 기준:
 
-- `InventoryViewModel`이 Hilt 기반으로 생성된다.
-- Repository, DataSource, UseCase 제공 방식이 Hilt DI 구조 안에서 정리되어 있다.
-- 기존 `StateFlow<InventoryUiState>` 상태 관리 구조가 유지된다.
+- Hilt 기반 DI 구조가 적용되어 있다.
 - Navigation Compose 기반 화면 이동 구조가 적용되어 있다.
-- Inbound, Outbound, Status 화면이 Navigation 구조 안에서 정상 동작한다.
-- HomeScreen이 앱 최초 진입점 역할을 한다.
 - HomeScreen에서 입고, 출고, 재고 현황 화면으로 이동할 수 있다.
 - 기존 상품 조회, 추가, 수량 감소, 삭제 동작이 유지된다.
 
 ---
 
-## 4. Milestone 2 이후 우선순위 후보
-
-### 테스트 및 품질 개선
+## 4. Milestone 3 후보: Quality & Production Readiness
 
 목표:
 
+- 테스트, 자동 검증, 문서, CI, 릴리즈 준비 수준을 높인다.
+- 포트폴리오 프로젝트로서 외부 리뷰어가 확인하기 좋은 상태로 만든다.
+
+후보 작업:
+
+- Unit Test 추가
 - ViewModel 테스트 추가
-- UseCase 테스트 추가
-- Repository/DataSource 테스트 검토
-- 수동 검증 기준 정리
-- CI 적용 검토
-
----
-
-### 기능 확장
-
-목표:
-
-- 검색 기능 추가
-- 필터 기능 추가
-- 입출고 이력 관리
-- 재고 부족 상태 표시
-- 바코드 스캔 기능 검토
-- 서버/Retrofit 연동 검토
+- Repository 테스트 추가
+- Room DAO 테스트 추가
+- GitHub Actions 기반 Android CI 구성
+- README 개선
+- PR template 및 Issue template 정리
+- Release 빌드 설정 정리
+- 앱 스크린샷 및 포트폴리오 설명 문서 추가
 
 ---
 
@@ -138,7 +123,7 @@ Milestone 2의 완료 기준:
 - 입출고 이력 관리
 - 재고 부족 알림
 - 테스트 코드 확장
-- CI 구성
+- CI 고도화
 - Release 빌드 설정 정리
 - README 및 포트폴리오 문서 개선
 
@@ -149,5 +134,5 @@ Milestone 2의 완료 기준:
 - Issue 본문에는 후속 작업을 최대 2개 정도만 언급한다.
 - 긴 제외 범위와 Backlog는 이 문서에서 관리한다.
 - 실제 우선순위는 현재 코드 상태, 빌드 안정성, 학습 목표, 포트폴리오 효과를 기준으로 조정한다.
-- Issue가 완료되거나 Milestone 구성이 바뀌면 이 문서를 함께 갱신한다.
-- GitHub Issue 번호와 Milestone 번호가 변경되면 이 문서를 즉시 갱신한다.
+- Issue가 완료될 때마다 이 문서의 진행 상태를 필요에 따라 갱신한다.
+- Milestone 범위가 바뀌면 `AGENTS.md`와 `.github/pull_request_template.md`의 확인 항목도 필요한지 검토한다.

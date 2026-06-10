@@ -4,10 +4,11 @@
 
 Issue 본문은 매번 새롭게 작성하되, 반복되는 아키텍처 규칙, 후속 작업, 공통 완료 기준은 별도 문서를 참조한다.
 
-최종 수정 기준: 2026-06-10  
-현재 기준 주요 Milestone:
-- Milestone 1: Architecture Foundation
-- Milestone 2: DI & Navigation Foundation
+공통 문서 위치는 다음을 기준으로 한다.
+
+```text
+docs/project-management/
+```
 
 ---
 
@@ -27,7 +28,23 @@ Issue Body는 다음 순서를 따른다.
 
 ---
 
-## 2. 각 항목 작성 기준
+## 2. 문서 확인 기준
+
+Issue 작성 또는 작업 진행 시 아래 기준에 따라 문서를 확인한다.
+
+| 상황 | 확인할 문서 |
+|---|---|
+| Issue 작성 또는 진행 시작 | `docs/project-management/issue-workflow.md` |
+| Milestone, 후속 Issue, 제외 범위 확인 | `docs/project-management/project-roadmap.md` |
+| 계층 경계, DI, Schema, 도메인 규칙 변경 가능성 있음 | `docs/project-management/architecture-rules.md` |
+| 작업 완료 전 최종 점검 | `docs/project-management/definition-of-done.md` |
+| AI Agent 작업 시작 | `AGENTS.md` |
+
+AI Agent가 작업할 경우, `AGENTS.md`와 대상 Issue를 먼저 확인한 뒤 이 문서를 기준으로 진행한다.
+
+---
+
+## 3. 각 항목 작성 기준
 
 ### 문제 정의
 
@@ -47,7 +64,7 @@ Issue Body는 다음 순서를 따른다.
 
 포함할 내용:
 
-- 이전 Issue 또는 Milestone과의 연결 관계
+- 이전 Issue와의 연결 관계
 - 현재 문제를 어떤 방향으로 해결할 것인지
 - 이 작업이 완료되었을 때 얻을 수 있는 가치
 - 후속 Issue를 진행하기 전에 이 작업이 필요한 이유
@@ -64,7 +81,6 @@ Issue Body는 다음 순서를 따른다.
 - 작업 목적을 간략하게 설명한다.
 - 세부 구현 방식은 과도하게 작성하지 않는다.
 - 코드 예시는 원칙적으로 넣지 않는다.
-- 구현 중 바뀔 수 있는 세부 결정은 PR 본문에서 설명한다.
 
 ---
 
@@ -75,9 +91,8 @@ Issue Body는 다음 순서를 따른다.
 작성 기준:
 
 - 후속 Issue 후보는 최대 2개 정도만 작성한다.
-- 나머지 후속 작업은 `docs/project-roadmap.md`에서 관리한다.
+- 나머지 후속 작업은 `docs/project-management/project-roadmap.md`에서 관리한다.
 - 단순히 모든 기능을 나열하는 방식은 피한다.
-- 제외 범위는 "이번 Issue에서 실수로 함께 변경될 가능성이 있는 작업"을 중심으로 작성한다.
 
 ---
 
@@ -90,7 +105,6 @@ Issue Body는 다음 순서를 따른다.
 - 각 커밋의 상세 구현 내용은 작성하지 않는다.
 - 커밋 메시지 자체로 작업 단위가 이해되도록 작성한다.
 - 문서 변경이 없다면 docs 커밋은 생략할 수 있다.
-- Milestone 변경 또는 로드맵 변경이 있다면 docs 커밋을 별도로 둔다.
 
 ---
 
@@ -102,8 +116,7 @@ Issue Body는 다음 순서를 따른다.
 
 - 실제 변경이 필요한 부분과 직접 관련된 조건만 작성한다.
 - 변경 과정에서 발생할 수 있는 문제와 관련된 조건을 포함한다.
-- 공통 완료 기준은 `docs/definition-of-done.md`를 참조한다.
-- Milestone 범위를 벗어난 변경이 없는지 확인한다.
+- 공통 완료 기준은 `docs/project-management/definition-of-done.md`를 참조한다.
 
 ---
 
@@ -141,41 +154,28 @@ Issue Body는 다음 순서를 따른다.
 
 ---
 
-## 3. 공통 참조 문서
+## 4. 공통 참조 문서
 
 Issue 작성 또는 작업 진행 시 다음 문서를 참조한다.
 
-- `docs/project-roadmap.md`
-  - Milestone, 후속 Issue, Backlog 관리
-- `docs/architecture-rules.md`
-  - 계층 경계, 도메인 규칙, DI, Navigation, Schema 규칙 관리
-- `docs/definition-of-done.md`
+- `docs/project-management/project-roadmap.md`
+  - 후속 Issue, Milestone, Backlog 관리
+- `docs/project-management/architecture-rules.md`
+  - 계층 경계, 도메인 규칙, DI, Schema 규칙 관리
+- `docs/project-management/definition-of-done.md`
   - 공통 완료 조건 및 체크리스트 관리
+- `AGENTS.md`
+  - AI Agent 작업 지침 관리
 
 ---
 
-## 4. Issue 작성 원칙
+## 5. Issue 작성 원칙
 
 - Issue는 이번 작업의 문제와 범위를 설명하는 문서이다.
 - 반복되는 공통 규칙은 Issue 본문에 길게 반복하지 않는다.
 - 구현 중 바뀔 수 있는 상세 코드 방향은 Issue에 고정하지 않는다.
 - 실제 구현 결과와 리뷰 포인트는 PR 본문에서 설명한다.
-- AI Agent가 작업할 경우에도 Issue 본문과 `docs/` 문서를 함께 확인하도록 한다.
-- Issue 본문에서 후속 작업을 길게 나열하지 않고, `docs/project-roadmap.md`를 참조한다.
-
----
-
-## 5. Milestone 작성 원칙
-
-Milestone은 Issue보다 큰 작업 단위이다.
-
-작성 기준:
-
-- Milestone은 여러 Issue가 공통으로 달성하려는 목표를 설명한다.
-- Milestone 안에는 성격이 비슷한 Issue를 묶는다.
-- Milestone 1은 내부 아키텍처 안정화에 집중한다.
-- Milestone 2는 DI와 화면 이동 인프라 정리에 집중한다.
-- 새로운 Issue를 만들 때 현재 Milestone에 포함해야 하는지, 다음 Milestone으로 넘겨야 하는지 먼저 판단한다.
+- AI Agent가 작업할 경우에도 Issue 본문, `AGENTS.md`, `docs/project-management/` 문서를 함께 확인하도록 한다.
 
 ---
 
