@@ -10,6 +10,12 @@
 docs/project-management/
 ```
 
+AI Agent 계획 및 검증 문서 위치는 다음을 기준으로 한다.
+
+```text
+docs/ai/
+```
+
 ---
 
 ## 1. 공통 완료 기준
@@ -22,11 +28,32 @@ docs/project-management/
 - 불필요한 파일 변경이 없다.
 - 변경 의도가 커밋 메시지와 PR 본문에서 설명 가능하다.
 - 필요한 경우 관련 문서가 갱신되어 있다.
-- AI Agent를 사용한 경우 `AGENTS.md`의 workflow를 확인했다.
+- AI Agent를 사용한 경우 `AGENTS.md`와 `docs/ai/` workflow를 확인했다.
+- AI Agent를 사용한 경우 구현 전 계획이 작성되었다.
+- AI Agent를 사용한 경우 명시적 승인 이후에만 코드가 수정되었다.
+- AI Agent를 사용한 경우 verification report가 작성되었다.
 
 ---
 
-## 2. Compose UI 체크리스트
+## 2. AI Agent 완료 기준
+
+AI Agent가 작업한 Issue는 다음 항목을 추가로 만족해야 한다.
+
+- `docs/ai/IMPLEMENTATION_PLAN_TEMPLATE.md` 형식의 구현 계획을 작성했다.
+- 구현 계획에 변경 파일 목록이 있다.
+- 구현 계획에 변경하지 않을 파일 목록이 있다.
+- 구현 계획에 완료 조건 매핑표가 있다.
+- 구현 계획에 검증 명령이 있다.
+- 구현 계획에 범위 외 작업과 follow-up 후보가 있다.
+- 사용자 승인 전 코드 수정이 없었다.
+- 구현 후 `docs/ai/VERIFICATION_REPORT_TEMPLATE.md` 형식의 검증 보고서를 작성했다.
+- 검증 보고서에 Pass/Fail 기준이 명확하다.
+- 실행하지 못한 명령이 있다면 숨기지 않고 기록했다.
+- Issue 범위 외 작업이 발생하지 않았음을 확인했다.
+
+---
+
+## 3. Compose UI 체크리스트
 
 Compose UI와 관련된 Issue에서는 다음 항목을 확인한다.
 
@@ -36,10 +63,12 @@ Compose UI와 관련된 Issue에서는 다음 항목을 확인한다.
 - UI 로직과 비즈니스 규칙이 과도하게 섞이지 않는다.
 - 기존 Preview가 깨지지 않는지 확인한다.
 - 화면 recomposition 이후에도 기존 상태가 의도대로 유지되는지 확인한다.
+- Issue에 없는 UI 지역 상태 이관이 발생하지 않았다.
+- Issue에 없는 화면 디자인 변경이 발생하지 않았다.
 
 ---
 
-## 3. ViewModel 체크리스트
+## 4. ViewModel 체크리스트
 
 ViewModel과 관련된 Issue에서는 다음 항목을 확인한다.
 
@@ -49,10 +78,13 @@ ViewModel과 관련된 Issue에서는 다음 항목을 확인한다.
 - 외부에서 ViewModel 내부 mutable state를 직접 수정할 수 없도록 한다.
 - Coroutine 또는 Flow 수집 로직이 ViewModel lifecycle 안에서 관리된다.
 - 기존 이벤트 처리 함수의 동작이 유지되는지 확인한다.
+- 기존 함수 파라미터 타입을 변경했다면 Issue 범위와 근거가 명확하다.
+- 사용자 입력 검증 실패가 조용히 무시되지 않는다.
+- 상태 수집 로직이 복잡한 경우 함수로 분리되어 가독성이 유지된다.
 
 ---
 
-## 4. 계층 경계 체크리스트
+## 5. 계층 경계 체크리스트
 
 아키텍처 변경 또는 리팩토링 Issue에서는 다음 항목을 확인한다.
 
@@ -62,10 +94,11 @@ ViewModel과 관련된 Issue에서는 다음 항목을 확인한다.
 - data 계층은 domain의 repository interface를 구현한다.
 - domain model과 data entity의 책임이 섞이지 않는다.
 - mapper가 필요한 경우 적절한 계층에 위치한다.
+- Issue가 요구하지 않은 계층 간 책임 이동이 발생하지 않았다.
 
 ---
 
-## 5. Domain / UseCase 체크리스트
+## 6. Domain / UseCase 체크리스트
 
 Domain 또는 UseCase와 관련된 Issue에서는 다음 항목을 확인한다.
 
@@ -74,10 +107,11 @@ Domain 또는 UseCase와 관련된 Issue에서는 다음 항목을 확인한다.
 - UseCase는 Repository interface에 의존한다.
 - UseCase가 data 구현체나 Room 세부 구현을 직접 참조하지 않는다.
 - 기존 기능의 정책이 의도치 않게 변경되지 않았다.
+- UI 입력 문자열이 domain 규칙으로 직접 흘러들어가지 않는다.
 
 ---
 
-## 6. DI 체크리스트
+## 7. DI 체크리스트
 
 DI 관련 Issue에서는 다음 항목을 확인한다.
 
@@ -91,7 +125,7 @@ DI 관련 Issue에서는 다음 항목을 확인한다.
 
 ---
 
-## 7. Navigation 체크리스트
+## 8. Navigation 체크리스트
 
 Navigation 관련 Issue에서는 다음 항목을 확인한다.
 
@@ -101,10 +135,11 @@ Navigation 관련 Issue에서는 다음 항목을 확인한다.
 - 뒤로가기 동작이 의도대로 동작한다.
 - Navigation 적용 중 domain/data 계층 변경이 불필요하게 포함되지 않았다.
 - ViewModel 상태 소유 구조가 유지된다.
+- Navigation과 무관한 UI 디자인 변경이 포함되지 않았다.
 
 ---
 
-## 8. Room / Schema 체크리스트
+## 9. Room / Schema 체크리스트
 
 Room 또는 schema와 관련된 Issue에서는 다음 항목을 확인한다.
 
@@ -114,10 +149,24 @@ Room 또는 schema와 관련된 Issue에서는 다음 항목을 확인한다.
 - schema 파일 변경 여부를 확인했다.
 - schema 변경이 없다면 `app/schemas` diff가 없어야 한다.
 - schema 변경이 있다면 migration 필요 여부를 검토했다.
+- schema 변경이 의도되지 않은 Issue에서 schema diff가 발생하지 않았다.
 
 ---
 
-## 9. 문서 체크리스트
+## 10. Dependency / Build 체크리스트
+
+Dependency 또는 build configuration이 변경되었거나, 새 API 사용에 dependency가 필요한 Issue에서는 다음 항목을 확인한다.
+
+- 새로 사용하는 API의 명시적 dependency가 추가되어 있다.
+- transitive dependency에 의존하지 않는다.
+- dependency 추가 이유가 구현 계획에 적혀 있다.
+- dependency 변경 파일이 PR 본문 또는 verification report에 포함되어 있다.
+- build가 성공한다.
+- Issue 범위 밖의 Gradle 정리나 버전 업그레이드는 하지 않았다.
+
+---
+
+## 11. 문서 체크리스트
 
 문서 변경이 필요한 Issue에서는 다음 항목을 확인한다.
 
@@ -126,11 +175,12 @@ Room 또는 schema와 관련된 Issue에서는 다음 항목을 확인한다.
 - 후속 Issue 흐름이 바뀌었다면 `docs/project-management/project-roadmap.md`를 갱신했다.
 - Issue 작성 기준이 바뀌었다면 `docs/project-management/issue-workflow.md`를 갱신했다.
 - 공통 완료 기준이 바뀌었다면 `docs/project-management/definition-of-done.md`를 갱신했다.
-- AI Agent 작업 규칙이 바뀌었다면 `AGENTS.md`를 갱신했다.
+- AI Agent 작업 규칙이 바뀌었다면 `AGENTS.md`와 `docs/ai/`를 갱신했다.
+- 단일 PR 구현 세부사항만을 문서에 과도하게 기록하지 않았다.
 
 ---
 
-## 10. Milestone 2 완료 체크리스트
+## 12. Milestone 2 완료 체크리스트
 
 Milestone 2 관련 Issue에서는 다음 항목을 추가로 확인한다.
 
@@ -139,19 +189,23 @@ Milestone 2 관련 Issue에서는 다음 항목을 추가로 확인한다.
 - HomeScreen 추가 Issue에서는 Navigation 구조와 연결이 명확하다.
 - 기존 상품 조회, 추가, 수량 감소, 삭제 동작이 유지된다.
 - Room schema 변경이 의도치 않게 발생하지 않았다.
+- Issue #7에서 정리한 `StateFlow<InventoryUiState>` 구조가 유지된다.
 
 ---
 
-## 11. PR 전 확인 기준
+## 13. PR 전 확인 기준
 
 PR 생성 전 다음 항목을 확인한다.
 
 - `AGENTS.md`를 확인했다.
+- `docs/ai/AI_WORKFLOW.md`를 확인했다.
 - 대상 Issue의 완료 조건을 모두 확인했다.
 - `docs/project-management/definition-of-done.md` 기준을 확인했다.
 - 변경 파일 목록이 Issue 범위와 맞는다.
+- 변경하지 않기로 한 파일이 변경되지 않았다.
 - schema 변경 여부를 확인했다.
 - 기존 주요 기능을 수동으로 확인했다.
+- verification report를 작성했다.
 - PR 본문에 변경 사항과 검증 결과를 작성할 수 있다.
 
 권장 명령:
@@ -167,3 +221,5 @@ PR 생성 전 다음 항목을 확인한다.
 ./gradlew :app:lintDebug
 git diff -- app/schemas
 ```
+
+Issue에 grep 또는 diff 명령이 있다면 함께 실행한다.

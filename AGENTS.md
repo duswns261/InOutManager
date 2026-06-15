@@ -2,20 +2,48 @@
 
 This file defines the working rules for AI coding agents contributing to the InOutManager project.
 
-InOutManager is an Android inventory management app project.  
-The project is developed through small GitHub Issues and Pull Requests, with architecture, workflow, roadmap, and completion rules managed in `docs/project-management/`.
+The project is developed through small GitHub Issues and Pull Requests, with architecture, workflow, roadmap, and completion rules managed in `docs/project-management/`, and AI working protocol managed in `docs/ai/`.
+
 
 This repository currently uses a documentation-driven agent workflow.  
 Pull request templates and GitHub Actions CI may be added later, but agents must not assume that automated PR or CI checks are already configured.
 
+> Do not edit code before producing an implementation plan and receiving explicit user approval.
+
 ---
 
-## 1. Required documents
+## 1. Core principle: staged work with human approval gates
+
+AI agents do NOT implement an Issue end-to-end in a single step.
+
+All work follows the staged protocol defined in `docs/ai/work-protocol.md`:
+
+```text
+Stage 1: Analysis        → output analysis, no code changes
+Stage 2: Plan            → output plan using docs/ai/plan-template.md, no code changes
+         [HUMAN APPROVAL GATE]
+Stage 3: Implementation  → small units, following the approved plan only
+Stage 4: Verification    → output report using docs/ai/verification-report-template.md
+```
+
+Hard rules:
+
+- Do not modify any code before the human approves the Stage 2 plan.
+- Do not exceed the approved plan during Stage 3. If new work is discovered, stop and report it.
+- Do not report completion without a Stage 4 verification report.
+- If the human request skips stages, ask which stage to start from instead of assuming.
+- AI agents must treat the current GitHub Issue as a contract.
+- The agent must implement only the current Issue scope.
+- If a change is useful but not required by the Issue, do not implement it. Write it as a follow-up recommendation instead.
+
+## 2. Required documents
 
 Before starting work on any Issue, read the target GitHub Issue and the following project documents.
 
 Required entry document:
 
+- `docs/ai/issue-workflow.md`
+- `docs/ai/issue-work-rules.md`
 - `docs/project-management/issue-workflow.md`
 
 Supporting documents:
@@ -28,33 +56,87 @@ Do not copy these documents into the Issue, completion report, or PR body. Use t
 
 ---
 
-## 2. Pre-work checklist
+## 3. Required approval-gated workflow
 
-Before editing files, summarize the following.
+Every Issue must follow this order.
 
-- Target Issue
-- Expected files to change
-- Files, layers, or features that must not change
-- Relevant project-management documents
-- Required local validation commands
-- Possible risks or ambiguity
+### Step 1. Analysis only
 
-If the Issue conflicts with `docs/project-management/architecture-rules.md`, stop and clarify before editing.
+Before proposing code changes, analyze only.
 
----
+In Stage 1, the agent reads and reports. No code changes.
 
-## 3. Required workflow
+The analysis must include:
 
-When working on an Issue, follow this order.
+- Read `docs/ai/issue-workflow.md'
+- Target Issue summary
+- Current branch state compared with main
+- Relevant documents checked
+- In-scope changes
+- Out-of-scope changes
+- Risk and ambiguity
+- Whether the Issue is ready for implementation
+- Conflicts or ambiguity between the Issue and `docs/project-management/architecture-rules.md`
+- Questions that need human answers before planning
 
-1. Read the target GitHub Issue.
-2. Read `docs/project-management/issue-workflow.md`.
-3. Check `docs/project-management/project-roadmap.md` if the task affects milestone order, excluded future work, or backlog.
-4. Check `docs/project-management/architecture-rules.md` before changing package structure, ViewModel, UseCase, Repository, DataSource, Room, DI, Navigation, or Compose UI state.
-5. Check `docs/project-management/definition-of-done.md` before finalizing the task.
-6. Keep the change scope limited to the target Issue.
-7. Do not combine unrelated future Issues into the current task.
-8. Run the validation commands listed in the Issue before reporting completion or opening a PR.
+If the Issue conflicts with architecture rules, stop and ask. Do not resolve the conflict by choosing a direction unilaterally.
+
+### Step 2. Implementation plan only
+
+Before editing files, produce an implementation plan.
+
+In Stage 2, the agent produces a plan using `docs/ai/plan-template.md`. No code changes.
+
+The plan must include:
+
+- Modified files list
+- Files that must not be modified
+- Layer impact
+- Acceptance criteria mapping
+- Commit plan
+- Validation commands
+- Manual behavior checks
+- Follow-up candidates that will not be implemented in this Issue
+
+No code edits are allowed in this step.
+The agent must not proceed to Stage 3 until the human replies with explicit approval.
+
+### Step 3. User approval
+
+- Implement only what the approved plan describes.
+- Work in small units matching the commit plan in the Issue.
+- If implementation reveals that the plan was wrong or incomplete, STOP. Report the discrepancy and wait for instructions. Do not improvise.
+- Discovered additional work goes to a follow-up Issue note, never into the current changes.
+
+Stop conditions (stop and ask before editing):
+
+- the Issue conflicts with existing architecture rules,
+- the task requires Room schema changes not mentioned in the Issue,
+- the task requires build configuration or dependency changes not mentioned in the approved plan,
+- the implementation would affect more than one Milestone scope,
+- the expected file changes are larger than the approved plan.
+
+Note: adding a dependency (e.g. a new artifact in `libs.versions.toml` or `build.gradle.kts`) is a build configuration change. It must appear in the approved plan. If it was missed, stop and report instead of silently adding it.
+
+### Step 4. Verification report
+
+After implementation, write a verification report using:
+
+- `docs/ai/verification-report-template.md`
+
+The report must include:
+
+- Modified files
+- Acceptance criteria Pass/Fail
+- Out-of-scope change check
+- Validation command results
+- Manual behavior check results
+- Remaining risks
+- Follow-up recommendations
+
+Do not claim completion without a verification report.
+Do not hide incomplete or uncertain work. If something could not be verified, state it clearly.
+Do not claim that CI passed unless a CI system actually ran.
 
 ---
 
@@ -62,132 +144,21 @@ When working on an Issue, follow this order.
 
 Stop and ask for clarification before editing when:
 
+- the user has not approved the implementation plan,
 - the Issue conflicts with existing architecture rules,
 - the task requires Room schema changes that are not mentioned in the Issue,
 - the task requires build configuration changes that are not mentioned in the Issue,
 - the implementation would affect more than one Milestone scope,
 - the task requires combining unrelated Hilt, Navigation, UI, database, or feature work,
-- the expected file changes are much larger than the Issue scope.
+- the expected file changes are much larger than the Issue scope,
+- an apparently good improvement is outside the Issue scope,
+- the agent cannot run or verify a required command,
+- a dependency must be added but the Issue did not mention dependency changes,
+- the implementation plan becomes inaccurate during development.
 
 ---
 
-## 5. Issue scope rules
-
-Each Issue should remain small and reviewable.
-
-Do not include unrelated work such as:
-
-- applying Hilt while working on StateFlow,
-- applying Navigation while working on DI,
-- changing Room schema during a presentation-layer refactor,
-- adding new features during architecture cleanup,
-- changing UI design during dependency or state management work.
-
-If additional work is discovered, document it as a follow-up Issue instead of expanding the current Issue.
-
----
-
-## 6. Architecture rules
-
-Follow `docs/project-management/architecture-rules.md`.
-
-Core rules:
-
-- Presentation should not depend directly on data implementation classes.
-- ViewModel should depend on UseCases or state holders, not Repository implementations.
-- Domain should not depend on presentation or data implementation details.
-- Data layer should contain Room, DataSource, Repository implementation, and mapper details.
-- UI state models such as `InventoryUiState` belong to the presentation layer.
-- Room schema changes must be intentional and verified.
-
----
-
-## 7. Dependency injection rules
-
-Follow the current milestone strategy.
-
-- Before Hilt migration, keep the existing manual DI structure unless the Issue explicitly says otherwise.
-- During Hilt migration, do not mix Navigation, UI redesign, or unrelated state management changes.
-- After Hilt migration, use the project’s Hilt modules and injection rules consistently.
-- Keep Preview and fake dependency creation paths working when possible.
-
----
-
-## 8. Navigation rules
-
-Navigation changes should be handled only in Navigation-related Issues.
-
-- Do not introduce Navigation Compose in non-navigation Issues.
-- Do not redesign screen flow unless the Issue explicitly includes it.
-- Keep ViewModel state ownership and screen state collection consistent with the architecture rules.
-
----
-
-## 9. Room and schema rules
-
-Room schema changes must not happen accidentally.
-
-Before finalizing work, check whether any of the following changed:
-
-- Room Entity
-- DAO
-- AppDatabase
-- Database version
-- `app/schemas`
-
-If the current Issue is not intended to change the database schema, there should be no schema diff.
-
----
-
-## 10. Local validation rules
-
-Before reporting completion or opening a PR, confirm the following.
-
-- The app builds successfully.
-- The Issue completion conditions are satisfied.
-- The change scope matches the Issue.
-- Existing core behavior still works.
-- No unintended Room schema change occurred.
-- Required project documents were checked.
-- The completion report or PR body can clearly explain what changed and how it was verified.
-
-At minimum, run locally:
-
-```bash
-./gradlew :app:build
-```
-
-When available and relevant, also run locally:
-
-```bash
-./gradlew :app:testDebugUnitTest
-./gradlew :app:lintDebug
-git diff -- app/schemas
-```
-
-Also run any grep or diff commands listed in the target Issue.
-
-Do not claim that CI passed unless a GitHub Actions workflow or another CI system actually ran successfully.
-
----
-
-## 11. Completion report and PR requirements
-
-A completion report or PR should explain the result of the work, not repeat the full Issue body.
-
-Include:
-
-- Summary of changes
-- Review points
-- Validation results
-- Screenshots if UI changed
-- Follow-up notes if needed
-
-Do not hide incomplete or uncertain work. If something could not be verified, state it clearly.
-
----
-
-## 12. Documentation update rules
+## 5. Documentation update rules
 
 Update project documents only when the change affects shared rules or future workflow.
 
@@ -197,26 +168,28 @@ Update:
 - `docs/project-management/architecture-rules.md` when architecture boundaries, DI, schema, or layer rules change.
 - `docs/project-management/definition-of-done.md` when common completion criteria change.
 - `docs/project-management/issue-workflow.md` when Issue writing or working process changes.
+- `docs/ai/` when AI workflow, planning, verification, or prompt templates change.
 - `AGENTS.md` when AI Agent workflow rules change.
 
 Do not update documentation just to restate implementation details from a single PR.
 
 ---
 
-## 13. Future automation notes
+## 6. Future automation notes
 
-The following files may be added later, but they are not required for the current documentation-driven workflow.
+The following files may be added later:
 
 ```text
 .github/pull_request_template.md
 .github/workflows/android-ci.yml
+scripts/verify_issue_x.sh
 ```
 
 If these files are added later, update this file and `docs/project-management/definition-of-done.md` so that PR and CI validation rules match the actual repository setup.
 
 ---
 
-## 14. Communication rules
+## 7. Communication rules
 
 When reporting work, be concise and specific.
 
@@ -232,11 +205,12 @@ Avoid:
 - broad refactoring without Issue approval,
 - large unrelated changes,
 - speculative future work inside the current PR,
-- undocumented architecture boundary changes.
+- undocumented architecture boundary changes,
+- claiming completion without verification evidence.
 
 ---
 
-## 15. Current project management path
+## 8. Current project management paths
 
 Project management documents are stored here:
 
@@ -244,13 +218,10 @@ Project management documents are stored here:
 docs/project-management/
 ```
 
-This folder contains:
+AI workflow documents are stored here:
 
 ```text
-issue-workflow.md
-project-roadmap.md
-architecture-rules.md
-definition-of-done.md
+docs/ai/
 ```
 
-Use these files as the source of truth for Issue workflow, roadmap, architecture rules, and completion criteria.
+Use these files as the source of truth for Issue workflow, roadmap, architecture rules, completion criteria, AI workflow, implementation planning, and verification reporting.
