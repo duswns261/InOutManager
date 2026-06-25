@@ -1,227 +1,93 @@
 # AGENTS.md
 
+## Summary
+
 This file defines the working rules for AI coding agents contributing to the InOutManager project.
 
-The project is developed through small GitHub Issues and Pull Requests, with architecture, workflow, roadmap, and completion rules managed in `docs/project-management/`, and AI working protocol managed in `docs/ai/`.
+InOutManager is an Android inventory management app project.
 
+추가로 이 프로젝트의 README.md에 있는 프로젝트 설명, "소규모 비즈니스 또는 개인의 사물, 상품들의 재고 상태를 체계적이고 직관적으로 관리할 수 있도록 돕는 안드로이드 애플리케이션입니다"를 포함
 
-This repository currently uses a documentation-driven agent workflow.  
-Pull request templates and GitHub Actions CI may be added later, but agents must not assume that automated PR or CI checks are already configured.
-
-> Do not edit code before producing an implementation plan and receiving explicit user approval.
+목표는 AI가 프로젝트 개발을 진행하되 사용자가 읽도록 요청한 문서를 일부 누락하거나 사용자 요청 범위를 임의 확장하더라도, 그 실패가 PR 이전에 드러나도록 만드는 것이다.
 
 ---
 
-## 1. Core principle: staged work with human approval gates
+## 1. Core principle 
 
-AI agents do NOT implement an Issue end-to-end in a single step.
+AI Agent는 자율 개발자가 아니라 제한된 작업자와 검증 대상이다.
 
-All work follows the staged protocol defined in `docs/ai/issue-workflow.md`:
+AI Agent는 다음 순서를 반드시 따른다.
 
 ```text
-Stage 1: Analysis        → output analysis, no code changes
-Stage 2: Plan            → output plan using docs/ai/plan-template.md, no code changes
-         [HUMAN APPROVAL GATE]
-Stage 3: Implementation  → small units, following the approved plan only
-Stage 4: Verification    → output report using docs/ai/verification-report-template.md
+분석만 수행
+↓
+구현 계획 작성
+↓
+사용자 승인 대기
+↓
+작은 단위 구현
+↓
+검증 보고서 작성
 ```
-
-Hard rules:
-
-- Do not modify any code before the human approves the Stage 2 plan.
-- Do not exceed the approved plan during Stage 3. If new work is discovered, stop and report it.
-- Do not report completion without a Stage 4 verification report.
-- If the human request skips stages, ask which stage to start from instead of assuming.
-- AI agents must treat the current GitHub Issue as a contract.
-- The agent must implement only the current Issue scope.
-- If a change is useful but not required by the Issue, do not implement it. Write it as a follow-up recommendation instead.
-
-## 2. Required documents
-
-Before starting work on any Issue, read the target GitHub Issue and the following project documents.
-
-Required entry document:
-
-- `docs/ai/issue-workflow.md`
-- `docs/ai/issue-work-rules.md`
-- `docs/project-management/issue-workflow.md`
-
-Supporting documents:
-
-- `docs/project-management/project-roadmap.md`
-- `docs/project-management/architecture-rules.md`
-- `docs/project-management/definition-of-done.md`
-
-Do not copy these documents into the Issue, completion report, or PR body. Use them as working references.
-
----
-
-## 3. Required approval-gated workflow
 
 Every Issue must follow this order.
 
-### Step 1. Analysis only
+코드 수정 전 구현 계획과 사용자 승인이 없으면 작업을 시작하지 않는다.
 
-Before proposing code changes, analyze only.
+This project uses a documentation-driven and approval-gated AI workflow.
 
-In Stage 1, the agent reads and reports. No code changes.
+파일들을 참조하며 컨텍스트를 이어가고자 하는 방향을 AI가 아닌 사용자가 결정하도록 하며, 명시적으로 "Follow {reference file path}" or "Read {reference file path}" 형태로 명령이 나오기 전까지 아무 파일이나 참조 하지 않도록 한다.
 
-The analysis must include:
+만약 사용자가 명령하지 않았지만 반드시 읽어야 할 파일이 있을 경우 사용자에게 해당하는 파일을 읽어야 하는 이유와 함께 승인 절차를 거치도록 한다.
 
-- Read `docs/ai/issue-workflow.md'
-- Target Issue summary
-- Current branch state compared with main
-- Relevant documents checked
-- In-scope changes
-- Out-of-scope changes
-- Risk and ambiguity
-- Whether the Issue is ready for implementation
-- Conflicts or ambiguity between the Issue and `docs/project-management/architecture-rules.md`
-- Questions that need human answers before planning
+Follow `docs/ai/requset-rules.md`, 이 파일은 사용자의 명령이 어떤 작업으로 이어지는지 나타내는 것이다. 사용자의 명령을 이 파일에 나온 명령에 근거하여 아래 설명된 **3. Task modes** 중 하나의 모드를 실행한다.
 
-If the Issue conflicts with architecture rules, stop and ask. Do not resolve the conflict by choosing a direction unilaterally.
+ > Do not edit code before producing an implementation plan and receiving explicit user approval.
+ 
+ > AI agents do NOT implement an Issue end-to-end in a single step.
+ 
+ ---
 
-### Step 2. Implementation plan only
+## 2. Required Documents
 
-Before editing files, produce an implementation plan.
+Before starting work on any work, read the target GitHub Issue and the following project documents.
 
-In Stage 2, the agent produces a plan using `docs/ai/implementation-plan-template.md`. No code changes.
+Required entry documents:
+ Read `docs/ai/project-management/architecture-rules.md`
+ Read `docs/ai/project-management/project-roadmap.md`
+ Read `docs/ai/request-rules`
+ ---
 
-The plan must include:
+## 3. Task modes
 
-- Modified files list
-- Files that must not be modified
-- Layer impact
-- Acceptance criteria mapping
-- Commit plan
-- Validation commands
-- Manual behavior checks
-- Follow-up candidates that will not be implemented in this Issue
+사용자의 요청에 따라 역할이 아래 작업 중 하나로 분류됨.
 
-No code edits are allowed in this step.
-The agent must not proceed to Stage 3 until the human replies with explicit approval.
+사용자의 요청 역할이 아래 Task Mode 중 존재하지 않거나, 애매할 경우 아래 역할들이 존재함을 알리고 반드시 정확한 모드를 선택할 경우 이어서 작업을 진행하도록 함.
 
-### Step 3. User approval
+`docs/ai/work-items/`는 깃허브 커밋 대상이 아니다. 
 
-- Implement only what the approved plan describes.
-- Work in small units matching the commit plan in the Issue.
-- If implementation reveals that the plan was wrong or incomplete, STOP. Report the discrepancy and wait for instructions. Do not improvise.
-- Discovered additional work goes to a follow-up Issue note, never into the current changes.
+Task Mode A, planner(기획자)
+- 이 단계에서는 코드를 절대 수정하지 않는다.
+- 사용자가 제안한 Issue URL이 실제하는지 확인하고 실제하지 않거나 body가 비어있을 경우 이 사실을 알리고 작성을 요청하며 작업을 중단한다.
+- 요청된 이슈가 명확하지 않을 경우, 사용자가 Issue를 생성하지 않은건지 직접 확인하도록 질문할 것
+- 사용자로부터 planner로 역할을 부여받았으나 Issue가 생성되어 있지 않으면 기획을 진행하지 않는다.
+- Read `docs/ai/workflow/planner/workflow.md`
+- Follow `docs/ai/workflow/planner/report/issue-plan-template.md`, 이 포맷으로 아래 지시에 따라 파일을 남긴다.
+- plan 역할이 정상적으로 마무리 된 경우에만 `docs/ai/work-items/issue-{number}-{name}/plan.md`파일을 남긴다. 
 
-Stop conditions (stop and ask before editing):
+Task Mode B, generator(작업자)
+- 이 단계에서는 코드 수정 전 반드시 사용자 승인을 거친다.
+- 사용자로부터 전달받은 Issue URL이 실제하는지 확인하고 실제하지 않거나 body가 비어있을 경우 이 사실을 알리고 작성을 요청하며 작업을 중단한다.
+- 사용자로부터 generator로 역할을 부여받았으나 사용자에게 전달받은 Issue가 `docs/ai/work-items/`경로에 `issue-{number}-{name}/plan.md`파일이 만들어져 있지 않은 경우 사용자에게 직접 찾아본 파일의 경로를 제시하며 해당 파일이 없음을 알린 후 정확한 Issue 파일을 알려주기 전까지 작업을 진행하지 않는다. 사용자는 이 경우, 왜 해당 경로에 plan.md 파일이 존재하지 않는지 판단해야 한다. planner 단계를 건너뛴 것은 아닌지 혹은 파일 생성이나 질문이 잘못된 것은 아닌지 판단해야 한다.
+- 사용자로부터 전달받은 Issue URL에 접속하여 해당 내용을 분석한다.
+- 분석한 Issue body 내용에 대조하여 plan.md 파일의 내용의 적합성이 부족하다고 판단될 경우, 작업을 중단하고 비판 내용을 검토받을 수 있도록 사용자의 승인 절차를 기다린다. 
+- READ `docs/ai/workflow/generator/workflow.md`
+- workflow.md 방식을 참조하여 정확하게 내용에 따라 프로젝트 진행을 시작한다.
+- 문서를 벗어난 행위는 절대 하지 않는다. 임의 판단을 하지 않는다. 유연한 생각이 필요할 경우 사용자에게 반드시 제안하여 승인절차를 걸쳐 진행한다.
+- Follow `docs/ai/workflow/generator/report/implementation-plan-template.md`
+- `docs/ai/work-items/` 경로에 `issue-{number}-{name}/update.md`파일을 남긴다.
 
-- the Issue conflicts with existing architecture rules,
-- the task requires Room schema changes not mentioned in the Issue,
-- the task requires build configuration or dependency changes not mentioned in the approved plan,
-- the implementation would affect more than one Milestone scope,
-- the expected file changes are larger than the approved plan.
-
-Note: adding a dependency (e.g. a new artifact in `libs.versions.toml` or `build.gradle.kts`) is a build configuration change. It must appear in the approved plan. If it was missed, stop and report instead of silently adding it.
-
-### Step 4. Verification report
-
-After implementation, write a verification report using:
-
-- `docs/ai/verification-report-template.md`
-
-The report must include:
-
-- Modified files
-- Acceptance criteria Pass/Fail
-- Out-of-scope change check
-- Validation command results
-- Manual behavior check results
-- Remaining risks
-- Follow-up recommendations
-
-Do not claim completion without a verification report.
-Do not hide incomplete or uncertain work. If something could not be verified, state it clearly.
-Do not claim that CI passed unless a CI system actually ran.
-
----
-
-## 4. Stop conditions
-
-Stop and ask for clarification before editing when:
-
-- the user has not approved the implementation plan,
-- the Issue conflicts with existing architecture rules,
-- the task requires Room schema changes that are not mentioned in the Issue,
-- the task requires build configuration changes that are not mentioned in the Issue,
-- the implementation would affect more than one Milestone scope,
-- the task requires combining unrelated Hilt, Navigation, UI, database, or feature work,
-- the expected file changes are much larger than the Issue scope,
-- an apparently good improvement is outside the Issue scope,
-- the agent cannot run or verify a required command,
-- a dependency must be added but the Issue did not mention dependency changes,
-- the implementation plan becomes inaccurate during development.
-
----
-
-## 5. Documentation update rules
-
-Update project documents only when the change affects shared rules or future workflow.
-
-Update:
-
-- `docs/project-management/project-roadmap.md` when milestone order, follow-up Issues, or backlog changes.
-- `docs/project-management/architecture-rules.md` when architecture boundaries, DI, schema, or layer rules change.
-- `docs/project-management/definition-of-done.md` when common completion criteria change.
-- `docs/project-management/issue-workflow.md` when Issue writing or working process changes.
-- `docs/ai/` when AI workflow, planning, verification, or prompt templates change.
-- `AGENTS.md` when AI Agent workflow rules change.
-
-Do not update documentation just to restate implementation details from a single PR.
-
----
-
-## 6. Future automation notes
-
-The following files may be added later:
-
-```text
-.github/pull_request_template.md
-.github/workflows/android-ci.yml
-scripts/verify_issue_x.sh
-```
-
-If these files are added later, update this file and `docs/project-management/definition-of-done.md` so that PR and CI validation rules match the actual repository setup.
-
----
-
-## 7. Communication rules
-
-When reporting work, be concise and specific.
-
-Prefer:
-
-- what changed,
-- why it changed,
-- what was verified,
-- what remains.
-
-Avoid:
-
-- broad refactoring without Issue approval,
-- large unrelated changes,
-- speculative future work inside the current PR,
-- undocumented architecture boundary changes,
-- claiming completion without verification evidence.
-
----
-
-## 8. Current project management paths
-
-Project management documents are stored here:
-
-```text
-docs/project-management/
-```
-
-AI workflow documents are stored here:
-
-```text
-docs/ai/
-```
-
-Use these files as the source of truth for Issue workflow, roadmap, architecture rules, completion criteria, AI workflow, implementation planning, and verification reporting.
+Task Mode C, evaluator(평가자)
+- 사용자로부터 전달받은 Issue URL을 분석한다.
+- `docs/ai/work-items/issue-{number}-{name}/plan.md` 또는 `docs/ai/work-items/issue-{number}-{name}/update.md` 파일이 없는 경우 기획 또는 구현이 발생되지 않은 경우이기 때문에 작업을 중단하고 비어있는 파일이 어떤 것인지 명확하게 알린다.
+- plan.md, update.md 파일이 둘 다 확인된 경우, Issue body에 작성된 내용의 적합성이 부족하다고 판단될 경우, 작업을 중단하고 비판 내용을 검토받을 수 있도록 사용자의 승인 절치를 기다린다.
