@@ -16,7 +16,7 @@ Pull request templates and GitHub Actions CI may be added later, but agents must
 
 AI agents do NOT implement an Issue end-to-end in a single step.
 
-All work follows the staged protocol defined in `docs/ai/work-protocol.md`:
+All work follows the staged protocol defined in `docs/ai/issue-workflow.md`:
 
 ```text
 Stage 1: Analysis        → output analysis, no code changes
@@ -85,7 +85,7 @@ If the Issue conflicts with architecture rules, stop and ask. Do not resolve the
 
 Before editing files, produce an implementation plan.
 
-In Stage 2, the agent produces a plan using `docs/ai/plan-template.md`. No code changes.
+In Stage 2, the agent produces a plan using `docs/ai/implementation-plan-template.md`. No code changes.
 
 The plan must include:
 

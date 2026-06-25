@@ -4,18 +4,6 @@
 
 각 Issue 본문에서는 제외 범위를 과도하게 나열하지 않고, 필요한 경우 이 문서를 참조한다.
 
-공통 문서 위치는 다음을 기준으로 한다.
-
-```text
-docs/project-management/
-```
-
-AI Agent 작업 절차와 템플릿은 다음 위치에서 관리한다.
-
-```text
-docs/ai/
-```
-
 ---
 
 ## 1. 현재 프로젝트 방향
@@ -62,41 +50,7 @@ InOutManager는 Android 재고 관리 앱 프로젝트이다.
 
 ---
 
-## 3. Milestone 1.5: AI Workflow Foundation
-
-목표:
-
-- AI Agent가 Issue 범위를 임의로 확장하지 못하도록 문서화된 작업 프로토콜을 정착한다.
-- 코드 수정 전 계획 승인, 작은 단위 구현, 검증 보고서 작성 절차를 도입한다.
-- AI 결과물이 완벽하지 않아도 실패가 드러나는 검증 흐름을 만든다.
-
-포함 작업:
-
-- `AGENTS.md` 강화
-- `docs/ai/AI_WORKFLOW.md` 추가
-- `docs/ai/ISSUE_WORK_RULES.md` 추가
-- `docs/ai/IMPLEMENTATION_PLAN_TEMPLATE.md` 추가
-- `docs/ai/VERIFICATION_REPORT_TEMPLATE.md` 추가
-- `docs/ai/AGENT_TASK_PROMPT_TEMPLATE.md` 추가
-- `docs/project-management/` 문서와 AI workflow 문서 연결
-
-완료 기준:
-
-- AI Agent는 코드 수정 전 구현 계획을 제출해야 한다.
-- 구현 계획에는 변경 파일, 변경하지 않을 파일, 완료 조건 매핑표가 포함된다.
-- 사용자 승인 전 코드 수정이 금지된다.
-- 구현 후 verification report가 작성된다.
-- Issue 범위 밖 개선은 follow-up 후보로만 기록된다.
-
-주의:
-
-- 이 Milestone은 개발 기능 추가가 아니라 작업 절차 안정화가 목적이다.
-- 앱 코드 변경과 섞지 않는다.
-- PR template, Issue template, CI는 후속 Quality Milestone에서 도입할 수 있다.
-
----
-
-## 4. Milestone 2: DI & Navigation Foundation
+## 3. Milestone 2: DI & Navigation Foundation
 
 목표:
 
@@ -134,7 +88,7 @@ InOutManager는 Android 재고 관리 앱 프로젝트이다.
 
 ---
 
-## 5. Milestone 3 후보: Quality & Production Readiness
+## 4. Milestone 3 후보: Quality & Production Readiness
 
 목표:
 
@@ -157,7 +111,7 @@ InOutManager는 Android 재고 관리 앱 프로젝트이다.
 
 ---
 
-## 6. Backlog
+## 5. Backlog
 
 다음 항목은 현재 Milestone 이후 검토할 수 있다.
 
@@ -179,7 +133,7 @@ InOutManager는 Android 재고 관리 앱 프로젝트이다.
 
 ---
 
-## 7. Roadmap 관리 원칙
+## 6. Roadmap 관리 원칙
 
 - Issue 본문에는 후속 작업을 최대 2개 정도만 언급한다.
 - 긴 제외 범위와 Backlog는 이 문서에서 관리한다.
