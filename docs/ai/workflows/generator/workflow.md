@@ -16,6 +16,8 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 
 범위 변경, 설계 결정, blocker, 재승인이 필요한 경우에 따라 GitHub Issue comment가 기록된 경우, 이에 대한 Human Owner의 명시적 승인 답변 없는 경우 이를 알리며 작업을 즉시 중단한다.
 
+`plan.md`의 내용은 대화 컨텍스트에서 작성했거나 설명한 내용을 기준으로 판단하지 않는다. 반드시 `.ai/work-items/issue-{number}-{slug}/plan.md` 파일을 직접 읽어 현재 내용을 확인한 뒤 구현을 시작한다.
+
 ---
 
 ## 1. 입력
