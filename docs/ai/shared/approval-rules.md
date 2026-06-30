@@ -34,9 +34,11 @@ Planner의 코드 읽기, Issue 분석, local `plan.md` 초안 작성은 승인 
 유효한 승인은 아래 조건을 모두 만족한다.
 
 1. 대상 Issue가 식별된다.
-2. 승인 대상 계획 또는 계획 요약이 식별된다.
-3. 사용자가 구현 진행 의사를 명확히 표현한다.
-4. 승인 내용이 GitHub Issue comment에 남아 있다.
+2. 승인 대상 `plan.md` 또는 계획 요약이 식별된다.
+3. Human Owner가 구현 진행 의사를 명확히 표현한다.
+4. `plan.md`의 `approval.status`가 `approved`로 갱신된다.
+
+GitHub Issue comment는 필수 조건이 아니다. 단, comment가 존재하는 경우에는 comment 내용이 승인 범위와 일치해야 하며, 이 경우 `approval_reference`에 comment URL을 기록한다.
 
 유효한 예:
 
@@ -44,6 +46,8 @@ Planner의 코드 읽기, Issue 분석, local `plan.md` 초안 작성은 승인 
 Issue #7의 plan v1을 승인한다. 명시된 파일 범위 안에서 구현을 진행해.
 Issue #7 계획 요약의 변경 범위와 검증 계획을 승인한다.
 Issue #7은 dependency 추가를 포함한 plan v2 기준으로 진행한다.
+계획대로 진행해.
+이 범위대로 구현 시작해.
 ```
 
 유효하지 않은 예:
@@ -68,16 +72,18 @@ approval:
   approval_reference: null
 ```
 
-로컬 개발 환경에서 Human Owner의 명시적 승인이 발생한 경우, GitHub Issue comment가 있고 이에 대한 명시적 승인 명령이 comment 답변으로 있는 경우, Planner 또는 Generator는 local plan을 아래처럼 갱신할 수 있다.
+Human Owner의 명시적 승인이 발생하면 Planner 또는 Generator는 local plan을 아래처럼 갱신한다.
 
 ```yaml
 approval:
   status: approved
   plan_version: 1
-  approval_reference: <GitHub Issue comment URL>
+  approval_reference: <GitHub Issue comment URL 또는 null>
 ```
 
-이 갱신은 GitHub 승인 기록을 반영하는 행위이며, Agent가 스스로 승인 권한을 행사하는 것이 아니다.
+`approval_reference`는 GitHub Issue comment가 존재하는 경우에만 기록한다. comment가 없는 승인은 `null`로 유지한다.
+
+이 갱신은 Human Owner의 승인을 반영하는 행위이며, Agent가 스스로 승인 권한을 행사하는 것이 아니다.
 
 ---
 

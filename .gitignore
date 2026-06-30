@@ -43,3 +43,6 @@ fabric.properties
 
 # Schema export
 /app/schemas
+
+# Local AI agent work artifacts
+.ai/work-items/
