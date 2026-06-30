@@ -1,93 +1,153 @@
 # AGENTS.md
 
-## Summary
+## 목적
 
-This file defines the working rules for AI coding agents contributing to the InOutManager project.
+InOutManager는 소규모 비즈니스 또는 개인이 사물과 상품의 재고 상태를 관리할 수 있도록 돕는 Android 애플리케이션이다.
 
-InOutManager is an Android inventory management app project.
+이 파일은 AI Agent의 루트 진입점이다. 이 문서는 상세 절차를 반복하지 않고, 작업 모드와 역할을 식별한 뒤 필요한 workflow로 라우팅한다.
 
-추가로 이 프로젝트의 README.md에 있는 프로젝트 설명, "소규모 비즈니스 또는 개인의 사물, 상품들의 재고 상태를 체계적이고 직관적으로 관리할 수 있도록 돕는 안드로이드 애플리케이션입니다"를 포함
+프로젝트는 Planner → Generator → Evaluator 역할을 분리한다.
 
-목표는 AI가 프로젝트 개발을 진행하되 사용자가 읽도록 요청한 문서를 일부 누락하거나 사용자 요청 범위를 임의 확장하더라도, 그 실패가 PR 이전에 드러나도록 만드는 것이다.
+AI Agent는 자율적으로 전체 Issue를 끝까지 처리하는 개발자가 아니라, 명시된 역할과 승인 범위 안에서만 작업하는 제한된 협업자다.
 
 ---
 
-## 1. Core principle 
+## 1. 공통 Hard Rules
 
-AI Agent는 자율 개발자가 아니라 제한된 작업자와 검증 대상이다.
+1. 작업 시작 시 먼저 `Issue Mode` 또는 `Direct Mode`를 식별한다.
+2. `Issue Mode`에서는 역할이 명시되지 않으면 Planner, Generator, Evaluator 역할을 임의로 선택하지 않는다.
+3. `Issue Mode`에서 코드·의존성·빌드 설정·DB schema·DI·Navigation 변경은 승인된 계획 범위 안에서만 수행한다.
+4. 승인된 계획 밖 변경이 필요하면 구현 또는 최종 판정을 중단하고 재승인을 요청한다.
+5. Evaluator는 코드, 계획, 구현 로그, 검증 보고서를 수정하지 않는다.
+6. 검증하지 못한 항목, 실패한 명령, 남은 위험을 숨기지 않는다.
+7. 문서의 사실원천이 충돌하면 Agent는 임의로 우선순위를 정하지 않고 작업을 중단해 충돌 내용을 보고한다.
+8. 문서 경로와 파일명은 `docs/ai/shared/path-registry.md`를 기준으로 한다.
 
-AI Agent는 다음 순서를 반드시 따른다.
+세부 승인, 산출물, 검증, 완료 기준은 각 shared 문서와 역할별 workflow를 따른다.
+
+---
+
+## 2. 작업 모드 선택
+
+### 2.1 Issue Mode
+
+다음 작업은 GitHub Issue를 기준으로 진행한다.
+
+- 기능 추가 또는 사용자 동작 변경
+- 버그 수정
+- 아키텍처·계층 책임 변경
+- dependency, Gradle, build configuration 변경
+- Room Entity, DAO, database version, schema 변경
+- DI 또는 Navigation 변경
+- 테스트 전략·CI·공통 개발 규칙 변경
+
+Issue Mode는 Planner → 승인 → Generator → Evaluator 흐름을 따른다.
+
+### 2.2 Direct Mode
+
+다음처럼 앱 동작, 공개 API, 빌드, 데이터 구조에 영향을 주지 않는 작업은 Direct Mode로 처리할 수 있다.
+
+- 오탈자, 문장, 주석, README 정정
+- Markdown 서식, 코드 포맷, import 정리
+- 파일 이동 없이 수행하는 비기능적 이름·표현 정리
+
+Direct Mode에서는 GitHub Issue, Planner, 로컬 work item을 기본적으로 요구하지 않는다.
+
+다만 Direct Mode 작업 중 아래 변경이 필요해지면 즉시 Issue Mode로 전환한다.
+
+- 앱 동작 또는 사용자 경험 변경
+- 테스트 동작 또는 공개 API 변경
+- dependency, Gradle, DB schema, DI, Navigation 변경
+- 파일 이동, 계층 책임 변경, 여러 파일에 걸친 구조 변경
+
+---
+
+## 3. 역할 호출 방식
+
+### 3.1 최소 호출
+
+Issue Mode에서 아래 세 가지가 명확하면 Agent는 역할별 사전 확인을 시작할 수 있다.
+
+1. 역할: Planner, Generator, Evaluator 중 하나
+2. 대상: GitHub Issue URL 또는 Issue 번호
+3. 목적: 분석·계획·구현·평가 중 수행할 작업
+
+자연어 호출 예시:
 
 ```text
-분석만 수행
-↓
-구현 계획 작성
-↓
-사용자 승인 대기
-↓
-작은 단위 구현
-↓
-검증 보고서 작성
+너는 Planner야.
+Issue URL: <Issue URL>
+구현 전 계획을 작성해줘.
 ```
 
-Every Issue must follow this order.
+### 3.2 정형 호출
 
-코드 수정 전 구현 계획과 사용자 승인이 없으면 작업을 시작하지 않는다.
+여러 Issue, 여러 branch, IDE 간 인수인계, 작업 재개처럼 대상이 복잡한 경우에는 아래 형식을 권장한다.
 
-This project uses a documentation-driven and approval-gated AI workflow.
+```text
+ROLE: PLANNER | GENERATOR | EVALUATOR
+TASK: ANALYZE_AND_PLAN | IMPLEMENT | EVALUATE
+ISSUE: <GitHub Issue URL 또는 Issue 번호>
+BRANCH: <GitHub branch name 또는 URL>
+ARTIFACT_DIR: .ai/work-items/issue-{number}-{slug}/
+```
 
-파일들을 참조하며 컨텍스트를 이어가고자 하는 방향을 AI가 아닌 사용자가 결정하도록 하며, 명시적으로 "Follow {reference file path}" or "Read {reference file path}" 형태로 명령이 나오기 전까지 아무 파일이나 참조 하지 않도록 한다.
+### 3.3 입력 부족
 
-만약 사용자가 명령하지 않았지만 반드시 읽어야 할 파일이 있을 경우 사용자에게 해당하는 파일을 읽어야 하는 이유와 함께 승인 절차를 거치도록 한다.
+역할 또는 대상 Issue가 없으면 Agent는 코드·구성·로컬 work item을 수정하지 않고 부족한 입력만 보고한다.
 
-Follow `docs/ai/requset-rules.md`, 이 파일은 사용자의 명령이 어떤 작업으로 이어지는지 나타내는 것이다. 사용자의 명령을 이 파일에 나온 명령에 근거하여 아래 설명된 **3. Task modes** 중 하나의 모드를 실행한다.
+`BRANCH`, `ARTIFACT_DIR`가 생략되면 해당 역할 workflow의 기본 규칙을 따른다.
 
- > Do not edit code before producing an implementation plan and receiving explicit user approval.
- 
- > AI agents do NOT implement an Issue end-to-end in a single step.
- 
- ---
+---
 
-## 2. Required Documents
+## 4. 공통 문서 확인
 
-Before starting work on any work, read the target GitHub Issue and the following project documents.
+Issue Mode에서 모든 역할은 아래 문서를 읽는다.
 
-Required entry documents:
- Read `docs/ai/project-management/architecture-rules.md`
- Read `docs/ai/project-management/project-roadmap.md`
- Read `docs/ai/request-rules`
- ---
+1. 대상 GitHub Issue
+2. `docs/ai/shared/workflow-contract.md`
+3. `docs/ai/shared/path-registry.md`
+4. `docs/ai/shared/approval-rules.md`
 
-## 3. Task modes
+그 후 선택된 역할의 workflow만 읽는다.
 
-사용자의 요청에 따라 역할이 아래 작업 중 하나로 분류됨.
+프로젝트 관리 문서, 역할별 템플릿, 로컬 work item은 각 역할 workflow가 지정한 범위만 읽는다.
 
-사용자의 요청 역할이 아래 Task Mode 중 존재하지 않거나, 애매할 경우 아래 역할들이 존재함을 알리고 반드시 정확한 모드를 선택할 경우 이어서 작업을 진행하도록 함.
+---
 
-`docs/ai/work-items/`는 깃허브 커밋 대상이 아니다. 
+## 5. 역할 라우팅
 
-Task Mode A, planner(기획자)
-- 이 단계에서는 코드를 절대 수정하지 않는다.
-- 사용자가 제안한 Issue URL이 실제하는지 확인하고 실제하지 않거나 body가 비어있을 경우 이 사실을 알리고 작성을 요청하며 작업을 중단한다.
-- 요청된 이슈가 명확하지 않을 경우, 사용자가 Issue를 생성하지 않은건지 직접 확인하도록 질문할 것
-- 사용자로부터 planner로 역할을 부여받았으나 Issue가 생성되어 있지 않으면 기획을 진행하지 않는다.
-- Read `docs/ai/workflow/planner/workflow.md`
-- Follow `docs/ai/workflow/planner/report/issue-plan-template.md`, 이 포맷으로 아래 지시에 따라 파일을 남긴다.
-- plan 역할이 정상적으로 마무리 된 경우에만 `docs/ai/work-items/issue-{number}-{name}/plan.md`파일을 남긴다. 
+| 역할 | 처리하는 요청 | 시작 문서 |
+|---|---|---|
+| Planner | Issue 분석, 구현 계획, 범위·위험·변경 파일 분석 | `docs/ai/workflows/planner/workflow.md` |
+| Generator | 승인된 계획 기반 구현, 검증 실행, 구현 기록 | `docs/ai/workflows/generator/workflow.md` |
+| Evaluator | 구현 결과, PR diff, 검증 근거의 독립 평가 | `docs/ai/workflows/evaluator/workflow.md` |
 
-Task Mode B, generator(작업자)
-- 이 단계에서는 코드 수정 전 반드시 사용자 승인을 거친다.
-- 사용자로부터 전달받은 Issue URL이 실제하는지 확인하고 실제하지 않거나 body가 비어있을 경우 이 사실을 알리고 작성을 요청하며 작업을 중단한다.
-- 사용자로부터 generator로 역할을 부여받았으나 사용자에게 전달받은 Issue가 `docs/ai/work-items/`경로에 `issue-{number}-{name}/plan.md`파일이 만들어져 있지 않은 경우 사용자에게 직접 찾아본 파일의 경로를 제시하며 해당 파일이 없음을 알린 후 정확한 Issue 파일을 알려주기 전까지 작업을 진행하지 않는다. 사용자는 이 경우, 왜 해당 경로에 plan.md 파일이 존재하지 않는지 판단해야 한다. planner 단계를 건너뛴 것은 아닌지 혹은 파일 생성이나 질문이 잘못된 것은 아닌지 판단해야 한다.
-- 사용자로부터 전달받은 Issue URL에 접속하여 해당 내용을 분석한다.
-- 분석한 Issue body 내용에 대조하여 plan.md 파일의 내용의 적합성이 부족하다고 판단될 경우, 작업을 중단하고 비판 내용을 검토받을 수 있도록 사용자의 승인 절차를 기다린다. 
-- READ `docs/ai/workflow/generator/workflow.md`
-- workflow.md 방식을 참조하여 정확하게 내용에 따라 프로젝트 진행을 시작한다.
-- 문서를 벗어난 행위는 절대 하지 않는다. 임의 판단을 하지 않는다. 유연한 생각이 필요할 경우 사용자에게 반드시 제안하여 승인절차를 걸쳐 진행한다.
-- Follow `docs/ai/workflow/generator/report/implementation-plan-template.md`
-- `docs/ai/work-items/` 경로에 `issue-{number}-{name}/update.md`파일을 남긴다.
+역할별 입력, work item 접근, 산출물, 중단 조건, 판정 기준은 해당 workflow가 단일 사실원천이다.
 
-Task Mode C, evaluator(평가자)
-- 사용자로부터 전달받은 Issue URL을 분석한다.
-- `docs/ai/work-items/issue-{number}-{name}/plan.md` 또는 `docs/ai/work-items/issue-{number}-{name}/update.md` 파일이 없는 경우 기획 또는 구현이 발생되지 않은 경우이기 때문에 작업을 중단하고 비어있는 파일이 어떤 것인지 명확하게 알린다.
-- plan.md, update.md 파일이 둘 다 확인된 경우, Issue body에 작성된 내용의 적합성이 부족하다고 판단될 경우, 작업을 중단하고 비판 내용을 검토받을 수 있도록 사용자의 승인 절치를 기다린다.
+---
+
+## 6. 영구 근거 원칙
+
+`.ai/work-items/`는 로컬 Agent 작업 기록이며 기본적으로 Git 추적 대상이 아니다.
+
+Issue Mode의 장기 근거는 GitHub에 남긴다.
+
+- 계획 요약과 명시적 승인: GitHub Issue
+- 실제 변경과 실행 결과: Pull Request와 CI
+- 독립 평가와 병합 권고: Pull Request review 또는 comment
+
+세부 기록 규칙은 `workflow-contract.md`와 `approval-rules.md`를 따른다.
+
+---
+
+## 7. 완료 선언
+
+`Verified`, `Conditionally Verified`, `Failed`의 의미와 완료 기준은 다음 문서에서 관리한다.
+
+```text
+docs/project-management/definition-of-done.md
+docs/ai/workflows/evaluator/workflow.md
+```
+
+Agent는 검증 근거 없이 완료 또는 병합 가능을 선언하지 않는다.
