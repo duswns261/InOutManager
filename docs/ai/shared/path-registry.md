@@ -35,6 +35,7 @@ docs/
         workflow.md
         implementation-log-template.md
         verification-report-template.md
+        pr-description-template.md
 
       evaluator/
         workflow.md
@@ -58,7 +59,7 @@ docs/
 | `AGENTS.md` | 예 | Agent 진입과 라우팅 |
 | `docs/project-management/` | 예 | 프로젝트 공통 운영 규칙 |
 | `docs/ai/shared/` | 예 | AI Agent 공통 계약 |
-| `docs/ai/workflows/` | 예 | 역할별 workflow와 템플릿 |
+| `docs/ai/workflows/` | 예 | 역할별 workflow와 필수 산출물 템플릿 |
 | `.ai/work-items/` | 아니오 | 로컬 Issue 작업 기록 |
 
 `.gitignore`에는 아래 항목을 둔다.
@@ -83,6 +84,7 @@ docs/
 | Generator workflow | `docs/ai/workflows/generator/workflow.md` | Generator |
 | 구현 로그 템플릿 | `docs/ai/workflows/generator/implementation-log-template.md` | Generator |
 | 검증 보고서 템플릿 | `docs/ai/workflows/generator/verification-report-template.md` | Generator |
+| PR 설명 템플릿 | `docs/ai/workflows/generator/pr-description-template.md` | Generator |
 | Evaluator workflow | `docs/ai/workflows/evaluator/workflow.md` | Evaluator |
 | 평가 보고서 템플릿 | `docs/ai/workflows/evaluator/evaluation-report-template.md` | Evaluator |
 
@@ -119,6 +121,8 @@ issue-9-navigation-compose
 ---
 
 ## 5. 사용하지 않는 경로
+
+이 항목을 작성하게 된 이유는 사용자의 타이핑에 의해 폴더 및 파일명에 잦은 오타를 발생시키는 것을 확인했기 때문이다.
 
 아래 경로는 사용하지 않는다.
 

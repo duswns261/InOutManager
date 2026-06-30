@@ -4,7 +4,9 @@
 
 이 문서는 Issue Mode에서 구현 전 승인, 계획 변경, 재승인에 관한 규칙을 정의한다.
 
-GitHub Issue의 명시적 승인 comment가 승인 여부의 사실원천이다. local `plan.md`는 그 승인 내용을 작업 중 참조하기 위한 로컬 기록일 뿐, 단독으로 승인 근거가 될 수 없다.
+local `plan.md`의 approval.status는 승인 여부의 사실 원천이며, planner에 의해 생성되었을 때 approval.status = pending, plan을 확인한 Human Owner가 이를 명시적 대답으로 승인하게 될 경우 `plan.md`의 approval.status = approved 상태로 변경된다.
+ 
+GitHub Issue comment는 범위 변경, 설계 결정, blocker, 재승인이 필요한 경우에만 기록한다. 이 경우에는 반드시 Human Owner의 명시적 승인이 필요하다. 해당 comment는 planner에 의해 생성될 수 있다.
 
 ---
 
@@ -66,7 +68,7 @@ approval:
   approval_reference: null
 ```
 
-GitHub Issue comment에 승인 기록이 남으면, Planner 또는 Generator는 local plan을 아래처럼 갱신할 수 있다.
+로컬 개발 환경에서 Human Owner의 명시적 승인이 발생한 경우, GitHub Issue comment가 있고 이에 대한 명시적 승인 명령이 comment 답변으로 있는 경우, Planner 또는 Generator는 local plan을 아래처럼 갱신할 수 있다.
 
 ```yaml
 approval:
