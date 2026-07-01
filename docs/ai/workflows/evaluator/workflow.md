@@ -65,6 +65,10 @@ local work item이 없더라도 GitHub Issue, PR, Generator 검증 결과로 최
 8. 미실행 검증과 잔여 위험이 숨겨지지 않았는지 확인한다.
 9. local `evaluation-report.md`에 상세 판단을 기록한다.
 10. PR review 또는 comment에 최종 판정과 근거를 남긴다.
+11. 판정에 따라 아래 행동을 취한다.
+    - **Pass:** `gh pr merge --merge --delete-branch` 명령으로 PR을 병합한다. PR 본문에 `Closes #<issue-number>`가 포함되어 있으면 Issue가 자동으로 닫힌다.
+    - **Conditional Pass:** PR을 병합하지 않는다. 판정 근거와 Human Owner가 확인해야 할 항목을 PR review에 명시한다.
+    - **Fail:** PR을 병합하지 않는다. 수정이 필요한 항목과 재평가 조건을 PR review에 명시한다.
 
 ---
 

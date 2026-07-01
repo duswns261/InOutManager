@@ -51,6 +51,7 @@ No architecture structure change.
 ## 3. Related Issue
 
 - Issue:
+- Closes: #<issue-number>
 - Branch:
 - Base branch:
 
