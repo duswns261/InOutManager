@@ -6,10 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -21,43 +20,17 @@ class InventoryViewModel(
     private val useCases: ProductUseCases,
 ) : ViewModel() {
 
-    // 내부의 가변적인 상태들을 담는 MutableStateFlow
-    private val _internalUiState = MutableStateFlow(InventoryUiState())
+    private val _uiState = MutableStateFlow(InventoryUiState(isLoading = true))
+    val uiState: StateFlow<InventoryUiState> = _uiState.asStateFlow()
 
-    // 전체 UI 상태를 결합하여 외부에 노출하는 StateFlow
-    val uiState: StateFlow<InventoryUiState> = combine(
-        useCases.getProducts(),
-        _internalUiState
-    ) { products, internalState ->
-        internalState.copy(products = products)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = InventoryUiState(isLoading = true)
-    )
-
-    // --- UI 이벤트 처리 ---
-
-    fun onShowAddDialog(show: Boolean) {
-        _internalUiState.update { it.copy(showAddDialog = show) }
-    }
-
-    fun onOutboundProductSelected(product: Product?) {
-        _internalUiState.update { 
-            it.copy(
-                selectedProductForOutbound = product,
-                outboundQuantityInput = "",
-                showConfirmDialog = false
-            )
+    init {
+        viewModelScope.launch {
+            useCases.getProducts()
+                .catch { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
+                .collect { products ->
+                    _uiState.update { it.copy(products = products, isLoading = false, errorMessage = null) }
+                }
         }
-    }
-
-    fun onOutboundQuantityChanged(input: String) {
-        _internalUiState.update { it.copy(outboundQuantityInput = input) }
-    }
-
-    fun onShowConfirmDialog(show: Boolean) {
-        _internalUiState.update { it.copy(showConfirmDialog = show) }
     }
 
     // --- 비즈니스 로직 호출 ---
@@ -65,22 +38,31 @@ class InventoryViewModel(
     fun addProduct(name: String, location: String, quantityStr: String) {
         val qty = quantityStr.toIntOrNull() ?: 0
         viewModelScope.launch {
-            useCases.addProduct(name, location, qty)
-            onShowAddDialog(false) // 성공 시 다이얼로그 닫기
+            try {
+                useCases.addProduct(name, location, qty)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message) }
+            }
         }
     }
 
-    fun decreaseQuantity(targetProduct: Product, amountStr: String) {
-        val amount = amountStr.toIntOrNull() ?: 0
+    fun decreaseQuantity(targetProduct: Product, amount: Int) {
         viewModelScope.launch {
-            useCases.decreaseProductQuantity(targetProduct, amount)
-            onOutboundProductSelected(null) // 성공 시 상태 초기화
+            try {
+                useCases.decreaseProductQuantity(targetProduct, amount)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message) }
+            }
         }
     }
 
     fun deleteProduct(product: Product) {
         viewModelScope.launch {
-            useCases.deleteProduct(product)
+            try {
+                useCases.deleteProduct(product)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message) }
+            }
         }
     }
 

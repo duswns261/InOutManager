@@ -33,8 +33,12 @@ import kotlinx.coroutines.launch
 fun InventoryApp(
     viewModel: InventoryViewModel = viewModel()
 ) {
-    // ViewModel로부터 통합된 UI 상태를 구독합니다.
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var showAddDialog by remember { mutableStateOf(false) }
+    var selectedProductForOutbound by remember { mutableStateOf<Product?>(null) }
+    var outboundQuantityInput by remember { mutableStateOf("") }
+    var showConfirmDialog by remember { mutableStateOf(false) }
 
     val tabs = listOf("입고", "출고", "자재 현황")
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -100,12 +104,14 @@ fun InventoryApp(
                 when (page) {
                     0 -> InboundScreen(
                         products = uiState.products,
-                        onAddClick = { viewModel.onShowAddDialog(true) }
+                        onAddClick = { showAddDialog = true }
                     )
                     1 -> OutboundScreen(
                         products = uiState.products,
                         onOutboundClick = { product ->
-                            viewModel.onOutboundProductSelected(product)
+                            selectedProductForOutbound = product
+                            outboundQuantityInput = ""
+                            showConfirmDialog = false
                         }
                     )
                     2 -> StatusScreen(
@@ -118,47 +124,50 @@ fun InventoryApp(
             }
         }
 
-        // --- 다이얼로그 관리 (ViewModel의 상태에 따라 노출 여부 결정) ---
+        // --- 다이얼로그 관리 ---
 
-        if (uiState.showAddDialog) {
+        if (showAddDialog) {
             NewProductDialog(
-                onDismiss = { viewModel.onShowAddDialog(false) },
+                onDismiss = { showAddDialog = false },
                 onConfirm = { name, location, qty ->
                     viewModel.addProduct(name, location, qty)
+                    showAddDialog = false
                 }
             )
         }
 
-        if (uiState.showOutboundInput && uiState.selectedProductForOutbound != null) {
+        if (selectedProductForOutbound != null) {
             OutboundQuantityDialog(
-                productName = uiState.selectedProductForOutbound!!.name,
-                currentQty = uiState.selectedProductForOutbound!!.quantity,
-                onDismiss = { viewModel.onOutboundProductSelected(null) },
+                productName = selectedProductForOutbound!!.name,
+                currentQty = selectedProductForOutbound!!.quantity,
+                onDismiss = { selectedProductForOutbound = null },
                 onNext = { qtyString ->
-                    viewModel.onOutboundQuantityChanged(qtyString)
-                    viewModel.onShowConfirmDialog(true)
+                    outboundQuantityInput = qtyString
+                    showConfirmDialog = true
                 }
             )
         }
 
-        if (uiState.showConfirmDialog && uiState.selectedProductForOutbound != null) {
+        if (showConfirmDialog && selectedProductForOutbound != null) {
             AlertDialog(
-                onDismissRequest = { viewModel.onShowConfirmDialog(false) },
+                onDismissRequest = { showConfirmDialog = false },
                 title = { Text(text = "출고 확인") },
-                text = { Text("${uiState.selectedProductForOutbound!!.name}을(를) ${uiState.outboundQuantityInput}개 출고하시겠습니까?") },
+                text = { Text("${selectedProductForOutbound!!.name}을(를) ${outboundQuantityInput}개 출고하시겠습니까?") },
                 confirmButton = {
                     Button(
                         onClick = {
                             viewModel.decreaseQuantity(
-                                uiState.selectedProductForOutbound!!,
-                                uiState.outboundQuantityInput
+                                selectedProductForOutbound!!,
+                                outboundQuantityInput.toIntOrNull() ?: 0
                             )
+                            showConfirmDialog = false
+                            selectedProductForOutbound = null
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = skyBlueColor)
                     ) { Text("확인") }
                 },
                 dismissButton = {
-                    OutlinedButton(onClick = { viewModel.onShowConfirmDialog(false) }) { Text("취소") }
+                    OutlinedButton(onClick = { showConfirmDialog = false }) { Text("취소") }
                 },
                 containerColor = Color.White
             )
