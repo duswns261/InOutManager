@@ -17,12 +17,16 @@ issue:
 
 ## 2. 실행 명령
 
-| 명령 | 결과 | 근거 또는 출력 요약 |
-|---|---|---|
-| `./gradlew :app:build` | | |
-| `./gradlew :app:testDebugUnitTest` | | |
-| `./gradlew :app:lintDebug` | | |
-| `git diff -- app/schemas` | | |
+plan.md 검증 계획을 출발점으로 삼고, 실제 변경 내용에 따라 명령을 보완한다.
+
+| 명령 | 출처 | 결과 | 근거 또는 출력 요약 |
+|---|---|---|---|
+| `./gradlew :app:build` | 공통 | | |
+| `./gradlew :app:testDebugUnitTest` | 공통 | | |
+| `./gradlew :app:lintDebug` | 공통 | | |
+| `git diff -- app/schemas` | 공통 | | |
+| (plan.md §검증 계획 명령) | plan.md | | |
+| (실제 변경 기반 추가 명령) | 실제 변경 | | |
 
 ## 3. 수동 확인
 

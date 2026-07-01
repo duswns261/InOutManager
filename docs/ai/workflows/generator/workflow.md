@@ -34,6 +34,7 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 - 완료·검증 판단: `definition-of-done.md`
 - Milestone 또는 선행 작업 확인: `project-roadmap.md`
 - PR 설명 초안 작성: `docs/ai/workflows/generator/pr-description-template.md`
+- 구현 산출물 작성: `docs/ai/workflows/generator/implementation-log-template.md`, `docs/ai/workflows/generator/verification-report-template.md`
 
 ---
 
@@ -60,9 +61,22 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 1. Issue, 승인된 plan, GitHub 승인 comment를 대조한다.
 2. 변경 파일과 변경 금지 파일을 확인한다.
 3. 작은 검토 단위로 구현한다.
-4. 계획 밖 변경이 필요하면 즉시 중단하고 재승인 절차로 돌아간다.
+4. 구현 중 plan.md 대비 편차가 발생하면 즉시 성격을 판단한다.
+
+   **범위 확장 — 즉시 중단하고 재승인 절차로 돌아간다:**
+   - plan.md에 없는 파일 신설 또는 삭제
+   - plan.md에 없는 dependency, build 설정, schema, DI, Navigation 변경
+   - 변경된 API가 plan.md 변경 파일 목록에 없는 파일에 영향을 미칠 때
+   - 동작 변경이 Issue 완료 조건에 명시된 기능에 영향을 줄 때
+
+   **계획 외 동작 세부 변경 — 구현을 계속하되 반드시 기록한다:**
+   - 외부 동작과 Issue 완료 조건은 동일하나 내부 구현 방식이 달라진 경우
+   - plan.md 검증 계획에 없는 추가 검증이 필요한 경우
+   - `implementation-log.md` §"계획 대비 편차"에 기록하고 `verification-report.md` 잔여 위험에 명시한다.
+   - 판단이 어렵거나 Human Owner 확인이 필요하다고 판단되면 구현을 중단하고 이유를 보고한다.
+
 5. 실제 변경 파일, 판단, 커밋을 local `implementation-log.md`에 기록한다.
-6. Issue와 DoD에 맞는 build, test, lint, schema diff, 수동 검증을 실행한다.
+6. plan.md의 검증 계획을 출발점으로 삼되, 실제 변경 내용을 기준으로 검증 명령을 보완한다. 특히 변경된 함수 시그니처의 모든 호출부, 제거된 API를 참조하던 모든 파일을 추가로 확인한다.
 7. 실행 결과와 미실행 이유를 local `verification-report.md`에 기록한다.
 8. `pr-description-template.md`를 기준으로 PR 본문 초안을 작성한다.
 9. 구조 변경이 있는 경우 `Architecture Notes`에 변경 전/후 구조와 핵심 설계 노트를 기록한다.
