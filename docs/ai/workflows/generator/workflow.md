@@ -60,8 +60,25 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 
 1. Issue, 승인된 plan, GitHub 승인 comment를 대조한다.
 2. 변경 파일과 변경 금지 파일을 확인한다.
-3. 작은 검토 단위로 구현한다.
-4. 구현 중 plan.md 대비 편차가 발생하면 즉시 성격을 판단한다.
+3. 구현 전 커밋 단위를 계획한다.
+
+   커밋 단위의 기준은 "파일 하나"가 아니라 **"해당 커밋까지만 적용해도 앱이 정상 동작하는 최소 단위"**다.
+   이를 위해 변경 파일 간 결합도를 먼저 파악한다.
+
+   **독립 커밋 가능한 변경** — 다른 변경 파일에 영향 없이 완결되는 경우:
+   - dependency 추가, build 설정 변경
+   - 기존 타입에 필드나 함수를 추가하는 변경 (제거 없음)
+   - 독립적인 유틸리티 파일 추가
+
+   **하나의 원자 커밋으로 묶어야 하는 변경** — 함께 변경하지 않으면 빌드가 깨지는 경우:
+   - data class 필드 제거와 그 필드를 참조하는 모든 파일
+   - 함수 시그니처 변경과 해당 함수의 모든 호출부
+   - API 제거와 해당 API를 사용하던 모든 파일
+
+   커밋 전 반드시 빌드를 실행하고 통과를 확인한다. 빌드가 깨지는 상태로는 커밋하지 않는다.
+
+4. 계획한 커밋 단위 순서에 따라 구현하고 커밋한다.
+5. 구현 중 plan.md 대비 편차가 발생하면 즉시 성격을 판단한다.
 
    **범위 확장 — 즉시 중단하고 재승인 절차로 돌아간다:**
    - plan.md에 없는 파일 신설 또는 삭제
@@ -75,12 +92,12 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
    - `implementation-log.md` §"계획 대비 편차"에 기록하고 `verification-report.md` 잔여 위험에 명시한다.
    - 판단이 어렵거나 Human Owner 확인이 필요하다고 판단되면 구현을 중단하고 이유를 보고한다.
 
-5. 실제 변경 파일, 판단, 커밋을 local `implementation-log.md`에 기록한다.
-6. plan.md의 검증 계획을 출발점으로 삼되, 실제 변경 내용을 기준으로 검증 명령을 보완한다. 특히 변경된 함수 시그니처의 모든 호출부, 제거된 API를 참조하던 모든 파일을 추가로 확인한다.
-7. 실행 결과와 미실행 이유를 local `verification-report.md`에 기록한다.
-8. `pr-description-template.md`를 기준으로 PR 본문 초안을 작성한다.
-9. 구조 변경이 있는 경우 `Architecture Notes`에 변경 전/후 구조와 핵심 설계 노트를 기록한다.
-10. 구조 변경이 없는 경우 `Architecture Notes`에 `No architecture structure change.`로 명시한다.
+6. 실제 변경 파일, 판단, 커밋을 local `implementation-log.md`에 기록한다.
+7. plan.md의 검증 계획을 출발점으로 삼되, 실제 변경 내용을 기준으로 검증 명령을 보완한다. 특히 변경된 함수 시그니처의 모든 호출부, 제거된 API를 참조하던 모든 파일을 추가로 확인한다.
+8. 실행 결과와 미실행 이유를 local `verification-report.md`에 기록한다.
+9. `pr-description-template.md`를 기준으로 PR 본문 초안을 작성한다.
+10. 구조 변경이 있는 경우 `Architecture Notes`에 변경 전/후 구조와 핵심 설계 노트를 기록한다.
+11. 구조 변경이 없는 경우 `Architecture Notes`에 `No architecture structure change.`로 명시한다.
 
 ---
 
