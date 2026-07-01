@@ -24,7 +24,10 @@ Evaluator는 Issue, GitHub 승인 기록, 승인된 계획, 실제 diff, 검증 
 필수:
 
 1. 대상 GitHub Issue
-2. GitHub Issue의 계획 요약과 승인 comment
+2. 승인 상태 확인 — `approval-rules.md`를 기준으로 아래 순서로 확인한다.
+   - local `plan.md`의 `approval.status = approved` 여부
+   - `approval_reference`가 있으면 해당 GitHub Issue comment 내용과 범위 일치 여부
+   - GitHub Issue comment가 없는 승인(`approval_reference: null`)은 `approval-rules.md §2` 조건 1~4를 충족하면 유효한 승인으로 인정한다.
 3. Pull Request 또는 비교 가능한 branch diff
 4. PR 본문 또는 Generator가 작성한 PR 설명 초안
 5. Generator의 검증 결과
