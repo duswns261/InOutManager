@@ -50,7 +50,7 @@ Human Owner의 명시적 승인 comment
   ↓
 Generator 구현 및 local verification 기록
   ↓
-Pull Request에 실제 변경과 검증 결과 기록
+Generator가 GitHub PR을 생성하고 PR 본문에 실제 변경과 검증 결과를 기록
   ↓
 Evaluator 독립 평가 및 PR review
   ↓
@@ -69,12 +69,14 @@ Human Owner 병합 또는 수정 결정
 
 ```text
 plan.md
-implementation-log.md
+implementation-log.md   ← PR URL 포함
 verification-report.md
 evaluation-report.md
 ```
 
 이 파일은 기본적으로 Git 추적하지 않는다.
+
+`pr-description.md`는 로컬 산출물이 아니다. Generator가 GitHub PR을 직접 생성하며, PR 본문 자체가 영구 기록이다.
 
 ### GitHub 영구 근거
 
@@ -82,7 +84,7 @@ evaluation-report.md
 |---|---|
 | 계획 요약, 변경 범위, 검증 계획 | GitHub Issue comment |
 | 사용자 승인 | GitHub Issue comment |
-| 실제 변경 요약, 검증 명령 결과, 미실행 사유 | PR 본문 또는 CI |
+| 실제 변경 요약, 검증 명령 결과, 미실행 사유 | **Generator가 생성한 PR 본문** |
 | 최종 평가, 잔여 위험, 병합 권고 | PR review 또는 PR comment |
 
 GitHub에는 로컬 로그 전체가 아니라, 나중에 판단을 재현하는 데 필요한 결론과 근거만 남긴다.

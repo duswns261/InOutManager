@@ -95,7 +95,12 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 6. 실제 변경 파일, 판단, 커밋을 local `implementation-log.md`에 기록한다.
 7. plan.md의 검증 계획을 출발점으로 삼되, 실제 변경 내용을 기준으로 검증 명령을 보완한다. 특히 변경된 함수 시그니처의 모든 호출부, 제거된 API를 참조하던 모든 파일을 추가로 확인한다.
 8. 실행 결과와 미실행 이유를 local `verification-report.md`에 기록한다.
-9. `pr-description-template.md`를 기준으로 PR 본문 초안을 작성한다.
+9. `pr-description-template.md`를 기준으로 PR 본문을 작성하고 GitHub PR을 생성한다.
+   - base branch는 `plan.md`의 `base_branch` 값을 따른다.
+   - PR 본문에는 실제 변경 요약, Architecture Notes, 검증 결과, 미실행 항목과 이유, 잔여 위험을 포함한다.
+   - `pr-description-template.md`의 항목 중 해당 Issue 성격에 맞지 않는 빈 항목은 제거할 수 있다.
+   - PR 생성 후 URL을 `implementation-log.md`의 커밋 기록 아래에 추가한다.
+   - 로컬에 별도 `pr-description.md`를 저장하지 않는다. GitHub PR 자체가 영구 기록이다.
 10. 구조 변경이 있는 경우 `Architecture Notes`에 변경 전/후 구조와 핵심 설계 노트를 기록한다.
 11. 구조 변경이 없는 경우 `Architecture Notes`에 `No architecture structure change.`로 명시한다.
 
