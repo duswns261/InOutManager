@@ -94,7 +94,7 @@ docs/ai/workflows/planner/issue-plan-template.md
 
 ## 6. 중단 조건
 
-- Issue가 존재하지 않는다. (본문이 비어 있는 경우는 §7을 따른다.)
+- Issue가 존재하지 않는다. (본문이 비어 있는 경우는 §7 Issue body 초안 작성을 따른다.)
 - Issue의 범위와 architecture rules가 충돌한다.
 - 변경 범위가 하나의 검증 가능한 Issue로 분리되지 않는다.
 - GitHub 승인 기록과 기존 plan의 범위가 모순된다.
