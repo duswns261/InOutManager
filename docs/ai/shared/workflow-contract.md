@@ -44,9 +44,7 @@ GitHub Issue
   ↓
 Planner 분석과 local plan.md 작성
   ↓
-Planner 계획 요약을 GitHub Issue에 남김
-  ↓
-Human Owner의 명시적 승인 comment
+범위 변경, 설계 결정, blocker, 재승인이 필요한 경우에만 GitHub Issue comment 기록
   ↓
 Generator 구현 및 local verification 기록
   ↓
@@ -83,8 +81,7 @@ evaluation-report.md
 
 | 내용 | 표준 저장 위치 |
 |---|---|
-| 계획 요약, 변경 범위, 검증 계획 | GitHub Issue comment |
-| 사용자 승인 | GitHub Issue comment |
+| 범위 변경, 설계 결정, blocker, 재승인 결과 | GitHub Issue comment (해당 경우에만) |
 | 실제 변경 요약, 검증 명령 결과, 미실행 사유 | **Generator가 생성한 PR 본문** |
 | 최종 평가, 잔여 위험, 병합 권고 | PR review 또는 PR comment |
 

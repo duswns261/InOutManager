@@ -23,7 +23,7 @@
 ## 2. AI Agent Issue Mode 추가 기준
 
 - [ ] local `plan.md`가 존재하거나 GitHub Issue의 승인 범위를 재구성할 수 있다.
-- [ ] GitHub Issue에 계획 요약과 명시적 승인 기록이 있다.
+- [ ] `plan.md`에 승인 기록이 있거나, 재승인이 필요한 변경 발생 시 GitHub Issue comment에 기록됐다.
 - [ ] 승인된 계획 범위를 벗어난 변경이 없다.
 - [ ] local `implementation-log.md`와 `verification-report.md`가 작성됐다.
 - [ ] PR 또는 CI에 실제 검증 결과와 미실행 사유가 남아 있다.

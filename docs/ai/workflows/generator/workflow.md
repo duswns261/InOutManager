@@ -30,7 +30,7 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 
 조건부:
 
-- 아키텍처 영향이 있는 작업: `architecture-rules.md`
+- ViewModel, Repository, DAO를 직접 수정하는 작업 또는 아키텍처 영향이 있는 작업: `architecture-rules.md`
 - 완료·검증 판단: `definition-of-done.md`
 - Milestone 또는 선행 작업 확인: `project-roadmap.md`
 - PR 설명 초안 작성: `docs/ai/workflows/generator/pr-description-template.md`
@@ -92,9 +92,9 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
    - `implementation-log.md` §"계획 대비 편차"에 기록하고 `verification-report.md` 잔여 위험에 명시한다.
    - 판단이 어렵거나 Human Owner 확인이 필요하다고 판단되면 구현을 중단하고 이유를 보고한다.
 
-6. 실제 변경 파일, 판단, 커밋을 local `implementation-log.md`에 기록한다.
+6. `implementation-log-template.md`를 열어 형식을 확인한 후, 실제 변경 파일, 판단, 커밋을 local `implementation-log.md`에 기록한다.
 7. plan.md의 검증 계획을 출발점으로 삼되, 실제 변경 내용을 기준으로 검증 명령을 보완한다. 특히 변경된 함수 시그니처의 모든 호출부, 제거된 API를 참조하던 모든 파일을 추가로 확인한다.
-8. 실행 결과와 미실행 이유를 local `verification-report.md`에 기록한다.
+8. `verification-report-template.md`를 열어 형식을 확인한 후, 실행 결과와 미실행 이유를 local `verification-report.md`에 기록한다.
 9. `pr-description-template.md`를 기준으로 PR 본문을 작성하고 GitHub PR을 생성한다.
    - base branch는 `plan.md`의 `base_branch` 값을 따른다.
    - PR 본문에는 실제 변경 요약, Architecture Notes, 검증 결과, 미실행 항목과 이유, 잔여 위험을 포함한다.

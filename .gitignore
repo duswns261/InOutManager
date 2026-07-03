@@ -44,5 +44,8 @@ fabric.properties
 # Schema export
 /app/schemas
 
+# Architecture diagrams (local only, not published until first release)
+docs/architecture/
+
 # Local AI agent work artifacts
 .ai/work-items/

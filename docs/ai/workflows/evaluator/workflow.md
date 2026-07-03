@@ -63,7 +63,7 @@ local work item이 없더라도 GitHub Issue, PR, Generator 검증 결과로 최
 6. architecture rules와 DoD 관련 항목을 확인한다.
 7. build, test, lint, schema diff, 수동 검증 근거를 평가한다.
 8. 미실행 검증과 잔여 위험이 숨겨지지 않았는지 확인한다.
-9. local `evaluation-report.md`에 상세 판단을 기록한다.
+9. `evaluation-report-template.md`를 열어 형식을 확인한 후, local `evaluation-report.md`에 상세 판단을 기록한다.
 10. PR review 또는 comment에 최종 판정과 근거를 남긴다.
 11. 판정에 따라 아래 행동을 취한다.
     - **Pass:** `gh pr merge --merge --delete-branch` 명령으로 PR을 병합한다. PR 본문에 `Closes #<issue-number>`가 포함되어 있으면 Issue가 자동으로 닫힌다.
