@@ -1,21 +1,53 @@
 # Issue Workflow
 
-이 문서는 InOutManager 프로젝트에서 GitHub Issue를 작성하고 진행할 때 따를 공통 기준을 정리한다.
+## 목적
 
-Issue 본문은 매번 새롭게 작성하되, 반복되는 아키텍처 규칙, 후속 작업, 공통 완료 기준은 별도 문서를 참조한다.
+이 문서는 InOutManager에서 GitHub Issue를 작성하고 진행할 때 적용하는 공통 기준이다.
 
-공통 문서 위치는 다음을 기준으로 한다.
+Issue는 이번 작업에서 무엇을 왜 어디까지 수행할지 정의한다. 아키텍처 규칙, 공통 완료 기준, 장기 작업 순서는 별도 문서에서 관리한다.
 
 ```text
-docs/project-management/
+docs/project-management/architecture-rules.md
+docs/project-management/definition-of-done.md
+docs/project-management/project-roadmap.md
 ```
 
 ---
 
-## 1. Issue Body 기본 구성
+## 1. Issue의 책임
 
-Issue Body는 다음 순서를 따른다.
+Issue에는 아래 내용을 기록한다.
 
+- 현재 문제와 해결하지 않았을 때의 위험
+- 작업이 필요한 배경
+- 이번 Issue에서 변경할 파일·패키지·계층
+- 제외 범위
+- 완료 조건
+- 검증 명령과 수동 동작 확인
+
+Issue 본문에 넣지 않는 내용:
+
+- 공통 아키텍처 규칙의 장문 반복
+- 전체 Backlog
+- 실제 구현 diff의 상세
+- 원본 local work item 로그
+
+### AI Agent 사용 시 예외
+
+GitHub Issue comment는 아래 경우에만 기록한다.
+
+- 범위 변경 발생 시
+- 설계 결정이 변경될 때
+- blocker가 발생했을 때
+- 재승인이 필요한 변경이 생겼을 때
+
+일반적인 계획 기록은 local `plan.md`를 사실원천으로 한다. Issue comment는 예외 상황의 근거 보존 목적으로만 사용한다.
+
+---
+
+## 2. Issue Body 표준 구성
+
+```text
 1. 문제 정의
 2. 작업 배경
 3. 작업 범위
@@ -25,174 +57,81 @@ Issue Body는 다음 순서를 따른다.
 7. 최종 목표
 8. 검증 명령
 9. 동작 확인
+```
 
 ---
 
-## 2. 문서 확인 기준
-
-Issue 작성 또는 작업 진행 시 아래 기준에 따라 문서를 확인한다.
-
-| 상황 | 확인할 문서 |
-|---|---|
-| Issue 작성 또는 진행 시작 | `docs/project-management/issue-workflow.md` |
-| Milestone, 후속 Issue, 제외 범위 확인 | `docs/project-management/project-roadmap.md` |
-| 계층 경계, DI, Schema, 도메인 규칙 변경 가능성 있음 | `docs/project-management/architecture-rules.md` |
-| 작업 완료 전 최종 점검 | `docs/project-management/definition-of-done.md` |
-| AI Agent 작업 시작 | `AGENTS.md` |
-
-AI Agent가 작업할 경우, `AGENTS.md`와 대상 Issue를 먼저 확인한 뒤 이 문서를 기준으로 진행한다.
-
----
-
-## 3. 각 항목 작성 기준
+## 3. 작성 규칙
 
 ### 문제 정의
 
-현재 직면한 문제를 설명한다.
+현재 문제와 방치 시 위험을 구체적으로 쓴다.
 
-포함할 내용:
+```text
+좋은 예:
+InventoryViewModel이 상품 목록을 Compose mutable state로 직접 노출한다.
+로딩·오류 상태를 표현하기 어렵고 UI가 ViewModel 내부 표현에 결합된다.
 
-- 현재 코드 또는 구조의 문제
-- 이 Issue를 해결하지 않았을 때 발생할 수 있는 문제
-- 사용성, 유지보수성, 테스트 용이성, 확장성 측면의 위험
-
----
-
-### 작업 배경
-
-왜 지금 이 작업을 진행해야 하는지 설명한다.
-
-포함할 내용:
-
-- 이전 Issue와의 연결 관계
-- 현재 문제를 어떤 방향으로 해결할 것인지
-- 이 작업이 완료되었을 때 얻을 수 있는 가치
-- 후속 Issue를 진행하기 전에 이 작업이 필요한 이유
-
----
+피해야 할 예:
+코드가 좋지 않으니 전체적으로 리팩토링한다.
+```
 
 ### 작업 범위
 
-이번 Issue에서 실제로 수정할 파일, 패키지, 계층, 작업 대상을 작성한다.
-
-작성 기준:
-
-- 파일 또는 패키지 위치를 명확히 작성한다.
-- 작업 목적을 간략하게 설명한다.
-- 세부 구현 방식은 과도하게 작성하지 않는다.
-- 코드 예시는 원칙적으로 넣지 않는다.
-
----
+- 파일 또는 패키지 경로를 쓴다.
+- 변경 목적을 짧고 구체적으로 쓴다.
+- 변경 대상이 과도하면 Issue를 분리한다.
 
 ### 제외 범위
 
-이번 Issue에서 의도적으로 포함하지 않을 큰 작업만 작성한다.
-
-작성 기준:
-
-- 후속 Issue 후보는 최대 2개 정도만 작성한다.
-- 나머지 후속 작업은 `docs/project-management/project-roadmap.md`에서 관리한다.
-- 단순히 모든 기능을 나열하는 방식은 피한다.
-
----
-
-### 커밋 계획
-
-권장 커밋 메시지만 간결하게 작성한다.
-
-작성 기준:
-
-- 각 커밋의 상세 구현 내용은 작성하지 않는다.
-- 커밋 메시지 자체로 작업 단위가 이해되도록 작성한다.
-- 문서 변경이 없다면 docs 커밋은 생략할 수 있다.
-
----
+- 가까운 후속 작업을 2~3개만 쓴다.
+- 제외 범위는 구현 중 임의로 포함하지 않는다.
+- 새로 발견한 큰 작업은 Follow-up Issue 후보로 기록한다.
 
 ### 완료 조건
 
-이번 Issue가 완료되었는지 판단할 수 있는 조건을 작성한다.
+- 검증 가능한 결과로 쓴다.
+- 실제 변경과 직접 연결한다.
+- 회귀 위험과 범위 제한을 포함한다.
+- 공통 점검은 `definition-of-done.md`를 참조한다.
 
-작성 기준:
+### 검증
 
-- 실제 변경이 필요한 부분과 직접 관련된 조건만 작성한다.
-- 변경 과정에서 발생할 수 있는 문제와 관련된 조건을 포함한다.
-- 공통 완료 기준은 `docs/project-management/definition-of-done.md`를 참조한다.
+변경 위험에 맞는 명령과 수동 확인 항목을 적는다.
 
----
+```bash
+./gradlew :app:build
+./gradlew :app:testDebugUnitTest
+./gradlew :app:lintDebug
+git diff -- app/schemas
+```
 
-### 최종 목표
-
-이번 Issue가 완료되었을 때 프로젝트가 어떤 상태가 되는지 간단히 정리한다.
-
-작성 기준:
-
-- 장문으로 작성하지 않는다.
-- 후속 작업을 가능하게 만드는 핵심 효과를 중심으로 작성한다.
-
----
-
-### 검증 명령
-
-빌드와 핵심 변경 확인 명령을 작성한다.
-
-작성 기준:
-
-- 빌드 확인 명령은 포함한다.
-- grep 명령은 핵심 변경 확인에 필요한 것만 작성한다.
-- 과도한 grep 명령은 PR 리뷰 단계로 넘긴다.
+모든 Issue에 모든 명령을 강제하지 않는다.
 
 ---
 
-### 동작 확인
+## 4. Issue 분리 기준
 
-앱 실행 후 수동으로 확인할 동작을 작성한다.
+아래 중 하나라도 해당하면 별도 Issue를 우선한다.
 
-작성 기준:
-
-- 기존 기능 유지 여부를 중심으로 작성한다.
-- 이번 Issue에서 새로 추가하는 동작이 있다면 함께 확인한다.
-
----
-
-## 4. 공통 참조 문서
-
-Issue 작성 또는 작업 진행 시 다음 문서를 참조한다.
-
-- `docs/project-management/project-roadmap.md`
-  - 후속 Issue, Milestone, Backlog 관리
-- `docs/project-management/architecture-rules.md`
-  - 계층 경계, 도메인 규칙, DI, Schema 규칙 관리
-- `docs/project-management/definition-of-done.md`
-  - 공통 완료 조건 및 체크리스트 관리
-- `AGENTS.md`
-  - AI Agent 작업 지침 관리
+- 서로 다른 Milestone의 작업이 섞인다.
+- DI와 Navigation을 동시에 변경한다.
+- Room schema 변경과 UI 리팩토링을 함께 수행한다.
+- 아키텍처 경계 변경과 기능 추가가 같이 발생한다.
+- 완료 조건과 검증 명령을 독립적으로 작성할 수 없다.
+- PR 리뷰 범위가 지나치게 넓어진다.
 
 ---
 
-## 5. Issue 작성 원칙
+## 5. Issue와 PR의 책임 구분
 
-- Issue는 이번 작업의 문제와 범위를 설명하는 문서이다.
-- 반복되는 공통 규칙은 Issue 본문에 길게 반복하지 않는다.
-- 구현 중 바뀔 수 있는 상세 코드 방향은 Issue에 고정하지 않는다.
-- 실제 구현 결과와 리뷰 포인트는 PR 본문에서 설명한다.
-- AI Agent가 작업할 경우에도 Issue 본문, `AGENTS.md`, `docs/project-management/` 문서를 함께 확인하도록 한다.
+| 구분 | GitHub Issue | Pull Request |
+|---|---|---|
+| 핵심 질문 | 무엇을 왜 바꾸는가 | 실제로 무엇을 어떻게 바꿨는가 |
+| 범위 | 계획 범위와 제외 범위 | 실제 변경 파일과 diff |
+| 승인 | 계획 요약에 대한 Human Owner 승인 | 해당 없음 |
+| 검증 | 계획된 검증 방법 | 실제 실행 결과와 CI |
+| 평가 | 재승인 필요 여부 | Evaluator의 최종 판정 |
+| 후속 작업 | 후보 수준 | 실제 남은 위험과 Follow-up Issue |
 
----
-
-## 6. PR 작성과의 구분
-
-Issue에는 다음을 작성한다.
-
-- 무엇이 문제인지
-- 왜 지금 해결해야 하는지
-- 어디까지 작업할 것인지
-- 무엇을 하지 않을 것인지
-- 완료 여부를 어떻게 판단할 것인지
-
-PR에는 다음을 작성한다.
-
-- 실제로 어떤 파일을 변경했는지
-- 어떤 구현 방식을 선택했는지
-- 리뷰어가 봐야 할 포인트
-- 테스트 및 검증 결과
-- 남은 작업 또는 후속 Issue
+PR에는 계획을 복사하지 않고 실제 결과와 검증 근거를 기록한다.

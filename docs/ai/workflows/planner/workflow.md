@@ -1,0 +1,100 @@
+# Planner Workflow
+
+## 역할
+
+Planner는 Issue와 현재 코드 상태를 분석하여 구현 가능한 계획을 작성한다.
+
+Planner는 앱 코드, build 설정, dependency, schema, DI, Navigation을 수정하지 않는다.
+
+---
+
+## 0. 실행 전 확인
+
+이 workflow는 `AGENTS.md`를 통해 해당 역할로 라우팅된 뒤 실행한다.
+
+역할, 대상 Issue, 작업 목적이 명확하지 않거나,
+이 workflow가 직접 열린 상태라면 역할 작업을 시작하지 않는다.
+
+이 경우 `AGENTS.md`로 돌아가 작업 모드와 역할을 다시 식별한다.
+
+---
+
+## 1. 입력
+
+필수:
+
+1. 대상 GitHub Issue URL 또는 Issue 번호
+2. 현재 작업 branch
+
+조건부:
+
+- Milestone·우선순위·선행 관계 판단: `project-roadmap.md`
+- 계층·DI·Navigation·schema 영향 판단: `architecture-rules.md`
+- 동일 Issue의 기존 local `plan.md`: 존재하는 경우에만 읽음
+
+---
+
+## 2. 수행 절차
+
+1. Issue의 문제, 범위, 제외 범위, 완료 조건, 검증 계획을 확인한다.
+2. 현재 branch와 기준 branch의 차이가 필요한지 판단하고, 요청 또는 Issue 범위에 맞게 비교한다.
+3. 기존 local plan이 있으면 plan version, GitHub 승인 상태, 변경 필요성을 확인한다.
+4. 변경 파일과 변경하지 않을 파일을 구분한다.
+5. dependency, build, schema, DI, Navigation, 아키텍처 영향 여부를 판단한다.
+6. Issue 완료 조건별 구현 방법과 검증 방법을 매핑한다.
+7. `.ai/work-items/issue-{number}-{slug}/plan.md`를 작성 또는 갱신한다.
+8. 계획 결과를 Human Owner에게 제시하고 구현 승인 여부를 확인한다.
+ - local plan.md는 구현 범위와 검증 계획을 확인하기 위한 작업 문서다.
+ - GitHub Issue comment는 범위 변경, 설계 결정, blocker, 재승인이 필요한 경우에만 기록한다.
+9. Human Owner의 명시적 승인 전에는 구현을 시작하지 않는다.
+
+---
+
+## 3. plan.md 최소 내용
+
+- Issue 번호와 URL
+- 기준 branch와 작업 branch
+- plan version 및 approval 상태
+- 문제와 목표 요약
+- 변경 파일과 변경하지 않을 파일
+- 설계 영향 판단
+- 완료 조건 매핑
+- 검증 계획
+- 위험 요소와 Follow-up 후보
+
+템플릿:
+
+```text
+docs/ai/workflows/planner/issue-plan-template.md
+```
+
+---
+
+## 4. 기존 plan 처리
+
+- 신규 Issue에서 local work item이 없는 것은 정상이다.
+- 기존 plan이 있고 변경이 필요 없으면 불필요하게 새 버전을 만들지 않는다.
+- 기존 plan이 승인된 상태에서 실질적 변경이 필요하면 `approval-rules.md`의 재승인 절차를 따른다.
+- 새 clone 또는 새 worktree로 local plan이 없을 때는 GitHub Issue의 계획 요약과 승인 comment를 먼저 확인한다.
+- GitHub 승인 범위를 복원할 수 없으면 plan을 작성할 수는 있으나 승인된 계획으로 표시하지 않는다.
+
+---
+
+## 5. 금지 사항
+
+- 앱 코드 또는 project configuration 수정
+- 승인 상태를 임의로 `approved`로 설정
+- Issue에 없는 기능을 계획에 확정
+- 구현 방법만 나열하고 완료 조건·검증 방법을 생략
+- 기존 승인 범위를 조용히 덮어쓰기
+
+---
+
+## 6. 중단 조건
+
+- Issue가 없거나 본문이 비어 있다.
+- Issue의 범위와 architecture rules가 충돌한다.
+- 변경 범위가 하나의 검증 가능한 Issue로 분리되지 않는다.
+- GitHub 승인 기록과 기존 plan의 범위가 모순된다.
+
+중단 시 코드 변경 없이 충돌 내용, 영향, 필요한 사용자 결정을 보고한다.

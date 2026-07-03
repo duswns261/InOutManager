@@ -1,56 +1,72 @@
 package com.cret.inoutmanager.presentation.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
  * 재고 화면의 상태를 보관하고, UI 이벤트를 UseCase 작업으로 변환합니다.
- * 이제 Repository 대신 UseCase 레이어와 통신하여 비즈니스 로직을 분리합니다.
+ * StateFlow를 사용하여 UI 상태를 단방향(UDF)으로 관리합니다.
  */
 class InventoryViewModel(
     private val useCases: ProductUseCases,
 ) : ViewModel() {
 
-    private val _products = mutableStateListOf<Product>()
-    val products: List<Product> get() = _products
+    private val _uiState = MutableStateFlow(InventoryUiState(isLoading = true))
+    val uiState: StateFlow<InventoryUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            useCases.getProducts().collect { savedProducts ->
-                _products.clear()
-                _products.addAll(savedProducts)
-            }
+            useCases.getProducts()
+                .catch { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
+                .collect { products ->
+                    _uiState.update { it.copy(products = products, isLoading = false, errorMessage = null) }
+                }
         }
     }
+
+    // --- 비즈니스 로직 호출 ---
 
     fun addProduct(name: String, location: String, quantityStr: String) {
         val qty = quantityStr.toIntOrNull() ?: 0
         viewModelScope.launch {
-            useCases.addProduct(name, location, qty)
+            try {
+                useCases.addProduct(name, location, qty)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message) }
+            }
         }
     }
 
     fun decreaseQuantity(targetProduct: Product, amount: Int) {
         viewModelScope.launch {
-            useCases.decreaseProductQuantity(targetProduct, amount)
+            try {
+                useCases.decreaseProductQuantity(targetProduct, amount)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message) }
+            }
         }
     }
 
     fun deleteProduct(product: Product) {
         viewModelScope.launch {
-            useCases.deleteProduct(product)
+            try {
+                useCases.deleteProduct(product)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message) }
+            }
         }
     }
 
     companion object {
-        /**
-         * UseCase 의존성이 필요한 ViewModel을 AndroidX viewModels API에서 생성하기 위한 Factory입니다.
-         */
         fun provideFactory(
             useCases: ProductUseCases,
         ): ViewModelProvider.Factory {
@@ -60,9 +76,7 @@ class InventoryViewModel(
                     if (modelClass.isAssignableFrom(InventoryViewModel::class.java)) {
                         return InventoryViewModel(useCases) as T
                     }
-                    throw IllegalArgumentException(
-                        "Unknown ViewModel class: ${modelClass.name}"
-                    )
+                    throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
                 }
             }
         }

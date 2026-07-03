@@ -1,138 +1,153 @@
 # Project Roadmap
 
-이 문서는 InOutManager 프로젝트의 Milestone, 후속 Issue 후보, Backlog를 관리한다.
+## 목적
 
-각 Issue 본문에서는 제외 범위를 과도하게 나열하지 않고, 필요한 경우 이 문서를 참조한다.
+이 문서는 InOutManager의 Milestone, 큰 작업 순서, Backlog를 관리한다.
 
-공통 문서 위치는 다음을 기준으로 한다.
+GitHub Issue는 개별 작업 단위의 상세 계약이고, 이 문서는 Issue들이 프로젝트 전체에서 가지는 순서와 의존성을 보여준다.
+
+정확한 Issue·PR 상태는 GitHub를 기준으로 한다.
+
+---
+
+## 1. 로드맵 운영 원칙
+
+1. 한 Issue는 하나의 검증 가능한 변경 목표를 가진다.
+2. 서로 다른 Milestone의 작업을 하나의 Issue에 섞지 않는다.
+3. 새 아이디어는 Backlog에 기록한 뒤 우선순위를 결정한다.
+4. 의존성이 있는 작업은 선행 작업의 검증이 끝난 뒤 진행한다.
+5. Milestone은 기능 개수보다 구조적 완료 기준으로 종료한다.
+
+---
+
+## 2. 큰 흐름
 
 ```text
-docs/project-management/
+Baseline Stabilization
+    ↓
+Architecture Foundation
+    ↓
+Dependency Injection & Navigation
+    ↓
+Quality & Release Readiness
+    ↓
+Feature Expansion / Server Integration
 ```
 
 ---
 
-## 1. 현재 프로젝트 방향
+## 3. Milestone 1 — Baseline Stabilization
 
-InOutManager는 Android 재고 관리 앱 프로젝트이다.
+### 목표
 
-현재 목표는 단순 기능 구현을 넘어 다음 기준을 갖춘 포트폴리오 프로젝트로 발전시키는 것이다.
+현재 코드의 명백한 구조 문제, 빌드 위험, 상태 관리 불일치를 줄이고 이후 리팩토링의 기준점을 만든다.
 
-- MVVM 기반 Presentation 구조
-- Domain / Data 계층 분리
-- Repository interface와 구현체 분리
-- LocalDataSource 도입
-- UseCase 계층 도입
-- StateFlow 기반 UI 상태 관리
-- Hilt DI 적용
-- Navigation Compose 적용
-- 테스트 및 문서화 강화
-- AI Agent 기반 작업 하네스 구성
+### 완료 기준
+
+- 앱이 기본 build를 통과한다.
+- 입고·출고·재고 조회·삭제의 핵심 흐름을 확인했다.
+- 다음 Milestone에서 변경할 구조와 제외 범위가 문서화됐다.
 
 ---
 
-## 2. Milestone 1: Architecture Foundation
+## 4. Milestone 2 — Architecture Foundation
 
-목표:
+### 목표
 
-- 현재 앱 구조를 아키텍처적으로 안정화한다.
-- UI, ViewModel, Domain, Data 계층의 책임을 명확히 분리한다.
-- 이후 DI와 Navigation을 적용하기 좋은 상태로 만든다.
+Presentation, Domain, Data의 책임을 분리하고 DI·Navigation·테스트를 수용할 수 있는 구조를 만든다.
 
-포함 Issue:
+### 대표 작업
 
-- Issue #4: ProductEntity와 domain Product 분리
-- Issue #5: LocalDataSource 추가 및 Repository 책임 분리
-- Issue #6: UseCase 계층 추가 및 ViewModel 책임 분리
-- Issue #7: ViewModel을 UiState + StateFlow 기반으로 변경
+- Domain model과 Room Entity 분리
+- Repository interface와 Data 구현체 분리
+- DataSource, Mapper, UseCase 도입
+- ViewModel 상태 API를 `StateFlow<UiState>`로 정리
+- UI의 명시적 상태 구독 전환
 
-완료 기준:
+### 완료 기준
 
-- ViewModel이 안정적인 상태 API를 제공한다.
-- Presentation, Domain, Data 계층의 기본 경계가 정리되어 있다.
-- Hilt와 Navigation 적용 전 내부 아키텍처가 안정화되어 있다.
-
----
-
-## 3. Milestone 2: DI & Navigation Foundation
-
-목표:
-
-- 수동 DI 구조를 Hilt 기반으로 전환한다.
-- 화면 이동 구조를 Navigation Compose 기반으로 정리한다.
-- 앱 최초 진입 화면인 HomeScreen을 추가한다.
-
-포함 Issue:
-
-- Issue #11: Hilt DI 적용
-- Issue #12: Navigation Compose 적용
-- Issue #13: HomeScreen 추가
-
-작업 순서:
-
-1. Issue #11: Hilt DI 적용
-2. Issue #12: Navigation Compose 적용
-3. Issue #13: HomeScreen 추가
-
-주의:
-
-- Hilt 적용 중 Navigation 또는 UI 흐름 개편을 함께 진행하지 않는다.
-- Navigation 적용 중 비즈니스 로직 또는 Room schema 변경을 함께 진행하지 않는다.
-- HomeScreen 추가는 Navigation Compose 적용 이후 진행한다.
-- Issue #7에서 정리한 `StateFlow<InventoryUiState>` 구조를 유지한다.
-
-완료 기준:
-
-- Hilt 기반 DI 구조가 적용되어 있다.
-- Navigation Compose 기반 화면 이동 구조가 적용되어 있다.
-- HomeScreen에서 입고, 출고, 재고 현황 화면으로 이동할 수 있다.
-- 기존 상품 조회, 추가, 수량 감소, 삭제 동작이 유지된다.
+- Presentation이 Data 구현체·DAO·Entity를 직접 참조하지 않는다.
+- ViewModel은 UseCase에 의존한다.
+- Domain은 Android·Room·Compose에 의존하지 않는다.
+- DI와 Navigation을 별도 Issue로 진행할 수 있다.
 
 ---
 
-## 4. Milestone 3 후보: Quality & Production Readiness
+## 5. Milestone 3 — Dependency Injection & Navigation
 
-목표:
+### 목표
 
-- 테스트, 자동 검증, 문서, CI, 릴리즈 준비 수준을 높인다.
-- 포트폴리오 프로젝트로서 외부 리뷰어가 확인하기 좋은 상태로 만든다.
+객체 생성 책임과 화면 이동 책임을 분리한다.
 
-후보 작업:
+### 권장 순서
 
-- Unit Test 추가
-- ViewModel 테스트 추가
-- Repository 테스트 추가
-- Room DAO 테스트 추가
-- GitHub Actions 기반 Android CI 구성
-- README 개선
-- PR template 및 Issue template 정리
-- Release 빌드 설정 정리
-- 앱 스크린샷 및 포트폴리오 설명 문서 추가
+1. Hilt 도입
+2. Hilt 기반 ViewModel 생성 전환
+3. Navigation Compose 도입
+4. route, argument, back stack 정책 정리
+
+### 분리 원칙
+
+```text
+Hilt Issue에는 Navigation 변경을 넣지 않는다.
+Navigation Issue에는 Domain/Data 구조 변경을 넣지 않는다.
+```
 
 ---
 
-## 5. Backlog
+## 6. Milestone 4 — Quality & Release Readiness
 
-다음 항목은 현재 Milestone 이후 검토할 수 있다.
+### 목표
 
-- 검색 기능 추가
-- 필터 기능 추가
-- 바코드 스캔 기능 추가
-- 서버/Retrofit 연동
-- StockTransaction 모델 추가
-- 입출고 이력 관리
+기능이 동작하는 수준을 넘어 검증 가능하고 배포를 준비할 수 있는 상태로 만든다.
+
+### 대표 작업
+
+- UseCase, ViewModel, Mapper 단위 테스트
+- Room DAO 및 핵심 데이터 흐름 테스트
+- Compose UI 또는 핵심 사용자 흐름 테스트
+- GitHub Actions 기반 build/test/lint CI
+- release build와 기본 배포 설정 확인
+- README, architecture diagram, 개발 문서 정리
+
+---
+
+## 7. Milestone 5 — Feature Expansion / Server Integration
+
+### 후보 작업
+
+- 사진 첨부와 이미지 저장 전략
+- 바코드 인식과 제품 검색
+- 입고·출고 이력
 - 재고 부족 알림
-- 테스트 코드 확장
-- CI 고도화
-- Release 빌드 설정 정리
-- README 및 포트폴리오 문서 개선
+- 정렬·필터·검색
+- 서버 동기화와 오프라인 우선 정책
+- 백업·내보내기
 
 ---
 
-## 6. Roadmap 관리 원칙
+## 8. Backlog 관리 규칙
 
-- Issue 본문에는 후속 작업을 최대 2개 정도만 언급한다.
-- 긴 제외 범위와 Backlog는 이 문서에서 관리한다.
-- 실제 우선순위는 현재 코드 상태, 빌드 안정성, 학습 목표, 포트폴리오 효과를 기준으로 조정한다.
-- Issue가 완료될 때마다 이 문서의 진행 상태를 필요에 따라 갱신한다.
-- Milestone 범위가 바뀌면 `AGENTS.md`와 `.github/pull_request_template.md`의 확인 항목도 필요한지 검토한다.
+각 Backlog 항목은 아래 정보를 가진다.
+
+| 항목 | 설명 |
+|---|---|
+| 후보 작업 | 한 문장 설명 |
+| 사용자 가치 | 왜 필요한가 |
+| 선행 조건 | 먼저 끝나야 하는 작업 |
+| 예상 영향 | UI / Domain / Data / DB / 서버 / 테스트 |
+| 우선순위 | High / Medium / Low |
+| 보류 이유 | 지금 하지 않는 이유 |
+
+---
+
+## 9. 로드맵 갱신
+
+다음 상황에서 이 문서를 갱신한다.
+
+- Milestone이 시작·완료·보류될 때
+- Issue 간 선행 관계가 바뀔 때
+- 큰 범위의 기능이 추가·삭제될 때
+- 아키텍처 방향이 바뀔 때
+
+단일 PR의 구현 상세는 PR에 남긴다. Issue Mode의 상세 Agent 기록은 로컬 `.ai/work-items/`에만 두고, 장기 근거는 GitHub Issue와 PR에 남긴다.

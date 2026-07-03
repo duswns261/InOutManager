@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.*
@@ -32,18 +33,15 @@ import kotlinx.coroutines.launch
 fun InventoryApp(
     viewModel: InventoryViewModel = viewModel()
 ) {
-    val products = viewModel.products
-    var showAddDialog by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // 출고 플로우 상태: 제품 선택 -> 수량 입력 -> 최종 확인 순서로 다이얼로그를 전환합니다.
-    var showOutboundInput by remember { mutableStateOf(false) }
-    var showConfirmDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
     var selectedProductForOutbound by remember { mutableStateOf<Product?>(null) }
     var outboundQuantityInput by remember { mutableStateOf("") }
+    var showConfirmDialog by remember { mutableStateOf(false) }
 
     val tabs = listOf("입고", "출고", "자재 현황")
     val pagerState = rememberPagerState(pageCount = { tabs.size })
-
     val coroutineScope = rememberCoroutineScope()
 
     val skyBlueColor = Color(0xFF03A9F4)
@@ -104,17 +102,20 @@ fun InventoryApp(
         ) { page ->
             Box(modifier = Modifier.fillMaxSize()) {
                 when (page) {
-                    0 -> InboundScreen(products, onAddClick = { showAddDialog = true })
+                    0 -> InboundScreen(
+                        products = uiState.products,
+                        onAddClick = { showAddDialog = true }
+                    )
                     1 -> OutboundScreen(
-                        products = products,
+                        products = uiState.products,
                         onOutboundClick = { product ->
                             selectedProductForOutbound = product
                             outboundQuantityInput = ""
-                            showOutboundInput = true
+                            showConfirmDialog = false
                         }
                     )
                     2 -> StatusScreen(
-                        products = products,
+                        products = uiState.products,
                         onDeleteRequest = { product ->
                             viewModel.deleteProduct(product)
                         }
@@ -123,7 +124,8 @@ fun InventoryApp(
             }
         }
 
-        // 화면 전역 다이얼로그는 Scaffold 안에서 조건부로 노출해 현재 탭과 독립적으로 동작시킵니다.
+        // --- 다이얼로그 관리 ---
+
         if (showAddDialog) {
             NewProductDialog(
                 onDismiss = { showAddDialog = false },
@@ -134,14 +136,13 @@ fun InventoryApp(
             )
         }
 
-        if (showOutboundInput && selectedProductForOutbound != null) {
+        if (selectedProductForOutbound != null) {
             OutboundQuantityDialog(
                 productName = selectedProductForOutbound!!.name,
                 currentQty = selectedProductForOutbound!!.quantity,
-                onDismiss = { showOutboundInput = false },
+                onDismiss = { selectedProductForOutbound = null },
                 onNext = { qtyString ->
                     outboundQuantityInput = qtyString
-                    showOutboundInput = false
                     showConfirmDialog = true
                 }
             )
@@ -155,10 +156,10 @@ fun InventoryApp(
                 confirmButton = {
                     Button(
                         onClick = {
-                            val qty = outboundQuantityInput.toIntOrNull() ?: 0
-                            if (qty > 0) {
-                                viewModel.decreaseQuantity(selectedProductForOutbound!!, qty)
-                            }
+                            viewModel.decreaseQuantity(
+                                selectedProductForOutbound!!,
+                                outboundQuantityInput.toIntOrNull() ?: 0
+                            )
                             showConfirmDialog = false
                             selectedProductForOutbound = null
                         },
@@ -183,7 +184,6 @@ fun InventoryApp(
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable
 fun PreviewInventoryApp() {
-    // Compose Preview를 위한 가짜 UseCases
     val fakeRepository = object : com.cret.inoutmanager.domain.repository.ProductRepository {
         override val allProducts: Flow<List<Product>> = flowOf(emptyList())
         override suspend fun insert(product: Product) {}

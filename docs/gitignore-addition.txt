@@ -1,0 +1,2 @@
+# Local AI agent work artifacts
+.ai/work-items/
