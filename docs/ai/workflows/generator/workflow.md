@@ -46,7 +46,7 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 - [ ] local `.ai/work-items/issue-{number}-{slug}/plan.md`가 존재한다. 
 - [ ] GitHub Issue에 comment가 있을 경우, Human Owner의 승인이 확인된다.
 - [ ] local plan의 version과 승인 reference가 GitHub 승인 기록과 일치한다.
-- [ ] 현재 branch가 계획과 일치한다.
+- [ ] plan.md의 work_branch가 명시돼 있고 main이 아닌 feature branch다.
 - [ ] dependency, build, schema, DI, Navigation 영향이 Issue와 승인된 계획에 명시돼 있다.
 - [ ] 관련 architecture rules와 충돌하지 않는다.
 
@@ -58,9 +58,13 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 
 ## 3. 수행 절차
 
-1. Issue, 승인된 plan, GitHub 승인 comment를 대조한다.
-2. 변경 파일과 변경 금지 파일을 확인한다.
-3. 구현 전 커밋 단위를 계획한다.
+1. plan.md의 work_branch로 전환한다.
+   - 해당 branch가 로컬에 없으면 `git checkout -b {work_branch}` 로 main 기준으로 생성한다.
+   - 이미 로컬에 있으면 `git checkout {work_branch}` 로 전환한다.
+   - 리모트에 동일 branch가 있으면 `git pull` 로 최신 상태를 동기화한다.
+2. Issue, 승인된 plan, GitHub 승인 comment를 대조한다.
+3. 변경 파일과 변경 금지 파일을 확인한다.
+4. 구현 전 커밋 단위를 계획한다.
 
    커밋 단위의 기준은 "파일 하나"가 아니라 **"해당 커밋까지만 적용해도 앱이 정상 동작하는 최소 단위"**다.
    이를 위해 변경 파일 간 결합도를 먼저 파악한다.
@@ -77,8 +81,8 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 
    커밋 전 반드시 빌드를 실행하고 통과를 확인한다. 빌드가 깨지는 상태로는 커밋하지 않는다.
 
-4. 계획한 커밋 단위 순서에 따라 구현하고 커밋한다.
-5. 구현 중 plan.md 대비 편차가 발생하면 즉시 성격을 판단한다.
+5. 계획한 커밋 단위 순서에 따라 구현하고 커밋한다.
+6. 구현 중 plan.md 대비 편차가 발생하면 즉시 성격을 판단한다.
 
    **범위 확장 — 즉시 중단하고 재승인 절차로 돌아간다:**
    - plan.md에 없는 파일 신설 또는 삭제
@@ -92,17 +96,17 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
    - `implementation-log.md` §"계획 대비 편차"에 기록하고 `verification-report.md` 잔여 위험에 명시한다.
    - 판단이 어렵거나 Human Owner 확인이 필요하다고 판단되면 구현을 중단하고 이유를 보고한다.
 
-6. `implementation-log-template.md`를 열어 형식을 확인한 후, 실제 변경 파일, 판단, 커밋을 local `implementation-log.md`에 기록한다.
-7. plan.md의 검증 계획을 출발점으로 삼되, 실제 변경 내용을 기준으로 검증 명령을 보완한다. 특히 변경된 함수 시그니처의 모든 호출부, 제거된 API를 참조하던 모든 파일을 추가로 확인한다.
-8. `verification-report-template.md`를 열어 형식을 확인한 후, 실행 결과와 미실행 이유를 local `verification-report.md`에 기록한다.
-9. `pr-description-template.md`를 기준으로 PR 본문을 작성하고 GitHub PR을 생성한다.
-   - base branch는 `plan.md`의 `base_branch` 값을 따른다.
-   - PR 본문에는 실제 변경 요약, Architecture Notes, 검증 결과, 미실행 항목과 이유, 잔여 위험을 포함한다.
-   - `pr-description-template.md`의 항목 중 해당 Issue 성격에 맞지 않는 빈 항목은 제거할 수 있다.
-   - PR 생성 후 URL을 `implementation-log.md`의 커밋 기록 아래에 추가한다.
-   - 로컬에 별도 `pr-description.md`를 저장하지 않는다. GitHub PR 자체가 영구 기록이다.
-10. 구조 변경이 있는 경우 `Architecture Notes`에 변경 전/후 구조와 핵심 설계 노트를 기록한다.
-11. 구조 변경이 없는 경우 `Architecture Notes`에 `No architecture structure change.`로 명시한다.
+7. `implementation-log-template.md`를 열어 형식을 확인한 후, 실제 변경 파일, 판단, 커밋을 local `implementation-log.md`에 기록한다.
+8. plan.md의 검증 계획을 출발점으로 삼되, 실제 변경 내용을 기준으로 검증 명령을 보완한다. 특히 변경된 함수 시그니처의 모든 호출부, 제거된 API를 참조하던 모든 파일을 추가로 확인한다.
+9. `verification-report-template.md`를 열어 형식을 확인한 후, 실행 결과와 미실행 이유를 local `verification-report.md`에 기록한다.
+10. `pr-description-template.md`를 기준으로 PR 본문을 작성하고 GitHub PR을 생성한다.
+    - base branch는 `plan.md`의 `base_branch` 값을 따른다.
+    - PR 본문에는 실제 변경 요약, Architecture Notes, 검증 결과, 미실행 항목과 이유, 잔여 위험을 포함한다.
+    - `pr-description-template.md`의 항목 중 해당 Issue 성격에 맞지 않는 빈 항목은 제거할 수 있다.
+    - PR 생성 후 URL을 `implementation-log.md`의 커밋 기록 아래에 추가한다.
+    - 로컬에 별도 `pr-description.md`를 저장하지 않는다. GitHub PR 자체가 영구 기록이다.
+11. 구조 변경이 있는 경우 `Architecture Notes`에 변경 전/후 구조와 핵심 설계 노트를 기록한다.
+12. 구조 변경이 없는 경우 `Architecture Notes`에 `No architecture structure change.`로 명시한다.
 
 ---
 

@@ -55,17 +55,18 @@ local work item이 없더라도 GitHub Issue, PR, Generator 검증 결과로 최
 
 ## 3. 평가 절차
 
-1. Issue의 완료 조건과 제외 범위를 목록화한다.
-2. GitHub Issue 승인 comment와 최신 plan의 범위를 대조한다.
-3. 실제 변경 파일과 승인 범위를 비교한다.
-4. PR 본문 또는 PR 설명 초안이 실제 변경, 검증 결과, 잔여 위험을 충분히 설명하는지 확인한다.
-5. 구조 변경이 있는 경우 `Architecture Notes`의 before/after와 key notes가 실제 diff와 일치하는지 확인한다.
-6. architecture rules와 DoD 관련 항목을 확인한다.
-7. build, test, lint, schema diff, 수동 검증 근거를 평가한다.
-8. 미실행 검증과 잔여 위험이 숨겨지지 않았는지 확인한다.
-9. `evaluation-report-template.md`를 열어 형식을 확인한 후, local `evaluation-report.md`에 상세 판단을 기록한다.
-10. PR review 또는 comment에 최종 판정과 근거를 남긴다.
-11. 판정에 따라 아래 행동을 취한다.
+1. local `plan.md`의 `work_branch`를 확인한다. 별도 IDE에서 실행되는 경우 해당 branch를 checkout하거나 tracking한 뒤 평가를 시작한다.
+2. Issue의 완료 조건과 제외 범위를 목록화한다.
+3. GitHub Issue 승인 comment와 최신 plan의 범위를 대조한다.
+4. 실제 변경 파일과 승인 범위를 비교한다.
+5. PR 본문 또는 PR 설명 초안이 실제 변경, 검증 결과, 잔여 위험을 충분히 설명하는지 확인한다.
+6. 구조 변경이 있는 경우 `Architecture Notes`의 before/after와 key notes가 실제 diff와 일치하는지 확인한다.
+7. architecture rules와 DoD 관련 항목을 확인한다.
+8. build, test, lint, schema diff, 수동 검증 근거를 평가한다.
+9. 미실행 검증과 잔여 위험이 숨겨지지 않았는지 확인한다.
+10. `evaluation-report-template.md`를 열어 형식을 확인한 후, local `evaluation-report.md`에 상세 판단을 기록한다.
+11. PR review 또는 comment에 최종 판정과 근거를 남긴다.
+12. 판정에 따라 아래 행동을 취한다.
     - **Pass:** `gh pr merge --merge --delete-branch` 명령으로 PR을 병합한다. PR 본문에 `Closes #<issue-number>`가 포함되어 있으면 Issue가 자동으로 닫힌다.
     - **Conditional Pass:** PR을 병합하지 않는다. 판정 근거와 Human Owner가 확인해야 할 항목을 PR review에 명시한다.
     - **Fail:** PR을 병합하지 않는다. 수정이 필요한 항목과 재평가 조건을 PR review에 명시한다.

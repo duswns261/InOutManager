@@ -6,7 +6,7 @@ issue:
   title: <issue-title>
   url: <issue-url>
   base_branch: main
-  work_branch: <branch-name>
+  work_branch: issue-{number}-{slug}  # base_branch와 달라야 한다. branch 생성은 Generator가 수행한다.
 
 approval:
   status: pending
