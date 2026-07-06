@@ -114,7 +114,7 @@ docs/
 
 ```text
 issue-7-stateflow-uistate
-issue-8-hilt-di-migration
+issue-11-hilt-di
 issue-9-navigation-compose
 ```
 

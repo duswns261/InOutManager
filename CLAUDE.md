@@ -18,7 +18,7 @@ This file provides guidance to Claude Code when working with this repository.
 
 ## Tech Stack
 
-Kotlin, Jetpack Compose (Material Design 3), MVVM, Room, Coroutines/Flow, manual DI (no Hilt)
+Kotlin, Jetpack Compose (Material Design 3), MVVM, Room, Coroutines/Flow, Hilt DI
 
 ## Key Dependencies
 
@@ -27,7 +27,8 @@ Defined in [gradle/libs.versions.toml](gradle/libs.versions.toml):
 - **Room** 2.8.4
 - **Compose BOM** 2024.09.00
 - **Lifecycle / ViewModel Compose** 2.10.0
-- **Kotlin** 2.0.21, **AGP** 8.9.2
+- **Hilt** 2.56
+- **Kotlin** 2.2.10, **AGP** 9.2.1
 
 ## AI Workflow
 
