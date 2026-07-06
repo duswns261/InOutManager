@@ -1,22 +1,24 @@
 package com.cret.inoutmanager.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * 재고 화면의 상태를 보관하고, UI 이벤트를 UseCase 작업으로 변환합니다.
  * StateFlow를 사용하여 UI 상태를 단방향(UDF)으로 관리합니다.
  */
-class InventoryViewModel(
+@HiltViewModel
+class InventoryViewModel @Inject constructor(
     private val useCases: ProductUseCases,
 ) : ViewModel() {
 
@@ -62,22 +64,6 @@ class InventoryViewModel(
                 useCases.deleteProduct(product)
             } catch (e: Exception) {
                 _uiState.update { it.copy(errorMessage = e.message) }
-            }
-        }
-    }
-
-    companion object {
-        fun provideFactory(
-            useCases: ProductUseCases,
-        ): ViewModelProvider.Factory {
-            return object : ViewModelProvider.Factory {
-                @Suppress("UNCHECKED_CAST")
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    if (modelClass.isAssignableFrom(InventoryViewModel::class.java)) {
-                        return InventoryViewModel(useCases) as T
-                    }
-                    throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
-                }
             }
         }
     }
