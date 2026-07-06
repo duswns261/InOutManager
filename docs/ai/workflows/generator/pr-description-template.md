@@ -75,7 +75,22 @@ No architecture structure change.
 
 ---
 
-## 6. Validation
+## 6. Document Impact
+
+문서 영향이 없더라도 `No`와 근거를 기록한다.
+문서 변경이 필요하지만 승인된 계획 범위에 없으면 PR에서 조용히 처리하지 않고 재승인 또는 Follow-up으로 남긴다.
+
+| Document | Impact | Action | Reason |
+|---|---|---|---|
+| `README.md` | Yes / No | Updated / Not needed / Follow-up | |
+| `docs/architecture/architecture_diagram.svg` | Yes / No | Updated / Not needed / Follow-up | |
+| `docs/project-management/architecture-rules.md` | Yes / No | Updated / Not needed / Follow-up | |
+| `docs/project-management/project-roadmap.md` | Yes / No | Updated / Not needed / Follow-up | |
+| `docs/ai/**` | Yes / No | Updated / Not needed / Follow-up | |
+
+---
+
+## 7. Validation
 
 CI가 구성되어 있지 않은 경우 CI 통과를 주장하지 않는다.
 대신 로컬 검증 명령 결과와 미실행 사유를 기록한다.
@@ -90,7 +105,7 @@ CI가 구성되어 있지 않은 경우 CI 통과를 주장하지 않는다.
 
 ---
 
-## 7. Not Run
+## 8. Not Run
 
 | Check | Reason | Risk |
 |---|---|---|
@@ -98,24 +113,25 @@ CI가 구성되어 있지 않은 경우 CI 통과를 주장하지 않는다.
 
 ---
 
-## 8. Risk / Follow-up
+## 9. Risk / Follow-up
 
 - Remaining risk:
 - Follow-up:
 
 ---
 
-## 9. Generator Self-Check
+## 10. Generator Self-Check
 
 - [ ] Actual changes match the approved plan.
 - [ ] No out-of-scope feature was added.
 - [ ] No unapproved dependency, build, schema, DI, or Navigation change was made.
 - [ ] Validation results are recorded honestly.
 - [ ] Not-run checks include a reason and risk.
+- [ ] Document impact was reviewed and recorded.
 
 ---
 
-## 10. Evaluator Notes
+## 11. Evaluator Notes
 
 ```text
 Evaluator should compare this PR description with:

@@ -89,7 +89,20 @@ GitHub에는 로컬 로그 전체가 아니라, 나중에 판단을 재현하는
 
 ---
 
-## 5. 공통 행동 규칙
+## 5. Branch 정리 원칙
+
+완료된 Issue branch는 원격 삭제 후 local에도 오래 보존하지 않는다.
+로컬 work item은 기록으로 남길 수 있지만, 완료된 branch는 새 작업의 기준 branch로 재사용하지 않는다.
+
+- `git fetch --prune` 이후 upstream이 `[gone]`인 issue branch는 새 작업 시작 지점으로 사용하지 않는다.
+- 원격에서 삭제된 issue branch가 남아 있으면 정리 후보로 보고한다.
+- 삭제 전 `main`에 포함된 commit인지 확인한다.
+- 현재 checkout 중인 branch, local-only commit이 있는 branch, 포함 여부가 불명확한 branch는 삭제하지 않는다.
+- branch 삭제 자체가 필요한 경우 Human Owner에게 branch명, 마지막 commit, main 포함 여부를 보고한 뒤 진행한다.
+
+---
+
+## 6. 공통 행동 규칙
 
 1. Issue와 승인된 계획에 없는 변경을 조용히 구현하지 않는다.
 2. 새 dependency, build 설정, DB schema, DI, Navigation 변경이 필요하면 계획과 Issue 범위를 다시 확인한다.
@@ -102,7 +115,7 @@ GitHub에는 로컬 로그 전체가 아니라, 나중에 판단을 재현하는
 
 ---
 
-## 6. 작업 상태
+## 7. 작업 상태
 
 | 상태 | 의미 |
 |---|---|

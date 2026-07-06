@@ -64,7 +64,9 @@ local work item이 없더라도 GitHub Issue, PR, Generator 검증 결과로 최
 7. architecture rules와 DoD 관련 항목을 확인한다.
 8. build, test, lint, schema diff, 수동 검증 근거를 평가한다.
 9. 미실행 검증과 잔여 위험이 숨겨지지 않았는지 확인한다.
-10. Human Owner의 병합 전 확인이 필요한 경우, 실제 앱 또는 에뮬레이터에서 관찰 가능한 수동 확인 항목을 Markdown task list로 작성한다.
+10. Human Owner의 병합 전 확인이 필요한지 여부를 항상 판단하고, `evaluation-report.md`의 `Human Owner 병합 전 체크리스트` 섹션을 반드시 작성한다.
+    - 확인이 필요 없으면 그 이유를 `없음 - 모든 필수 검증이 자동화 또는 CI로 충분히 확인됨`처럼 명시한다.
+    - 확인이 필요한 경우, 실제 앱 또는 에뮬레이터에서 관찰 가능한 수동 확인 항목을 Markdown task list로 작성한다.
     - 항목은 Issue의 동작 확인, Generator verification report의 미실행 수동 확인, DoD의 회귀 확인 기준을 기반으로 한다.
     - `수동 확인 필요`처럼 추상적으로 쓰지 않고, 사용자가 직접 체크할 수 있는 사용자 동작과 기대 결과로 쓴다.
 11. `evaluation-report-template.md`를 열어 형식을 확인한 후, local `evaluation-report.md`에 상세 판단을 기록한다.
@@ -94,7 +96,8 @@ local work item이 없더라도 GitHub Issue, PR, Generator 검증 결과로 최
 - 핵심 요구는 충족했다.
 - 일부 비핵심 검증이 미실행이거나 잔여 위험이 있다.
 - 미실행 이유와 Human Owner가 판단해야 할 영향이 명시돼 있다.
-- Human Owner가 병합 전 직접 확인해야 하는 항목이 있으면 PR review 또는 comment에 체크 가능한 task list로 제공돼 있다.
+- Human Owner가 병합 전 직접 확인해야 하는 항목이 PR review 또는 comment에 체크 가능한 task list로 제공돼 있다.
+- 확인이 필요 없다고 판단한 경우 그 이유가 `evaluation-report.md`와 PR review 또는 comment에 명시돼 있다.
 
 ### Fail
 

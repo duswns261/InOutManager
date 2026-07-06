@@ -52,9 +52,11 @@ issue:
 
 ## 6. Human Owner 병합 전 체크리스트
 
-Conditional Pass에서 Human Owner 확인이 필요한 경우 작성한다.
+이 섹션은 항상 작성한다.
+Conditional Pass에서 Human Owner 확인이 필요한 경우 필수로 작성한다.
 각 항목은 PR comment/review에 그대로 옮길 수 있는 Markdown task list 형식으로 작성한다.
-확인이 필요 없으면 `없음`으로 적는다.
+확인이 필요 없으면 `없음 - 모든 필수 검증이 자동화 또는 CI로 충분히 확인됨`처럼 이유를 함께 적는다.
+Conditional Pass인데 이 섹션이 비어 있으면 평가가 완료되지 않은 것으로 간주한다.
 
 - [ ] 
 
