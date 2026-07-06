@@ -4,6 +4,9 @@
 
 Generator는 승인된 계획 범위에서만 코드와 프로젝트 구성을 변경하고, 실제 구현과 검증 결과를 기록한다.
 
+구현 변경으로 프로젝트 문서의 사실 내용이 달라지는 경우, Generator는 승인된 계획 범위 안에서 관련 문서를 함께 갱신한다.
+문서 갱신 필요 여부와 실제 처리 결과는 검증 보고서 또는 PR 본문에 기록한다.
+
 ---
 
 ## 0. 실행 전 확인
@@ -33,6 +36,7 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 - ViewModel, Repository, DAO를 직접 수정하는 작업 또는 아키텍처 영향이 있는 작업: `architecture-rules.md`
 - 완료·검증 판단: `definition-of-done.md`
 - Milestone 또는 선행 작업 확인: `project-roadmap.md`
+- 문서 영향이 있는 작업: 관련 `docs/project-management/` 또는 `docs/ai/` 문서
 - PR 설명 초안 작성: `docs/ai/workflows/generator/pr-description-template.md`
 - 구현 산출물 작성: `docs/ai/workflows/generator/implementation-log-template.md`, `docs/ai/workflows/generator/verification-report-template.md`
 
@@ -98,15 +102,19 @@ GitHub Issue에 계획 요약과 승인 comment가 있더라도, local `plan.md`
 
 7. `implementation-log-template.md`를 열어 형식을 확인한 후, 실제 변경 파일, 판단, 커밋을 local `implementation-log.md`에 기록한다.
 8. plan.md의 검증 계획을 출발점으로 삼되, 실제 변경 내용을 기준으로 검증 명령을 보완한다. 특히 변경된 함수 시그니처의 모든 호출부, 제거된 API를 참조하던 모든 파일을 추가로 확인한다.
-9. `verification-report-template.md`를 열어 형식을 확인한 후, 실행 결과와 미실행 이유를 local `verification-report.md`에 기록한다.
-10. `pr-description-template.md`를 기준으로 PR 본문을 작성하고 GitHub PR을 생성한다.
+9. 구현 변경이 프로젝트 문서의 사실 내용에 영향을 주는지 확인한다.
+   - 영향이 없으면 verification report 또는 PR 본문에 문서 영향 없음으로 기록한다.
+   - 영향이 있고 해당 문서가 승인된 계획의 변경 범위에 포함되어 있으면 함께 갱신한다.
+   - 영향이 있지만 plan.md 변경 범위에 문서가 포함되어 있지 않거나 공통 정책 변경에 해당하면 구현을 중단하고 재승인을 요청한다.
+10. `verification-report-template.md`를 열어 형식을 확인한 후, 실행 결과와 미실행 이유, 문서 영향 검토 결과를 local `verification-report.md`에 기록한다.
+11. `pr-description-template.md`를 기준으로 PR 본문을 작성하고 GitHub PR을 생성한다.
     - base branch는 `plan.md`의 `base_branch` 값을 따른다.
     - PR 본문에는 실제 변경 요약, Architecture Notes, 검증 결과, 미실행 항목과 이유, 잔여 위험을 포함한다.
     - `pr-description-template.md`의 항목 중 해당 Issue 성격에 맞지 않는 빈 항목은 제거할 수 있다.
     - PR 생성 후 URL을 `implementation-log.md`의 커밋 기록 아래에 추가한다.
     - 로컬에 별도 `pr-description.md`를 저장하지 않는다. GitHub PR 자체가 영구 기록이다.
-11. 구조 변경이 있는 경우 `Architecture Notes`에 변경 전/후 구조와 핵심 설계 노트를 기록한다.
-12. 구조 변경이 없는 경우 `Architecture Notes`에 `No architecture structure change.`로 명시한다.
+12. 구조 변경이 있는 경우 `Architecture Notes`에 변경 전/후 구조와 핵심 설계 노트를 기록한다.
+13. 구조 변경이 없는 경우 `Architecture Notes`에 `No architecture structure change.`로 명시한다.
 
 ---
 
@@ -116,6 +124,7 @@ Generator는 PR에 아래 실제 결과를 남긴다.
 
 - 변경 목적과 실제 변경 파일
 - 구조 변경이 있는 경우 Architecture Notes
+- 문서 영향 검토 결과와 문서 변경 여부
 - Issue 완료 조건별 결과
 - 실행한 build, test, lint, schema diff
 - 실행하지 못한 검증과 이유
@@ -131,6 +140,7 @@ PR 본문은 `pr-description-template.md`를 기준으로 작성하되, 실제 I
 
 - 승인 전 코드 또는 구성 변경
 - 계획 밖 dependency·Gradle·schema·DI·Navigation 변경
+- 계획 밖 문서 정책 변경 또는 승인되지 않은 문서 최신화
 - Issue 범위 밖 기능 추가
 - 테스트 실패 또는 미실행 사실 은폐
 - Evaluator 역할 수행
@@ -145,6 +155,7 @@ PR 본문은 `pr-description-template.md`를 기준으로 작성하되, 실제 I
 - 현재 branch가 계획과 다르다.
 - 새 dependency 또는 configuration 변경이 필요하지만 승인되지 않았다.
 - schema, DI, Navigation 영향이 새로 발생했다.
+- 문서 사실 변경이 필요하지만 plan.md 변경 범위에 포함되어 있지 않다.
 - build 또는 test 실패 원인이 승인된 계획 범위를 넘어선다.
 
 중단 시 실제로 수행한 변경, 발견한 사실, 영향, 필요한 재승인을 기록한다.
