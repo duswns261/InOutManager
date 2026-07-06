@@ -64,9 +64,14 @@ local work item이 없더라도 GitHub Issue, PR, Generator 검증 결과로 최
 7. architecture rules와 DoD 관련 항목을 확인한다.
 8. build, test, lint, schema diff, 수동 검증 근거를 평가한다.
 9. 미실행 검증과 잔여 위험이 숨겨지지 않았는지 확인한다.
-10. `evaluation-report-template.md`를 열어 형식을 확인한 후, local `evaluation-report.md`에 상세 판단을 기록한다.
-11. PR review 또는 comment에 최종 판정과 근거를 남긴다.
-12. 판정에 따라 아래 행동을 취한다.
+10. Human Owner의 병합 전 확인이 필요한 경우, 실제 앱 또는 에뮬레이터에서 관찰 가능한 수동 확인 항목을 Markdown task list로 작성한다.
+    - 항목은 Issue의 동작 확인, Generator verification report의 미실행 수동 확인, DoD의 회귀 확인 기준을 기반으로 한다.
+    - `수동 확인 필요`처럼 추상적으로 쓰지 않고, 사용자가 직접 체크할 수 있는 사용자 동작과 기대 결과로 쓴다.
+11. `evaluation-report-template.md`를 열어 형식을 확인한 후, local `evaluation-report.md`에 상세 판단을 기록한다.
+12. PR review 또는 comment에 최종 판정과 근거를 남긴다.
+    - `Conditional Pass`에서 Human Owner 확인이 필요하면 `Human Owner 병합 전 체크리스트` 섹션을 포함한다.
+    - 체크리스트는 GitHub PR 화면에서 직접 체크할 수 있도록 `- [ ]` Markdown task list 형식으로 작성한다.
+13. 판정에 따라 아래 행동을 취한다.
     - **Pass:** `gh pr merge --merge --delete-branch` 명령으로 PR을 병합한다. PR 본문에 `Closes #<issue-number>`가 포함되어 있으면 Issue가 자동으로 닫힌다.
     - **Conditional Pass:** PR을 병합하지 않는다. 판정 근거와 Human Owner가 확인해야 할 항목을 PR review에 명시한다.
     - **Fail:** PR을 병합하지 않는다. 수정이 필요한 항목과 재평가 조건을 PR review에 명시한다.
@@ -89,6 +94,7 @@ local work item이 없더라도 GitHub Issue, PR, Generator 검증 결과로 최
 - 핵심 요구는 충족했다.
 - 일부 비핵심 검증이 미실행이거나 잔여 위험이 있다.
 - 미실행 이유와 Human Owner가 판단해야 할 영향이 명시돼 있다.
+- Human Owner가 병합 전 직접 확인해야 하는 항목이 있으면 PR review 또는 comment에 체크 가능한 task list로 제공돼 있다.
 
 ### Fail
 
@@ -120,6 +126,10 @@ PR 본문과 Architecture Notes:
 
 남은 위험 또는 수정 요청:
 - ...
+
+Human Owner 병합 전 체크리스트:
+- [ ] ...
+- [ ] ...
 
 병합 권고:
 - 병합 가능 / 조건부 병합 / 수정 후 재평가
