@@ -114,7 +114,12 @@ docs/ai/workflows/planner/issue-plan-template.md
 Issue 제목은 있으나 본문이 비어 있을 때 수행한다. plan.md는 작성하지 않는다.
 
 1. `project-roadmap.md`, `architecture-rules.md`, `issue-workflow.md`를 읽는다.
-2. Issue 제목과 Milestone 맥락을 기반으로 `issue-workflow.md §2` 구조에 따라 body 초안을 작성한다.
-3. Human Owner가 결정해야 할 항목(포함 여부가 불분명한 범위, follow-up 성격의 작업 등)은 초안에 **"결정 필요"** 로 명시하고 임의로 확정하지 않는다.
-4. 초안을 로컬 파일로 저장하지 않고 대화 텍스트로 제시한다.
-5. Human Owner가 검토 후 GitHub Issue에 게시하면 Planner를 다시 호출해 §2 수행 절차를 재개한다.
+2. 기존 Issue title을 그대로 신뢰하지 않고, Issue title과 Milestone 맥락, 현재 코드 상태를 함께 검토한다.
+3. 변경 사항과 완료 조건을 더 정확히 표현하는 Issue title을 먼저 추천한다.
+   - 기존 title이 충분히 정확하면 "기존 title 유지"를 명시한다.
+   - 기존 title이 넓거나 모호하면 새 title 후보를 1~3개 제시한다.
+   - title 후보는 구현 방법보다 검증 가능한 변경 목표를 드러내야 한다.
+4. 추천 title과 Milestone 맥락을 기반으로 `issue-workflow.md §2` 구조에 따라 body 초안을 작성한다.
+5. Human Owner가 결정해야 할 항목(포함 여부가 불분명한 범위, follow-up 성격의 작업 등)은 초안에 **"결정 필요"** 로 명시하고 임의로 확정하지 않는다.
+6. title 추천과 body 초안은 로컬 파일로 저장하지 않고 대화 텍스트로 제시한다.
+7. Human Owner가 검토 후 GitHub Issue title/body에 반영하면 Planner를 다시 호출해 §2 수행 절차를 재개한다.
