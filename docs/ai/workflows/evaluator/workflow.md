@@ -77,6 +77,13 @@ local work item이 없더라도 GitHub Issue, PR, Generator 검증 결과로 최
     - **Pass:** `gh pr merge --merge --delete-branch` 명령으로 PR을 병합한다. PR 본문에 `Closes #<issue-number>`가 포함되어 있으면 Issue가 자동으로 닫힌다.
     - **Conditional Pass:** PR을 병합하지 않는다. 판정 근거와 Human Owner가 확인해야 할 항목을 PR review에 명시한다.
     - **Fail:** PR을 병합하지 않는다. 수정이 필요한 항목과 재평가 조건을 PR review에 명시한다.
+14. **Pass 병합 성공 후 local main 동기화 확인**을 수행한다.
+    - `git fetch --prune`으로 리모트 상태를 다시 동기화한다.
+    - worktree에 추적된 미커밋 변경이 있으면 자동 동기화를 중단하고 Human Owner에게 보고한다.
+    - `main`으로 이동한 뒤 `origin/main`과 fast-forward 가능한 상태인지 확인한다.
+    - fast-forward 가능한 경우에만 `git pull --ff-only origin main`을 실행해 Android Studio가 바라보는 local `main`을 최신 병합 결과로 맞춘다.
+    - local `main`이 diverge되어 있거나 local-only commit이 있거나 upstream이 `[gone]` 상태면 자동 처리하지 않고 Human Owner에게 중단 사유와 현재 branch 상태를 보고한다.
+    - 동기화 후 `git status --short --branch` 결과를 확인하고, 최종 응답 또는 PR comment에 local `main` 동기화 성공 여부와 남은 위험을 기록한다.
 
 ---
 
