@@ -16,14 +16,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.*
 import com.cret.inoutmanager.presentation.ui.components.NewProductDialog
 import com.cret.inoutmanager.presentation.ui.components.OutboundQuantityDialog
-import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
 import com.cret.inoutmanager.presentation.ui.screens.InboundScreen
 import com.cret.inoutmanager.presentation.ui.screens.OutboundScreen
 import com.cret.inoutmanager.presentation.ui.screens.StatusScreen
@@ -44,42 +40,10 @@ fun InventoryApp(
     var outboundQuantityInput by remember { mutableStateOf("") }
     var showConfirmDialog by remember { mutableStateOf(false) }
 
-    val tabRoutes = listOf(InventoryRoute.Inbound, InventoryRoute.Outbound, InventoryRoute.Status)
     val tabTitles = listOf("입고", "출고", "자재 현황")
-    val navController = rememberNavController()
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRouteIndex = tabRoutes
-        .indexOfFirst { it.route == currentBackStackEntry?.destination?.route }
-        .coerceAtLeast(0)
-    val pagerState = rememberPagerState(pageCount = { tabRoutes.size })
+    val pagerState = rememberPagerState(pageCount = { tabTitles.size })
     val coroutineScope = rememberCoroutineScope()
     val selectedTabIndex = pagerState.currentPage
-
-    fun navigateToTab(index: Int) {
-        navController.navigate(tabRoutes[index].route) {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
-            launchSingleTop = true
-            restoreState = true
-        }
-    }
-
-    // 탭 클릭으로 navController route가 바뀌면 pager를 같은 위치로 스크롤한다.
-    LaunchedEffect(currentRouteIndex) {
-        if (pagerState.currentPage != currentRouteIndex) {
-            pagerState.animateScrollToPage(currentRouteIndex)
-        }
-    }
-
-    // 스와이프로 pager 페이지가 바뀌면 navController route를 같은 화면으로 맞춘다.
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            if (currentRouteIndex != page) {
-                navigateToTab(page)
-            }
-        }
-    }
 
     val skyBlueColor = Color(0xFF03A9F4)
 
