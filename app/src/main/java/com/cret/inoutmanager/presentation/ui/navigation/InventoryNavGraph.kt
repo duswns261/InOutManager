@@ -1,0 +1,62 @@
+package com.cret.inoutmanager.presentation.ui.navigation
+
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.cret.inoutmanager.domain.model.Product
+import com.cret.inoutmanager.presentation.ui.screens.InboundScreen
+import com.cret.inoutmanager.presentation.ui.screens.OutboundScreen
+import com.cret.inoutmanager.presentation.ui.screens.StatusScreen
+
+private fun routeIndex(route: String?): Int =
+    InventoryRoute.ordered.indexOfFirst { it.route == route }.coerceAtLeast(0)
+
+@Composable
+fun InventoryNavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    products: List<Product>,
+    onAddClick: () -> Unit,
+    onOutboundClick: (Product) -> Unit,
+    onDeleteRequest: (Product) -> Unit,
+) {
+    NavHost(
+        navController = navController,
+        startDestination = InventoryRoute.Inbound.route,
+        modifier = modifier,
+        enterTransition = {
+            val forward = routeIndex(targetState.destination.route) > routeIndex(initialState.destination.route)
+            slideInHorizontally(tween(250)) { width -> if (forward) width else -width } + fadeIn(tween(250))
+        },
+        exitTransition = {
+            val forward = routeIndex(targetState.destination.route) > routeIndex(initialState.destination.route)
+            slideOutHorizontally(tween(250)) { width -> if (forward) -width else width } + fadeOut(tween(250))
+        }
+    ) {
+        composable(InventoryRoute.Inbound.route) {
+            InboundScreen(
+                products = products,
+                onAddClick = onAddClick,
+            )
+        }
+        composable(InventoryRoute.Outbound.route) {
+            OutboundScreen(
+                products = products,
+                onOutboundClick = onOutboundClick,
+            )
+        }
+        composable(InventoryRoute.Status.route) {
+            StatusScreen(
+                products = products,
+                onDeleteRequest = onDeleteRequest,
+            )
+        }
+    }
+}

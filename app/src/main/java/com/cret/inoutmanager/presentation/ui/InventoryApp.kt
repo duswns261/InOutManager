@@ -1,33 +1,35 @@
 package com.cret.inoutmanager.presentation.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import android.annotation.SuppressLint
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.*
 import com.cret.inoutmanager.presentation.ui.components.NewProductDialog
 import com.cret.inoutmanager.presentation.ui.components.OutboundQuantityDialog
-import com.cret.inoutmanager.presentation.ui.screens.InboundScreen
-import com.cret.inoutmanager.presentation.ui.screens.OutboundScreen
-import com.cret.inoutmanager.presentation.ui.screens.StatusScreen
+import com.cret.inoutmanager.presentation.ui.navigation.InventoryNavGraph
+import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
 import com.cret.inoutmanager.presentation.viewmodel.InventoryViewModel
 import com.cret.inoutmanager.ui.theme.InOutManagerTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 
 @Composable
 fun InventoryApp(
@@ -41,9 +43,26 @@ fun InventoryApp(
     var showConfirmDialog by remember { mutableStateOf(false) }
 
     val tabTitles = listOf("입고", "출고", "자재 현황")
-    val pagerState = rememberPagerState(pageCount = { tabTitles.size })
-    val coroutineScope = rememberCoroutineScope()
-    val selectedTabIndex = pagerState.currentPage
+    val navController = rememberNavController()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val selectedTabIndex = InventoryRoute.ordered
+        .indexOfFirst { it.route == currentBackStackEntry?.destination?.route }
+        .coerceAtLeast(0)
+
+    fun navigateToTab(index: Int) {
+        val target = InventoryRoute.ordered[index]
+        if (target.route == currentBackStackEntry?.destination?.route) return
+        navController.navigate(target.route) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    val density = LocalDensity.current
+    val swipeThresholdPx = with(density) { 80.dp.toPx() }
 
     val skyBlueColor = Color(0xFF03A9F4)
 
@@ -76,9 +95,7 @@ fun InventoryApp(
                     tabTitles.forEachIndexed { index, title ->
                         Tab(
                             selected = selectedTabIndex == index,
-                            onClick = {
-                                coroutineScope.launch { pagerState.animateScrollToPage(index) }
-                            },
+                            onClick = { navigateToTab(index) },
                             text = {
                                 Text(
                                     title,
@@ -92,35 +109,47 @@ fun InventoryApp(
             }
         }
     ) { innerPadding ->
-        HorizontalPager(
-            state = pagerState,
+        var dragAccumulatedPx by remember { mutableStateOf(0f) }
+
+        Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
                 .background(Color(0xFFFAFAFA))
-        ) { page ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                when (page) {
-                    0 -> InboundScreen(
-                        products = uiState.products,
-                        onAddClick = { showAddDialog = true }
-                    )
-                    1 -> OutboundScreen(
-                        products = uiState.products,
-                        onOutboundClick = { product ->
-                            selectedProductForOutbound = product
-                            outboundQuantityInput = ""
-                            showConfirmDialog = false
+                .pointerInput(selectedTabIndex) {
+                    detectHorizontalDragGestures(
+                        onDragStart = { dragAccumulatedPx = 0f },
+                        onDragCancel = { dragAccumulatedPx = 0f },
+                        onDragEnd = {
+                            when {
+                                dragAccumulatedPx <= -swipeThresholdPx &&
+                                    selectedTabIndex < InventoryRoute.ordered.lastIndex ->
+                                    navigateToTab(selectedTabIndex + 1)
+                                dragAccumulatedPx >= swipeThresholdPx && selectedTabIndex > 0 ->
+                                    navigateToTab(selectedTabIndex - 1)
+                            }
+                            dragAccumulatedPx = 0f
                         }
-                    )
-                    2 -> StatusScreen(
-                        products = uiState.products,
-                        onDeleteRequest = { product ->
-                            viewModel.deleteProduct(product)
-                        }
-                    )
+                    ) { change, dragAmount ->
+                        change.consume()
+                        dragAccumulatedPx += dragAmount
+                    }
                 }
-            }
+        ) {
+            InventoryNavGraph(
+                navController = navController,
+                modifier = Modifier.fillMaxSize(),
+                products = uiState.products,
+                onAddClick = { showAddDialog = true },
+                onOutboundClick = { product ->
+                    selectedProductForOutbound = product
+                    outboundQuantityInput = ""
+                    showConfirmDialog = false
+                },
+                onDeleteRequest = { product ->
+                    viewModel.deleteProduct(product)
+                }
+            )
         }
 
         // --- 다이얼로그 관리 ---
