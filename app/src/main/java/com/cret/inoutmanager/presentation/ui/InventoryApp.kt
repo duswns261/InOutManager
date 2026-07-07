@@ -2,6 +2,8 @@ package com.cret.inoutmanager.presentation.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -21,12 +23,15 @@ import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.*
 import com.cret.inoutmanager.presentation.ui.components.NewProductDialog
 import com.cret.inoutmanager.presentation.ui.components.OutboundQuantityDialog
-import com.cret.inoutmanager.presentation.ui.navigation.InventoryNavGraph
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
+import com.cret.inoutmanager.presentation.ui.screens.InboundScreen
+import com.cret.inoutmanager.presentation.ui.screens.OutboundScreen
+import com.cret.inoutmanager.presentation.ui.screens.StatusScreen
 import com.cret.inoutmanager.presentation.viewmodel.InventoryViewModel
 import com.cret.inoutmanager.ui.theme.InOutManagerTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 
 @Composable
 fun InventoryApp(
@@ -43,9 +48,38 @@ fun InventoryApp(
     val tabTitles = listOf("입고", "출고", "자재 현황")
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val selectedTabIndex = tabRoutes
+    val currentRouteIndex = tabRoutes
         .indexOfFirst { it.route == currentBackStackEntry?.destination?.route }
         .coerceAtLeast(0)
+    val pagerState = rememberPagerState(pageCount = { tabRoutes.size })
+    val coroutineScope = rememberCoroutineScope()
+    val selectedTabIndex = pagerState.currentPage
+
+    fun navigateToTab(index: Int) {
+        navController.navigate(tabRoutes[index].route) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    // 탭 클릭으로 navController route가 바뀌면 pager를 같은 위치로 스크롤한다.
+    LaunchedEffect(currentRouteIndex) {
+        if (pagerState.currentPage != currentRouteIndex) {
+            pagerState.animateScrollToPage(currentRouteIndex)
+        }
+    }
+
+    // 스와이프로 pager 페이지가 바뀌면 navController route를 같은 화면으로 맞춘다.
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            if (currentRouteIndex != page) {
+                navigateToTab(page)
+            }
+        }
+    }
 
     val skyBlueColor = Color(0xFF03A9F4)
 
@@ -79,13 +113,7 @@ fun InventoryApp(
                         Tab(
                             selected = selectedTabIndex == index,
                             onClick = {
-                                navController.navigate(tabRoutes[index].route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                                coroutineScope.launch { pagerState.animateScrollToPage(index) }
                             },
                             text = {
                                 Text(
@@ -100,23 +128,34 @@ fun InventoryApp(
             }
         }
     ) { innerPadding ->
-        InventoryNavGraph(
-            navController = navController,
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(Color(0xFFFAFAFA)),
-            products = uiState.products,
-            onAddClick = { showAddDialog = true },
-            onOutboundClick = { product ->
-                selectedProductForOutbound = product
-                outboundQuantityInput = ""
-                showConfirmDialog = false
-            },
-            onDeleteRequest = { product ->
-                viewModel.deleteProduct(product)
+                .background(Color(0xFFFAFAFA))
+        ) { page ->
+            when (page) {
+                0 -> InboundScreen(
+                    products = uiState.products,
+                    onAddClick = { showAddDialog = true }
+                )
+                1 -> OutboundScreen(
+                    products = uiState.products,
+                    onOutboundClick = { product ->
+                        selectedProductForOutbound = product
+                        outboundQuantityInput = ""
+                        showConfirmDialog = false
+                    }
+                )
+                2 -> StatusScreen(
+                    products = uiState.products,
+                    onDeleteRequest = { product ->
+                        viewModel.deleteProduct(product)
+                    }
+                )
             }
-        )
+        }
 
         // --- 다이얼로그 관리 ---
 
