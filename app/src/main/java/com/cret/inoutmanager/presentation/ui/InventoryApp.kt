@@ -99,25 +99,27 @@ fun InventoryApp(
                 .fillMaxSize()
                 .background(Color(0xFFFAFAFA))
         ) { page ->
-            when (page) {
-                0 -> InboundScreen(
-                    products = uiState.products,
-                    onAddClick = { showAddDialog = true }
-                )
-                1 -> OutboundScreen(
-                    products = uiState.products,
-                    onOutboundClick = { product ->
-                        selectedProductForOutbound = product
-                        outboundQuantityInput = ""
-                        showConfirmDialog = false
-                    }
-                )
-                2 -> StatusScreen(
-                    products = uiState.products,
-                    onDeleteRequest = { product ->
-                        viewModel.deleteProduct(product)
-                    }
-                )
+            Box(modifier = Modifier.fillMaxSize()) {
+                when (page) {
+                    0 -> InboundScreen(
+                        products = uiState.products,
+                        onAddClick = { showAddDialog = true }
+                    )
+                    1 -> OutboundScreen(
+                        products = uiState.products,
+                        onOutboundClick = { product ->
+                            selectedProductForOutbound = product
+                            outboundQuantityInput = ""
+                            showConfirmDialog = false
+                        }
+                    )
+                    2 -> StatusScreen(
+                        products = uiState.products,
+                        onDeleteRequest = { product ->
+                            viewModel.deleteProduct(product)
+                        }
+                    )
+                }
             }
         }
 
