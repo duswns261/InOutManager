@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.cret.inoutmanager.domain.model.Product
+import com.cret.inoutmanager.presentation.ui.screens.HomeScreen
 import com.cret.inoutmanager.presentation.ui.screens.InboundScreen
 import com.cret.inoutmanager.presentation.ui.screens.OutboundScreen
 import com.cret.inoutmanager.presentation.ui.screens.StatusScreen
@@ -20,28 +21,40 @@ fun InventoryNavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     products: List<Product>,
-    onAddClick: () -> Unit,
+    onNavigateToFeature: (String) -> Unit,
     onOutboundClick: (Product) -> Unit,
     onDeleteRequest: (Product) -> Unit,
 ) {
     NavHost(
         navController = navController,
-        startDestination = InventoryRoute.Inbound.route,
+        startDestination = InventoryRoute.Home.route,
         modifier = modifier,
         enterTransition = {
-            val forward = InventoryRoute.indexOf(targetState.destination.route) > InventoryRoute.indexOf(initialState.destination.route)
-            slideInHorizontally(tween(250)) { width -> if (forward) width else -width } + fadeIn(tween(250))
+            val initialRoute = initialState.destination.route
+            val targetRoute = targetState.destination.route
+            if (initialRoute == InventoryRoute.Home.route || targetRoute == InventoryRoute.Home.route) {
+                fadeIn(tween(250))
+            } else {
+                val forward = InventoryRoute.indexOfFeature(targetRoute) > InventoryRoute.indexOfFeature(initialRoute)
+                slideInHorizontally(tween(250)) { width -> if (forward) width else -width } + fadeIn(tween(250))
+            }
         },
         exitTransition = {
-            val forward = InventoryRoute.indexOf(targetState.destination.route) > InventoryRoute.indexOf(initialState.destination.route)
-            slideOutHorizontally(tween(250)) { width -> if (forward) -width else width } + fadeOut(tween(250))
+            val initialRoute = initialState.destination.route
+            val targetRoute = targetState.destination.route
+            if (initialRoute == InventoryRoute.Home.route || targetRoute == InventoryRoute.Home.route) {
+                fadeOut(tween(250))
+            } else {
+                val forward = InventoryRoute.indexOfFeature(targetRoute) > InventoryRoute.indexOfFeature(initialRoute)
+                slideOutHorizontally(tween(250)) { width -> if (forward) -width else width } + fadeOut(tween(250))
+            }
         }
     ) {
+        composable(InventoryRoute.Home.route) {
+            HomeScreen(onNavigate = onNavigateToFeature)
+        }
         composable(InventoryRoute.Inbound.route) {
-            InboundScreen(
-                products = products,
-                onAddClick = onAddClick,
-            )
+            InboundScreen(products = products)
         }
         composable(InventoryRoute.Outbound.route) {
             OutboundScreen(

@@ -1,16 +1,21 @@
 package com.cret.inoutmanager.presentation.ui
 
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import android.annotation.SuppressLint
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +36,8 @@ import com.cret.inoutmanager.ui.theme.InOutManagerTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
+private const val EXIT_CONFIRM_WINDOW_MS = 300L
+
 @Composable
 fun InventoryApp(
     viewModel: InventoryViewModel = viewModel()
@@ -44,25 +51,32 @@ fun InventoryApp(
 
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val selectedTabIndex = InventoryRoute.indexOf(currentBackStackEntry?.destination?.route)
+    val currentRoute = currentBackStackEntry?.destination?.route
+    val isHome = currentRoute == null || currentRoute == InventoryRoute.Home.route
 
-    fun navigateToTab(index: Int) {
-        val target = InventoryRoute.ordered[index]
-        if (target.route == currentBackStackEntry?.destination?.route) return
-        navController.navigate(target.route) {
-            // saveState/restoreState는 탭을 오갈 때 각 화면(LazyColumn)의 스크롤 위치를 보존하기 위함이다.
+    fun navigateToFeature(route: String) {
+        if (route == currentRoute) return
+        navController.navigate(route) {
             popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
+                inclusive = false
             }
             launchSingleTop = true
-            restoreState = true
         }
     }
 
-    val density = LocalDensity.current
-    val swipeThresholdPx = with(density) { 80.dp.toPx() }
-
     val skyBlueColor = Color(0xFF03A9F4)
+
+    val context = LocalContext.current
+    var lastBackPressTime by remember { mutableStateOf(0L) }
+    BackHandler(enabled = isHome) {
+        val now = System.currentTimeMillis()
+        if (now - lastBackPressTime <= EXIT_CONFIRM_WINDOW_MS) {
+            (context as? Activity)?.finish()
+        } else {
+            lastBackPressTime = now
+            Toast.makeText(context, "한 번 더 누르면 종료됩니다", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Scaffold(
         containerColor = Color.White,
@@ -79,67 +93,63 @@ fun InventoryApp(
                     modifier = Modifier.padding(16.dp),
                     color = Color.Black
                 )
-                TabRow(
-                    selectedTabIndex = selectedTabIndex,
-                    containerColor = Color.White,
-                    contentColor = Color.Black,
-                    indicator = { tabPositions ->
-                        TabRowDefaults.SecondaryIndicator(
-                            modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                            color = skyBlueColor
-                        )
-                    }
-                ) {
-                    InventoryRoute.ordered.forEachIndexed { index, route ->
-                        Tab(
-                            selected = selectedTabIndex == index,
-                            onClick = { navigateToTab(index) },
-                            text = {
-                                Text(
-                                    route.title,
-                                    color = if (selectedTabIndex == index) skyBlueColor else Color.Gray,
-                                    fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal
+                if (!isHome) {
+                    var expanded by remember { mutableStateOf(false) }
+                    val featureIndex = InventoryRoute.indexOfFeature(currentRoute)
+                    val currentFeature = InventoryRoute.featureRoutes[featureIndex]
+                    Box {
+                        Row(
+                            modifier = Modifier
+                                .clickable { expanded = true }
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "${featureIndex + 1}/${InventoryRoute.featureRoutes.size} ${currentFeature.title}",
+                                color = skyBlueColor,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = skyBlueColor)
+                        }
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            InventoryRoute.featureRoutes.forEach { route ->
+                                DropdownMenuItem(
+                                    text = { Text(route.title) },
+                                    onClick = {
+                                        expanded = false
+                                        navigateToFeature(route.route)
+                                    }
                                 )
                             }
-                        )
+                        }
                     }
                 }
             }
-        }
+        },
+        floatingActionButton = {
+            if (currentRoute == InventoryRoute.Inbound.route) {
+                FloatingActionButton(
+                    onClick = { showAddDialog = true },
+                    modifier = Modifier.navigationBarsPadding(),
+                    containerColor = skyBlueColor
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "신규 제품 등록")
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Start
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
                 .background(Color(0xFFFAFAFA))
-                .pointerInput(selectedTabIndex) {
-                    // 컴포지션에서 읽히지 않는 순수 제스처 누적값이므로 Compose state가 아닌
-                    // pointerInput 코루틴 스코프에 갇힌 지역 변수로 충분하다.
-                    var dragAccumulatedPx = 0f
-                    detectHorizontalDragGestures(
-                        onDragStart = { dragAccumulatedPx = 0f },
-                        onDragCancel = { dragAccumulatedPx = 0f },
-                        onDragEnd = {
-                            when {
-                                dragAccumulatedPx <= -swipeThresholdPx &&
-                                    selectedTabIndex < InventoryRoute.ordered.lastIndex ->
-                                    navigateToTab(selectedTabIndex + 1)
-                                dragAccumulatedPx >= swipeThresholdPx && selectedTabIndex > 0 ->
-                                    navigateToTab(selectedTabIndex - 1)
-                            }
-                            dragAccumulatedPx = 0f
-                        }
-                    ) { change, dragAmount ->
-                        change.consume()
-                        dragAccumulatedPx += dragAmount
-                    }
-                }
         ) {
             InventoryNavGraph(
                 navController = navController,
                 modifier = Modifier.fillMaxSize(),
                 products = uiState.products,
-                onAddClick = { showAddDialog = true },
+                onNavigateToFeature = ::navigateToFeature,
                 onOutboundClick = { product ->
                     selectedProductForOutbound = product
                     outboundQuantityInput = ""
@@ -217,7 +227,7 @@ fun PreviewInventoryApp() {
         override suspend fun update(product: Product) {}
         override suspend fun delete(product: Product) {}
     }
-    
+
     val fakeUseCases = ProductUseCases(
         getProducts = GetProductsUseCase(fakeRepository),
         addProduct = AddProductUseCase(fakeRepository),
