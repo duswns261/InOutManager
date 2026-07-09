@@ -15,6 +15,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.domain.model.Product
+import com.cret.inoutmanager.ui.theme.BrandAccentDark
+import com.cret.inoutmanager.ui.theme.BrandChipBackground
+import com.cret.inoutmanager.ui.theme.BrandSurface
 
 @Composable
 fun OutboundScreen(
@@ -28,7 +31,7 @@ fun OutboundScreen(
                     onClick = { onOutboundClick(product) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = BrandSurface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Row(
@@ -44,10 +47,10 @@ fun OutboundScreen(
                         }
                         Box(
                             modifier = Modifier
-                                .background(Color(0xFFE3F2FD), RoundedCornerShape(4.dp))
+                                .background(BrandChipBackground, RoundedCornerShape(4.dp))
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text(text = product.location, fontSize = 10.sp, color = Color(0xFF0D47A1))
+                            Text(text = product.location, fontSize = 10.sp, color = BrandAccentDark)
                         }
                     }
                 }

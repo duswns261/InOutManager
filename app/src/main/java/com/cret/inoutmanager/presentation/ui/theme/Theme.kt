@@ -17,15 +17,17 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = BrandAccent,
+    secondary = BrandAccentDark,
+    tertiary = Pink40,
+    background = BrandBackground,
+    surface = BrandSurface
 )
 
 @Composable
 fun InOutManagerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

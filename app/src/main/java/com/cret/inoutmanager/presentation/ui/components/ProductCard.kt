@@ -11,11 +11,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.domain.model.Product
+import com.cret.inoutmanager.ui.theme.BrandAccent
+import com.cret.inoutmanager.ui.theme.BrandSurface
 
 @Composable
 fun ProductCard(product: Product) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = BrandSurface),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -27,7 +29,7 @@ fun ProductCard(product: Product) {
                 Text(text = product.name, fontWeight = FontWeight.Bold)
                 Text(text = product.location, fontSize = 12.sp, color = Color.Gray)
             }
-            Text(text = "${product.quantity}개", color = Color(0xFF03A9F4), fontWeight = FontWeight.Bold)
+            Text(text = "${product.quantity}개", color = BrandAccent, fontWeight = FontWeight.Bold)
         }
     }
 }

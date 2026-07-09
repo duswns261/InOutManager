@@ -18,13 +18,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
+import com.cret.inoutmanager.ui.theme.BrandAccent
+import com.cret.inoutmanager.ui.theme.BrandBackground
+import com.cret.inoutmanager.ui.theme.BrandSurface
 
 @Composable
 fun HomeScreen(onNavigate: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F4EE))
+            .background(BrandBackground)
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -55,7 +58,7 @@ private fun HomeMenuCard(title: String, subtitle: String, onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = BrandSurface)
     ) {
         Row(
             modifier = Modifier
@@ -69,7 +72,7 @@ private fun HomeMenuCard(title: String, subtitle: String, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = subtitle, fontSize = 12.sp, color = Color.Gray)
             }
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = BrandAccent)
         }
     }
 }

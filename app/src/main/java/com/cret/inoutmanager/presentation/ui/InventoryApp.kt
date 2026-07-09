@@ -32,6 +32,9 @@ import com.cret.inoutmanager.presentation.ui.components.OutboundQuantityDialog
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryNavGraph
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
 import com.cret.inoutmanager.presentation.viewmodel.InventoryViewModel
+import com.cret.inoutmanager.ui.theme.BrandAccent
+import com.cret.inoutmanager.ui.theme.BrandBackground
+import com.cret.inoutmanager.ui.theme.BrandSurface
 import com.cret.inoutmanager.ui.theme.InOutManagerTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -64,8 +67,6 @@ fun InventoryApp(
         }
     }
 
-    val skyBlueColor = Color(0xFF03A9F4)
-
     val context = LocalContext.current
     var lastBackPressTime by remember { mutableStateOf(0L) }
     BackHandler(enabled = isHome) {
@@ -79,11 +80,11 @@ fun InventoryApp(
     }
 
     Scaffold(
-        containerColor = Color.White,
+        containerColor = BrandBackground,
         topBar = {
             Column(
                 modifier = Modifier
-                    .background(Color.White)
+                    .background(BrandBackground)
                     .statusBarsPadding()
             ) {
                 Text(
@@ -106,10 +107,10 @@ fun InventoryApp(
                         ) {
                             Text(
                                 text = "${featureIndex + 1}/${InventoryRoute.featureRoutes.size} ${currentFeature.title}",
-                                color = skyBlueColor,
+                                color = BrandAccent,
                                 fontWeight = FontWeight.Bold
                             )
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = skyBlueColor)
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = BrandAccent)
                         }
                         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             InventoryRoute.featureRoutes.forEach { route ->
@@ -131,7 +132,7 @@ fun InventoryApp(
                 FloatingActionButton(
                     onClick = { showAddDialog = true },
                     modifier = Modifier.navigationBarsPadding(),
-                    containerColor = skyBlueColor
+                    containerColor = BrandAccent
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "신규 제품 등록")
                 }
@@ -143,7 +144,7 @@ fun InventoryApp(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(Color(0xFFFAFAFA))
+                .background(BrandBackground)
         ) {
             InventoryNavGraph(
                 navController = navController,
@@ -200,13 +201,13 @@ fun InventoryApp(
                             showConfirmDialog = false
                             selectedProductForOutbound = null
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = skyBlueColor)
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandAccent)
                     ) { Text("확인") }
                 },
                 dismissButton = {
                     OutlinedButton(onClick = { showConfirmDialog = false }) { Text("취소") }
                 },
-                containerColor = Color.White
+                containerColor = BrandSurface
             )
         }
     }

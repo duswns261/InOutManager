@@ -18,8 +18,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-
-val SkyBlue = Color(0xFF03A9F4)
+import com.cret.inoutmanager.ui.theme.BrandAccent
+import com.cret.inoutmanager.ui.theme.BrandSurface
 
 @Composable
 fun NewProductDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit) {
@@ -31,7 +31,7 @@ fun NewProductDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) 
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = BrandSurface)
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Row(
@@ -73,7 +73,7 @@ fun NewProductDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) 
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = SkyBlue)
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandAccent)
                     ) { Text("등록") }
                 }
             }
@@ -94,7 +94,7 @@ fun OutboundQuantityDialog(
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = BrandSurface)
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text("출고 수량 입력", fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -129,7 +129,7 @@ fun OutboundQuantityDialog(
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = SkyBlue)
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandAccent)
                     ) { Text("출고 완료") }
                 }
             }
