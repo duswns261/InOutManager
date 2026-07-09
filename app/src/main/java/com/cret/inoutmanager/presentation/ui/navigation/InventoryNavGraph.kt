@@ -15,9 +15,6 @@ import com.cret.inoutmanager.presentation.ui.screens.InboundScreen
 import com.cret.inoutmanager.presentation.ui.screens.OutboundScreen
 import com.cret.inoutmanager.presentation.ui.screens.StatusScreen
 
-private fun routeIndex(route: String?): Int =
-    InventoryRoute.ordered.indexOfFirst { it.route == route }.coerceAtLeast(0)
-
 @Composable
 fun InventoryNavGraph(
     navController: NavHostController,
@@ -32,11 +29,11 @@ fun InventoryNavGraph(
         startDestination = InventoryRoute.Inbound.route,
         modifier = modifier,
         enterTransition = {
-            val forward = routeIndex(targetState.destination.route) > routeIndex(initialState.destination.route)
+            val forward = InventoryRoute.indexOf(targetState.destination.route) > InventoryRoute.indexOf(initialState.destination.route)
             slideInHorizontally(tween(250)) { width -> if (forward) width else -width } + fadeIn(tween(250))
         },
         exitTransition = {
-            val forward = routeIndex(targetState.destination.route) > routeIndex(initialState.destination.route)
+            val forward = InventoryRoute.indexOf(targetState.destination.route) > InventoryRoute.indexOf(initialState.destination.route)
             slideOutHorizontally(tween(250)) { width -> if (forward) -width else width } + fadeOut(tween(250))
         }
     ) {

@@ -42,17 +42,15 @@ fun InventoryApp(
     var outboundQuantityInput by remember { mutableStateOf("") }
     var showConfirmDialog by remember { mutableStateOf(false) }
 
-    val tabTitles = listOf("입고", "출고", "자재 현황")
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val selectedTabIndex = InventoryRoute.ordered
-        .indexOfFirst { it.route == currentBackStackEntry?.destination?.route }
-        .coerceAtLeast(0)
+    val selectedTabIndex = InventoryRoute.indexOf(currentBackStackEntry?.destination?.route)
 
     fun navigateToTab(index: Int) {
         val target = InventoryRoute.ordered[index]
         if (target.route == currentBackStackEntry?.destination?.route) return
         navController.navigate(target.route) {
+            // saveState/restoreState는 탭을 오갈 때 각 화면(LazyColumn)의 스크롤 위치를 보존하기 위함이다.
             popUpTo(navController.graph.findStartDestination().id) {
                 saveState = true
             }
@@ -92,13 +90,13 @@ fun InventoryApp(
                         )
                     }
                 ) {
-                    tabTitles.forEachIndexed { index, title ->
+                    InventoryRoute.ordered.forEachIndexed { index, route ->
                         Tab(
                             selected = selectedTabIndex == index,
                             onClick = { navigateToTab(index) },
                             text = {
                                 Text(
-                                    title,
+                                    route.title,
                                     color = if (selectedTabIndex == index) skyBlueColor else Color.Gray,
                                     fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal
                                 )
@@ -109,14 +107,15 @@ fun InventoryApp(
             }
         }
     ) { innerPadding ->
-        var dragAccumulatedPx by remember { mutableStateOf(0f) }
-
         Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
                 .background(Color(0xFFFAFAFA))
                 .pointerInput(selectedTabIndex) {
+                    // 컴포지션에서 읽히지 않는 순수 제스처 누적값이므로 Compose state가 아닌
+                    // pointerInput 코루틴 스코프에 갇힌 지역 변수로 충분하다.
+                    var dragAccumulatedPx = 0f
                     detectHorizontalDragGestures(
                         onDragStart = { dragAccumulatedPx = 0f },
                         onDragCancel = { dragAccumulatedPx = 0f },
