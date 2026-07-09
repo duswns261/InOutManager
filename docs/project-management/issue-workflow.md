@@ -104,6 +104,20 @@ InventoryViewModel이 상품 목록을 Compose mutable state로 직접 노출한
 
 - 설명 없이 커밋 메시지 후보만 작성한다.
 - 커밋 메시지는 실제 구현 전에 예상 가능한 최소 단위로 작성한다.
+- 커밋 메시지는 Conventional Commits 형식을 기본으로 한다.
+- 형식은 `type: summary`를 사용한다.
+- Issue 번호는 커밋 메시지에 필수로 넣지 않는다.
+- Issue 연결은 PR 제목, PR 본문, `Closes #<issue-number>` 문구로 관리한다.
+
+예시:
+
+```text
+feat: add home screen entry flow
+fix: prevent outbound quantity from going below zero
+refactor: separate product mapper
+style: apply soft inventory app visual updates
+docs: update issue workflow
+```
 
 ### 검증
 
