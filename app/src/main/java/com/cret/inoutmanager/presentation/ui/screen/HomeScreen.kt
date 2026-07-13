@@ -31,7 +31,6 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(text = "재고관리", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Text(text = "이동할 화면을 선택하세요", fontSize = 14.sp, color = Color.Gray)
         Spacer(modifier = Modifier.height(8.dp))
         HomeMenuCard(

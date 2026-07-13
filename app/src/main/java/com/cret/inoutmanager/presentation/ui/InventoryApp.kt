@@ -3,16 +3,17 @@ package com.cret.inoutmanager.presentation.ui
 import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import android.annotation.SuppressLint
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -38,9 +39,11 @@ import com.cret.inoutmanager.ui.theme.BrandSurface
 import com.cret.inoutmanager.ui.theme.InOutManagerTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 
 private const val EXIT_CONFIRM_WINDOW_MS = 300L
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventoryApp(
     viewModel: InventoryViewModel = viewModel()
@@ -95,33 +98,66 @@ fun InventoryApp(
                     color = Color.Black
                 )
                 if (!isHome) {
-                    var expanded by remember { mutableStateOf(false) }
-                    val featureIndex = InventoryRoute.indexOfFeature(currentRoute)
-                    val currentFeature = InventoryRoute.featureRoutes[featureIndex]
-                    Box {
-                        Row(
-                            modifier = Modifier
-                                .clickable { expanded = true }
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                    var showFeatureSheet by remember { mutableStateOf(false) }
+                    val sheetState = rememberModalBottomSheetState()
+                    val scope = rememberCoroutineScope()
+                    val currentFeature = InventoryRoute.featureRoutes[InventoryRoute.indexOfFeature(currentRoute)]
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        AssistChip(
+                            onClick = { showFeatureSheet = true },
+                            label = { Text(text = currentFeature.title, fontWeight = FontWeight.Bold) },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            colors = AssistChipDefaults.assistChipColors(
+                                containerColor = BrandSurface,
+                                labelColor = BrandAccent,
+                                trailingIconContentColor = BrandAccent
+                            ),
+                            border = BorderStroke(1.dp, BrandAccent)
+                        )
+                    }
+
+                    if (showFeatureSheet) {
+                        ModalBottomSheet(
+                            onDismissRequest = { showFeatureSheet = false },
+                            sheetState = sheetState,
+                            containerColor = BrandSurface
                         ) {
-                            Text(
-                                text = "${featureIndex + 1}/${InventoryRoute.featureRoutes.size} ${currentFeature.title}",
-                                color = BrandAccent,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = BrandAccent)
-                        }
-                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             InventoryRoute.featureRoutes.forEach { route ->
-                                DropdownMenuItem(
-                                    text = { Text(route.title) },
-                                    onClick = {
-                                        expanded = false
-                                        navigateToFeature(route.route)
+                                val isSelected = route == currentFeature
+                                ListItem(
+                                    headlineContent = {
+                                        Text(
+                                            text = route.title,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        )
+                                    },
+                                    trailingContent = {
+                                        if (isSelected) {
+                                            Icon(Icons.Default.Check, contentDescription = null, tint = BrandAccent)
+                                        }
+                                    },
+                                    colors = ListItemDefaults.colors(containerColor = BrandSurface),
+                                    modifier = Modifier.clickable {
+                                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                            showFeatureSheet = false
+                                            navigateToFeature(route.route)
+                                        }
                                     }
                                 )
                             }
+                            Spacer(modifier = Modifier.navigationBarsPadding())
                         }
                     }
                 }
@@ -137,8 +173,7 @@ fun InventoryApp(
                     Icon(Icons.Default.Add, contentDescription = "신규 제품 등록")
                 }
             }
-        },
-        floatingActionButtonPosition = FabPosition.Start
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier
