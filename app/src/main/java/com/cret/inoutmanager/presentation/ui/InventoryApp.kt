@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
-private const val EXIT_CONFIRM_WINDOW_MS = 300L
+private const val EXIT_CONFIRM_WINDOW_MS = 600L
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
