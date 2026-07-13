@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.presentation.ui.components.SummaryCard
+import com.cret.inoutmanager.ui.theme.BrandAccent
+import com.cret.inoutmanager.ui.theme.BrandSurface
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 
@@ -43,7 +45,7 @@ fun StatusScreen(
         Spacer(modifier = Modifier.height(8.dp))
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(products) { product ->
-                Card(colors = CardDefaults.cardColors(containerColor = Color.White),
+                Card(colors = CardDefaults.cardColors(containerColor = BrandSurface),
                     modifier = Modifier
                         .fillMaxWidth()
                         .combinedClickable(
@@ -63,7 +65,7 @@ fun StatusScreen(
                             Text(text = product.name, fontWeight = FontWeight.Bold)
                             Text(text = product.location, fontSize = 12.sp, color = Color.Gray)
                         }
-                        Text(text = "${product.quantity}개", color = Color(0xFF03A9F4), fontWeight = FontWeight.Bold)
+                        Text(text = "${product.quantity}개", color = BrandAccent, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -91,7 +93,7 @@ fun StatusScreen(
                     Text("취소")
                 }
             },
-            containerColor = Color.White
+            containerColor = BrandSurface
         )
     }
 }
