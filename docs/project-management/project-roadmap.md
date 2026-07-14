@@ -17,6 +17,8 @@ GitHub Issue는 개별 작업 단위의 상세 계약이고, 이 문서는 Issue
 3. 새 아이디어는 Backlog에 기록한 뒤 우선순위를 결정한다.
 4. 의존성이 있는 작업은 선행 작업의 검증이 끝난 뒤 진행한다.
 5. Milestone은 기능 개수보다 구조적 완료 기준으로 종료한다.
+6. 통제할 수 없는 외부 대기시간(스토어 심사, 테스트 기간, 운영 데이터 축적)은 Milestone 완료 조건에 넣지 않는다.
+7. 사용자 행동 이벤트 계측은 별도 Issue로 몰지 않고, 해당 기능을 구현하는 Issue가 자신의 계측을 포함한다.
 
 ---
 
@@ -25,14 +27,30 @@ GitHub Issue는 개별 작업 단위의 상세 계약이고, 이 문서는 Issue
 ```text
 Pre-milestone: Baseline Readiness
     ↓
-Architecture Foundation
+Milestone 1: Architecture Foundation
     ↓
-DI & Navigation Foundation
+Milestone 2: DI & Navigation Foundation
     ↓
-Quality & Release Readiness
+Milestone 3: Observability Foundation
     ↓
-Feature Expansion / Server Integration
+Milestone 4: Product Imaging
+    ↓
+Milestone 5: Release Readiness
+    ↓
+(조건부 외부 대기: 비공개 테스트 14일 - Backlog 사용성 항목 병행)
+    ↓
+Milestone 6: Launch & First Iteration
 ```
+
+2023년 11월 13일 이후 생성된 개인 개발자 계정에는 Google Play
+비공개 테스트 요건(테스터 12명 이상, 14일 연속 참여)이 적용된다.
+해당하는 경우 Milestone 5 완료와 Milestone 6 시작 사이의 외부
+대기시간에는 Backlog의 사용성 개선 항목을 테스트 트랙 업데이트로
+진행한다. 정확한 적용 여부와 조건은 Google Play 공식 정책을 기준으로 한다.
+
+Play Console 개발자 계정 생성·신원 확인과 테스터 모집은 코드와
+무관한 외부 대기시간을 가지므로 Milestone 3 시작 시점에 병렬로
+착수한다.
 
 ---
 
@@ -134,38 +152,182 @@ Navigation Issue에는 Domain/Data 구조 변경을 넣지 않는다.
 
 ---
 
-## 6. Milestone 3 — Quality & Release Readiness
+## 6. Milestone 3 — Observability Foundation
+
+GitHub Milestone:
+
+- `Milestone 3: Observability Foundation`
+
+관련 Issue:
+
+- Issue #19: Firebase 연결 및 Crashlytics 기반 크래시 관측 도입
+- Issue #20: GA4 도입, AnalyticsLogger 추상화 및 핵심 이벤트 계측
 
 ### 목표
 
-기능이 동작하는 수준을 넘어 검증 가능하고 배포를 준비할 수 있는 상태로 만든다.
+앱의 실사용 품질(크래시)과 사용자 행동을 데이터로 관측할 수 있는
+기반을 만든다. 이후 기능 개발 단계의 크래시부터 계측되도록
+Product Imaging보다 먼저 수행한다.
 
 ### 대표 작업
 
-- UseCase, ViewModel, Mapper 단위 테스트
-- Room DAO 및 핵심 데이터 흐름 테스트
-- Compose UI 또는 핵심 사용자 흐름 테스트
-- GitHub Actions 기반 build/test/lint CI
-- release build와 기본 배포 설정 확인
-- README, architecture diagram, 개발 문서 정리
+- Firebase 프로젝트 연결과 SDK 기반 구성
+- Crashlytics 적용, debug 전용 Test Crash 검증 수단
+- Firebase Analytics(GA4) 적용
+- `AnalyticsLogger` 인터페이스 추상화와 Hilt 제공
+- 이벤트 명세 문서화, 파라미터 개인정보 배제 규칙 정의
+- DebugView 이벤트 수신 검증
+
+### 완료 기준
+
+- 강제 크래시가 Firebase 콘솔에 리포트된다.
+- Test Crash 진입점이 debug 빌드에만 존재한다.
+- 이벤트 명세 문서와 실제 로깅 코드가 일치한다.
+- 정의된 이벤트가 DebugView에서 수신 확인된다.
+- 이벤트 파라미터에 사용자 입력 문자열이 포함되지 않는다.
+- Presentation은 `AnalyticsLogger` 인터페이스에만 의존한다.
+
+### 분리 원칙
+
+```text
+카메라·촬영 관련 이벤트는 이 Milestone에서 정의하지 않는다.
+해당 이벤트는 Milestone 4의 기능 Issue가 각자 포함한다.
+```
 
 ---
 
-## 7. Milestone 4 — Feature Expansion / Server Integration
+## 7. Milestone 4 — Product Imaging
 
-### 후보 작업
+예정 GitHub Milestone:
 
-- 사진 첨부와 이미지 저장 전략
-- 바코드 인식과 제품 검색
-- 입고·출고 이력
-- 재고 부족 알림
-- 정렬·필터·검색
-- 서버 동기화와 오프라인 우선 정책
-- 백업·내보내기
+- `Milestone 4: Product Imaging`
+
+예정 작업:
+
+- 제품 이미지 저장 모델 도입 및 Room Migration(1→2) 추가
+- CameraX 기반 제품 촬영 및 등록 흐름 연동
+- 입고·출고·재고 현황 화면 제품 이미지 표시
+
+### 목표
+
+입고 과정에서 제품 사진을 촬영해 저장하고, 모든 재고 화면에서
+이미지를 확인할 수 있게 한다. 데이터 모델과 저장 정책을 먼저
+확정한 뒤 CameraX UI를 구현한다.
+
+### 대표 작업
+
+- 이미지 파일 저장 정책(앱 전용 저장소, Room에는 경로만 저장)
+- `Product.imagePath` 추가, Room version 1→2 Migration과 Migration 테스트
+- CameraX Preview / ImageCapture, 런타임 권한 처리
+- 촬영·재촬영·취소 흐름, 등록 취소 시 임시 파일 정리
+- Coil 기반 공통 썸네일 컴포넌트, placeholder와 파일 유실 처리
+- 제품 삭제 시 이미지 파일 정리
+- 촬영 흐름 GA4 이벤트와 Crashlytics Custom Key 계측(각 Issue에 포함)
+
+### 완료 기준
+
+- 기존 설치 데이터가 Migration 후에도 보존된다.
+- 실기기에서 촬영, 저장, 재실행 후 표시가 동작한다.
+- 권한 거부, 파일 유실, 촬영 실패에서 앱이 crash하지 않는다.
+- 세 화면이 공통 컴포넌트로 이미지를 표시한다.
+
+### 분리 원칙
+
+```text
+모델/Migration Issue에는 CameraX 코드를 넣지 않는다.
+바코드 스캔은 이 Milestone에 포함하지 않는다. (Backlog: v1.1 후보)
+```
 
 ---
 
-## 8. Backlog 관리 규칙
+## 8. Milestone 5 — Release Readiness
+
+예정 GitHub Milestone:
+
+- `Milestone 5: Release Readiness`
+
+예정 작업:
+
+- 개인정보 최종 감사, 개인정보처리방침 게시 및 Data Safety 초안
+- Release 서명·AAB·최소 CI 구성
+- Play Console 등록, 스토어 자산 및 비공개 테스트 개시
+
+### 목표
+
+Google Play 비공개 테스트를 시작할 수 있는 상태를 만든다.
+이 Milestone의 완료 조건은 Production 출시가 아니라
+비공개 테스트 트랙 개시이다.
+
+### 대표 작업
+
+- GA4 이벤트·Crashlytics Custom Key 전수 최종 감사
+- 개인정보처리방침 작성과 공개 URL 게시
+- Play Console Data Safety 응답 초안
+- release signing, versionCode/versionName 정책, AAB 생성
+- R8 적용과 Crashlytics mapping 업로드 확인
+- GitHub Actions 최소 CI(build, lint, Room Migration 테스트)
+- 스토어 등록 자산(아이콘, Feature Graphic, 스크린샷, 설명)
+- 내부 테스트 확인 후 비공개 테스트 트랙 개시
+
+### 완료 기준
+
+- Release AAB가 생성되고 debug 전용 코드가 포함되지 않는다.
+- 개인정보처리방침이 공개 URL에 게시됐다.
+- Data Safety 응답이 실제 SDK·앱 동작과 일치한다.
+- CI가 PR에서 자동 실행된다.
+- 비공개 테스트 트랙에 빌드가 게시되고 테스터 모집이 완료됐다.
+
+---
+
+## 9. Milestone 6 — Launch & First Iteration
+
+예정 GitHub Milestone:
+
+- `Milestone 6: Launch & First Iteration`
+
+2023년 11월 13일 이후 생성된 개인 개발자 계정인 경우 비공개
+테스트 요건(테스터 12명, 14일 연속 참여) 충족 후 시작한다.
+그 외 계정은 Milestone 5 완료 후 Production 접근 가능 상태를
+확인하고 시작한다. 상세 Issue는 시작 시점에 작성한다.
+
+### 목표
+
+Production v1.0.0을 출시하고, 실제 관측 데이터를 근거로 첫 개선
+버전을 배포하여 가설-관측-판단-개선 사이클을 완성한다.
+
+### 대표 작업
+
+- Production 접근 신청, 심사 제출과 거절 사유 대응
+- v1.0.0 출시 확인, Crashlytics·GA4 수집 확인
+- Android Vitals, Pre-launch Report, 사용자 피드백 검토
+- 관측 결과 기반 개선 대상 선정과 v1.0.1 배포
+- 개선 전후 비교의 README·포트폴리오 기록
+
+### 완료 기준
+
+- Google Play에서 앱을 실제로 설치할 수 있다.
+- 관측 데이터를 근거로 선정한 개선이 v1.0.1로 배포됐다.
+- 가설, 관측, 판단, 개선 흐름이 문서화됐다.
+
+---
+
+## 10. Backlog 현황
+
+| 후보 작업 | 사용자 가치 | 선행 조건 | 예상 영향 | 우선순위 | 보류 이유 |
+|---|---|---|---|---|---|
+| 재고 현황 검색 | 품목 증가 시 조회 속도 유지 | M5 완료(테스트 트랙 개시) | UI / Domain / Data | High | 비공개 테스트 기간에 테스트 트랙 업데이트로 진행 |
+| 빈 화면(Empty State) 안내 | 신규 사용자 첫 진입 이탈 감소 | M5 완료 | UI | High | 비공개 테스트 기간에 진행 |
+| 안전재고(최소수량) 표시 | 재고 부족 사전 인지 | M5 완료 | UI / Domain / Data / DB | High | 비공개 테스트 기간에 진행, schema 변경 포함 |
+| CSV 내보내기 | 데이터 소실 불안 해소, 외부 공유 | M5 완료 | UI / Domain / Data | Medium | 비공개 테스트 기간에 진행 |
+| 바코드 스캔(ML Kit) | 제품 등록 입력 보조 | v1.0.0 출시, GA4 등록 흐름 지표 확인 | UI / Domain / Data | Medium | v1.1.0 후보. 지표로 필요성을 확인한 뒤 진행 |
+| 단위 테스트 확충·CI 고도화 | 회귀 방지 | M5의 최소 CI | 테스트 | Medium | 출시 일정 우선. 출시 후 v1.0.1 주기에 재개 |
+| 재고 부족 알림 | 부족 시점 능동 통지 | 안전재고 표시 | UI / Domain | Low | 안전재고 표시의 사용 지표 확인 후 판단 |
+| 입고·출고 이력 | 변동 내역 추적 | 미정 | Domain / Data / DB | Low | v1.0 범위 아님 |
+| 서버 동기화·백업 | 기기 간 데이터 공유 | 미정 | 전 계층 / 서버 | Low | 로컬 우선 정책 유지 |
+
+---
+
+## 11. Backlog 관리 규칙
 
 각 Backlog 항목은 아래 정보를 가진다.
 
@@ -180,7 +342,7 @@ Navigation Issue에는 Domain/Data 구조 변경을 넣지 않는다.
 
 ---
 
-## 9. 로드맵 갱신
+## 12. 로드맵 갱신
 
 다음 상황에서 이 문서를 갱신한다.
 
