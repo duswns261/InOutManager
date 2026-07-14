@@ -15,12 +15,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import android.annotation.SuppressLint
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -90,13 +88,6 @@ fun InventoryApp(
                     .background(BrandBackground)
                     .statusBarsPadding()
             ) {
-                Text(
-                    text = "재고관리",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp),
-                    color = Color.Black
-                )
                 if (!isHome) {
                     var showFeatureSheet by remember { mutableStateOf(false) }
                     val sheetState = rememberModalBottomSheetState()
