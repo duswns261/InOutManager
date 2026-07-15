@@ -58,6 +58,12 @@ fun InventoryApp(
     val currentRoute = currentBackStackEntry?.destination?.route
     val isHome = currentRoute == null || currentRoute == InventoryRoute.Home.route
 
+    LaunchedEffect(currentRoute) {
+        if (currentRoute == InventoryRoute.Status.route) {
+            viewModel.logInventoryScreenViewed()
+        }
+    }
+
     fun navigateToFeature(route: String) {
         if (route == currentRoute) return
         navController.navigate(route) {
@@ -157,7 +163,10 @@ fun InventoryApp(
         floatingActionButton = {
             if (currentRoute == InventoryRoute.Inbound.route) {
                 FloatingActionButton(
-                    onClick = { showAddDialog = true },
+                    onClick = {
+                        showAddDialog = true
+                        viewModel.logProductRegistrationStarted()
+                    },
                     modifier = Modifier.navigationBarsPadding(),
                     containerColor = BrandAccent
                 ) {
@@ -181,6 +190,7 @@ fun InventoryApp(
                     selectedProductForOutbound = product
                     outboundQuantityInput = ""
                     showConfirmDialog = false
+                    viewModel.logOutboundStarted()
                 },
                 onDeleteRequest = { product ->
                     viewModel.deleteProduct(product)
@@ -262,7 +272,9 @@ fun PreviewInventoryApp() {
         deleteProduct = DeleteProductUseCase(fakeRepository)
     )
 
-    val fakeViewModel = InventoryViewModel(fakeUseCases)
+    val noOpAnalyticsLogger = com.cret.inoutmanager.analytics.AnalyticsLogger { }
+
+    val fakeViewModel = InventoryViewModel(fakeUseCases, noOpAnalyticsLogger)
 
     InOutManagerTheme {
         InventoryApp(viewModel = fakeViewModel)

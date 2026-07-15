@@ -2,6 +2,9 @@ package com.cret.inoutmanager.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cret.inoutmanager.analytics.AnalyticsEvent
+import com.cret.inoutmanager.analytics.AnalyticsLogger
+import com.cret.inoutmanager.analytics.EntryPoint
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class InventoryViewModel @Inject constructor(
     private val useCases: ProductUseCases,
+    private val analyticsLogger: AnalyticsLogger,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(InventoryUiState(isLoading = true))
@@ -42,6 +46,7 @@ class InventoryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 useCases.addProduct(name, location, qty)
+                analyticsLogger.log(AnalyticsEvent.ProductCreated(quantity = qty))
             } catch (e: Exception) {
                 _uiState.update { it.copy(errorMessage = e.message) }
             }
@@ -52,6 +57,7 @@ class InventoryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 useCases.decreaseProductQuantity(targetProduct, amount)
+                analyticsLogger.log(AnalyticsEvent.OutboundCompleted(quantity = amount))
             } catch (e: Exception) {
                 _uiState.update { it.copy(errorMessage = e.message) }
             }
@@ -62,9 +68,24 @@ class InventoryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 useCases.deleteProduct(product)
+                analyticsLogger.log(AnalyticsEvent.ProductDeleted)
             } catch (e: Exception) {
                 _uiState.update { it.copy(errorMessage = e.message) }
             }
         }
+    }
+
+    // --- Analytics 시작/화면 이벤트 ---
+
+    fun logProductRegistrationStarted() {
+        analyticsLogger.log(AnalyticsEvent.ProductRegistrationStarted(entryPoint = EntryPoint.INBOUND_FAB))
+    }
+
+    fun logOutboundStarted() {
+        analyticsLogger.log(AnalyticsEvent.OutboundStarted)
+    }
+
+    fun logInventoryScreenViewed() {
+        analyticsLogger.log(AnalyticsEvent.InventoryScreenViewed)
     }
 }
