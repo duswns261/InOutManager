@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="crashlytics_test_title">Crashlytics 검증</string>
+    <string name="crashlytics_test_description">디버그 빌드에서만 사용 가능한 Crashlytics fatal/non-fatal 리포트 검증 화면입니다.</string>
+    <string name="crashlytics_test_non_fatal_button">Non-fatal 기록</string>
+    <string name="crashlytics_test_fatal_button">Fatal 크래시 발생</string>
+</resources>
