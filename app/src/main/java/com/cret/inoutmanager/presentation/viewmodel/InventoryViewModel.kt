@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 /**
@@ -41,15 +42,33 @@ class InventoryViewModel @Inject constructor(
 
     // --- 비즈니스 로직 호출 ---
 
-    fun addProduct(name: String, location: String, quantityStr: String) {
+    fun addProduct(
+        name: String,
+        location: String,
+        quantityStr: String,
+        imageFile: File? = null,
+        onResult: (Boolean) -> Unit = {},
+    ) {
         val qty = quantityStr.toIntOrNull() ?: 0
         viewModelScope.launch {
             try {
-                useCases.addProduct(name, location, qty)
+                useCases.addProduct(name, location, qty, imageFile)
                 analyticsLogger.log(AnalyticsEvent.ProductCreated(quantity = qty))
+                onResult(true)
             } catch (e: Exception) {
                 _uiState.update { it.copy(errorMessage = e.message) }
+                onResult(false)
             }
+        }
+    }
+
+    // --- 촬영 임시 파일 관리 ---
+
+    fun createTemporaryImageFile(): File = useCases.createTemporaryProductImage()
+
+    fun discardTemporaryImage(file: File) {
+        viewModelScope.launch {
+            useCases.discardProductImage(file)
         }
     }
 

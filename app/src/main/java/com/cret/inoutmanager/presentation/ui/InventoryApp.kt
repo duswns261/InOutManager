@@ -203,10 +203,16 @@ fun InventoryApp(
         if (showAddDialog) {
             NewProductDialog(
                 onDismiss = { showAddDialog = false },
-                onConfirm = { name, location, qty ->
-                    viewModel.addProduct(name, location, qty)
-                    showAddDialog = false
-                }
+                onConfirm = { name, location, qty, imageFile, onResult ->
+                    viewModel.addProduct(name, location, qty, imageFile) { success ->
+                        onResult(success)
+                        if (success) {
+                            showAddDialog = false
+                        }
+                    }
+                },
+                createTemporaryImageFile = viewModel::createTemporaryImageFile,
+                discardTemporaryImage = viewModel::discardTemporaryImage,
             )
         }
 
@@ -265,11 +271,19 @@ fun PreviewInventoryApp() {
         override suspend fun delete(product: Product) {}
     }
 
+    val fakeImageStorage = object : com.cret.inoutmanager.domain.repository.ProductImageStorage {
+        override fun createTemporaryFile() = java.io.File.createTempFile("preview", ".jpg")
+        override fun commit(temporaryFile: java.io.File) = temporaryFile
+        override fun delete(file: java.io.File) {}
+    }
+
     val fakeUseCases = ProductUseCases(
         getProducts = GetProductsUseCase(fakeRepository),
-        addProduct = AddProductUseCase(fakeRepository),
+        addProduct = AddProductUseCase(fakeRepository, fakeImageStorage),
         decreaseProductQuantity = DecreaseProductQuantityUseCase(fakeRepository),
-        deleteProduct = DeleteProductUseCase(fakeRepository)
+        deleteProduct = DeleteProductUseCase(fakeRepository),
+        createTemporaryProductImage = CreateTemporaryProductImageUseCase(fakeImageStorage),
+        discardProductImage = DiscardProductImageUseCase(fakeImageStorage)
     )
 
     val noOpAnalyticsLogger = com.cret.inoutmanager.analytics.AnalyticsLogger { }

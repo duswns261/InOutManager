@@ -5,10 +5,13 @@ import com.cret.inoutmanager.analytics.AnalyticsEvent
 import com.cret.inoutmanager.analytics.AnalyticsLogger
 import com.cret.inoutmanager.analytics.EntryPoint
 import com.cret.inoutmanager.domain.model.Product
+import com.cret.inoutmanager.domain.repository.ProductImageStorage
 import com.cret.inoutmanager.domain.repository.ProductRepository
 import com.cret.inoutmanager.domain.usecase.AddProductUseCase
+import com.cret.inoutmanager.domain.usecase.CreateTemporaryProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.DecreaseProductQuantityUseCase
 import com.cret.inoutmanager.domain.usecase.DeleteProductUseCase
+import com.cret.inoutmanager.domain.usecase.DiscardProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.GetProductsUseCase
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +21,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 
 class InventoryViewModelAnalyticsTest {
 
@@ -51,12 +55,27 @@ class InventoryViewModelAnalyticsTest {
         }
     }
 
-    private fun viewModel(repository: ProductRepository, logger: AnalyticsLogger): InventoryViewModel {
+    private class FakeProductImageStorage : ProductImageStorage {
+        val deleted = mutableListOf<File>()
+        override fun createTemporaryFile(): File = File.createTempFile("test", ".jpg")
+        override fun commit(temporaryFile: File): File = temporaryFile
+        override fun delete(file: File) {
+            deleted += file
+        }
+    }
+
+    private fun viewModel(
+        repository: ProductRepository,
+        logger: AnalyticsLogger,
+        imageStorage: ProductImageStorage = FakeProductImageStorage(),
+    ): InventoryViewModel {
         val useCases = ProductUseCases(
             getProducts = GetProductsUseCase(repository),
-            addProduct = AddProductUseCase(repository),
+            addProduct = AddProductUseCase(repository, imageStorage),
             decreaseProductQuantity = DecreaseProductQuantityUseCase(repository),
             deleteProduct = DeleteProductUseCase(repository),
+            createTemporaryProductImage = CreateTemporaryProductImageUseCase(imageStorage),
+            discardProductImage = DiscardProductImageUseCase(imageStorage),
         )
         return InventoryViewModel(useCases, logger)
     }

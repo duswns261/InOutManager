@@ -1,9 +1,12 @@
 package com.cret.inoutmanager.di
 
+import com.cret.inoutmanager.domain.repository.ProductImageStorage
 import com.cret.inoutmanager.domain.repository.ProductRepository
 import com.cret.inoutmanager.domain.usecase.AddProductUseCase
+import com.cret.inoutmanager.domain.usecase.CreateTemporaryProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.DecreaseProductQuantityUseCase
 import com.cret.inoutmanager.domain.usecase.DeleteProductUseCase
+import com.cret.inoutmanager.domain.usecase.DiscardProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.GetProductsUseCase
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
 import dagger.Module
@@ -18,11 +21,16 @@ object UseCaseModule {
 
     @Provides
     @Singleton
-    fun provideProductUseCases(repository: ProductRepository): ProductUseCases =
+    fun provideProductUseCases(
+        repository: ProductRepository,
+        imageStorage: ProductImageStorage,
+    ): ProductUseCases =
         ProductUseCases(
             getProducts = GetProductsUseCase(repository),
-            addProduct = AddProductUseCase(repository),
+            addProduct = AddProductUseCase(repository, imageStorage),
             decreaseProductQuantity = DecreaseProductQuantityUseCase(repository),
-            deleteProduct = DeleteProductUseCase(repository)
+            deleteProduct = DeleteProductUseCase(repository),
+            createTemporaryProductImage = CreateTemporaryProductImageUseCase(imageStorage),
+            discardProductImage = DiscardProductImageUseCase(imageStorage)
         )
 }
