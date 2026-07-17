@@ -17,10 +17,10 @@ sealed interface AnalyticsEvent {
         }
     }
 
-    data class ProductCreated(val quantity: Int) : AnalyticsEvent {
+    data class ProductCreated(val quantity: Int, val hasImage: Boolean) : AnalyticsEvent {
         override val name: String = NAME
         override val params: Map<String, String> = mapOf(
-            PARAM_HAS_IMAGE to "false",
+            PARAM_HAS_IMAGE to hasImage.toString(),
             PARAM_QUANTITY_RANGE to QuantityRange.from(quantity).value,
         )
 
@@ -53,11 +53,38 @@ sealed interface AnalyticsEvent {
         override val params: Map<String, String> = emptyMap()
     }
 
+    data object ProductPhotoCaptureStarted : AnalyticsEvent {
+        override val name: String = "product_photo_capture_started"
+        override val params: Map<String, String> = emptyMap()
+    }
+
+    data object ProductPhotoCaptureCompleted : AnalyticsEvent {
+        override val name: String = "product_photo_capture_completed"
+        override val params: Map<String, String> = emptyMap()
+    }
+
+    data class ProductPhotoCaptureFailed(val reason: PhotoCaptureFailureReason) : AnalyticsEvent {
+        override val name: String = NAME
+        override val params: Map<String, String> = mapOf(PARAM_FAILURE_REASON to reason.value)
+
+        companion object {
+            const val NAME = "product_photo_capture_failed"
+        }
+    }
+
     companion object {
         const val PARAM_ENTRY_POINT = "entry_point"
         const val PARAM_HAS_IMAGE = "has_image"
         const val PARAM_QUANTITY_RANGE = "quantity_range"
+        const val PARAM_FAILURE_REASON = "failure_reason"
     }
+}
+
+/** `product_photo_capture_failed`의 `failure_reason` 허용 값입니다. */
+enum class PhotoCaptureFailureReason(val value: String) {
+    PERMISSION_DENIED("permission_denied"),
+    CAPTURE_ERROR("capture_error"),
+    SAVE_ERROR("save_error"),
 }
 
 /** `product_registration_started`의 `entry_point` 허용 값입니다. */

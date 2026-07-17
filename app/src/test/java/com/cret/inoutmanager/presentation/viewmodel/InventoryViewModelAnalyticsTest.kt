@@ -14,6 +14,9 @@ import com.cret.inoutmanager.domain.usecase.DeleteProductUseCase
 import com.cret.inoutmanager.domain.usecase.DiscardProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.GetProductsUseCase
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
+import com.cret.inoutmanager.reporting.CaptureFailureReason
+import com.cret.inoutmanager.reporting.CaptureState
+import com.cret.inoutmanager.reporting.ProductPhotoCaptureReporter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -64,10 +67,30 @@ class InventoryViewModelAnalyticsTest {
         }
     }
 
+    private class FakePhotoCaptureReporter : ProductPhotoCaptureReporter {
+        val states = mutableListOf<CaptureState>()
+        val failureReasons = mutableListOf<CaptureFailureReason>()
+        var resetCount = 0
+            private set
+
+        override fun setState(state: CaptureState) {
+            states += state
+        }
+
+        override fun setFailureReason(reason: CaptureFailureReason) {
+            failureReasons += reason
+        }
+
+        override fun reset() {
+            resetCount += 1
+        }
+    }
+
     private fun viewModel(
         repository: ProductRepository,
         logger: AnalyticsLogger,
         imageStorage: ProductImageStorage = FakeProductImageStorage(),
+        reporter: ProductPhotoCaptureReporter = FakePhotoCaptureReporter(),
     ): InventoryViewModel {
         val useCases = ProductUseCases(
             getProducts = GetProductsUseCase(repository),
@@ -77,17 +100,17 @@ class InventoryViewModelAnalyticsTest {
             createTemporaryProductImage = CreateTemporaryProductImageUseCase(imageStorage),
             discardProductImage = DiscardProductImageUseCase(imageStorage),
         )
-        return InventoryViewModel(useCases, logger)
+        return InventoryViewModel(useCases, logger, reporter)
     }
 
     @Test
-    fun `addProduct success logs product_created with quantity range`() = runTest {
+    fun `addProduct success without image logs product_created with has_image false`() = runTest {
         val logger = FakeAnalyticsLogger()
         val sut = viewModel(FakeProductRepository(), logger)
 
         sut.addProduct(name = "펜", location = "A-1", quantityStr = "5")
 
-        assertEquals(listOf(AnalyticsEvent.ProductCreated(quantity = 5)), logger.loggedEvents)
+        assertEquals(listOf(AnalyticsEvent.ProductCreated(quantity = 5, hasImage = false)), logger.loggedEvents)
     }
 
     @Test

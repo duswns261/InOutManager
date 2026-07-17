@@ -14,8 +14,8 @@ class AnalyticsEventTest {
     }
 
     @Test
-    fun `product created has has_image false and quantity range`() {
-        val event = AnalyticsEvent.ProductCreated(quantity = 5)
+    fun `product created without image has has_image false and quantity range`() {
+        val event = AnalyticsEvent.ProductCreated(quantity = 5, hasImage = false)
 
         assertEquals("product_created", event.name)
         assertEquals(
