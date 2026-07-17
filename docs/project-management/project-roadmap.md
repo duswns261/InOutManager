@@ -206,7 +206,7 @@ Product Imaging보다 먼저 수행한다.
 
 예정 작업:
 
-- 제품 이미지 저장 모델 도입 및 Room Migration(1→2) 추가
+- 제품 이미지 저장 모델 도입 및 Room Migration(1→2) 적용
 - CameraX 기반 제품 촬영 및 등록 흐름 연동
 - 입고·출고·재고 현황 화면 제품 이미지 표시
 

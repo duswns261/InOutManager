@@ -8,7 +8,8 @@ fun ProductEntity.toDomain(): Product {
         id = id,
         name = name,
         location = location,
-        quantity = quantity
+        quantity = quantity,
+        imagePath = imagePath
     )
 }
 
@@ -17,6 +18,7 @@ fun Product.toEntity(): ProductEntity {
         id = id,
         name = name,
         location = location,
-        quantity = quantity
+        quantity = quantity,
+        imagePath = imagePath
     )
 }

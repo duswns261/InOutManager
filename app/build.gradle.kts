@@ -51,6 +51,21 @@ android {
     }
 }
 
+// androidx.savedstate:savedstate-android transitively pulls kotlinx-serialization-bom,
+// which strictly pins kotlinx-serialization to 1.7.3. androidx.room:room-testing 2.8.4's
+// schema parser is compiled against 1.8.1 APIs, so androidTest needs the newer version
+// forced to avoid AbstractMethodError at runtime (see issuetracker.google.com/issues/400483860).
+configurations.matching { it.name.contains("AndroidTest", ignoreCase = false) }.configureEach {
+    resolutionStrategy {
+        force(
+            "org.jetbrains.kotlinx:kotlinx-serialization-core:${libs.versions.kotlinxSerialization.get()}",
+            "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:${libs.versions.kotlinxSerialization.get()}",
+            "org.jetbrains.kotlinx:kotlinx-serialization-json:${libs.versions.kotlinxSerialization.get()}",
+            "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:${libs.versions.kotlinxSerialization.get()}"
+        )
+    }
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -67,6 +82,9 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.kotlinx.serialization.core)
+    androidTestImplementation(libs.kotlinx.serialization.json)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
