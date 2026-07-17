@@ -4,6 +4,7 @@ import com.cret.inoutmanager.MainDispatcherRule
 import com.cret.inoutmanager.analytics.AnalyticsEvent
 import com.cret.inoutmanager.analytics.AnalyticsLogger
 import com.cret.inoutmanager.analytics.EntryPoint
+import com.cret.inoutmanager.analytics.PhotoCaptureFailureReason
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.repository.ProductImageStorage
 import com.cret.inoutmanager.domain.repository.ProductRepository
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -122,6 +124,127 @@ class InventoryViewModelAnalyticsTest {
 
         assertEquals(emptyList<AnalyticsEvent>(), logger.loggedEvents)
         assertNotNull(sut.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `addProduct success with image logs product_created with has_image true`() = runTest {
+        val logger = FakeAnalyticsLogger()
+        val sut = viewModel(FakeProductRepository(), logger)
+        val imageFile = File.createTempFile("test", ".jpg")
+
+        sut.addProduct(name = "펜", location = "A-1", quantityStr = "5", imageFile = imageFile)
+
+        assertEquals(listOf(AnalyticsEvent.ProductCreated(quantity = 5, hasImage = true)), logger.loggedEvents)
+    }
+
+    @Test
+    fun `addProduct success calls onResult with true`() = runTest {
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger())
+        var result: Boolean? = null
+
+        sut.addProduct(name = "펜", location = "A-1", quantityStr = "5", onResult = { result = it })
+
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `addProduct failure with image logs SAVE_ERROR to reporter and analytics`() = runTest {
+        val logger = FakeAnalyticsLogger()
+        val reporter = FakePhotoCaptureReporter()
+        val sut = viewModel(
+            FakeProductRepository(insertError = RuntimeException("insert failed")),
+            logger,
+            reporter = reporter,
+        )
+        val imageFile = File.createTempFile("test", ".jpg")
+        var result: Boolean? = null
+
+        sut.addProduct(name = "펜", location = "A-1", quantityStr = "5", imageFile = imageFile, onResult = { result = it })
+
+        assertEquals(false, result)
+        assertEquals(
+            listOf(AnalyticsEvent.ProductPhotoCaptureFailed(reason = PhotoCaptureFailureReason.SAVE_ERROR)),
+            logger.loggedEvents,
+        )
+        assertEquals(listOf(CaptureState.FAILED), reporter.states)
+        assertEquals(listOf(CaptureFailureReason.SAVE_ERROR), reporter.failureReasons)
+    }
+
+    @Test
+    fun `addProduct failure without image does not log photo capture failure`() = runTest {
+        val logger = FakeAnalyticsLogger()
+        val reporter = FakePhotoCaptureReporter()
+        val sut = viewModel(
+            FakeProductRepository(insertError = RuntimeException("insert failed")),
+            logger,
+            reporter = reporter,
+        )
+
+        sut.addProduct(name = "펜", location = "A-1", quantityStr = "5")
+
+        assertEquals(emptyList<AnalyticsEvent>(), logger.loggedEvents)
+        assertTrue(reporter.states.isEmpty())
+    }
+
+    @Test
+    fun `createTemporaryImageFile delegates to useCases and discardTemporaryImage deletes it`() = runTest {
+        val imageStorage = FakeProductImageStorage()
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger(), imageStorage = imageStorage)
+
+        val file = sut.createTemporaryImageFile()
+        sut.discardTemporaryImage(file)
+
+        assertEquals(listOf(file), imageStorage.deleted)
+    }
+
+    @Test
+    fun `logPhotoCaptureStarted sets preview_active state and logs event`() = runTest {
+        val logger = FakeAnalyticsLogger()
+        val reporter = FakePhotoCaptureReporter()
+        val sut = viewModel(FakeProductRepository(), logger, reporter = reporter)
+
+        sut.logPhotoCaptureStarted()
+
+        assertEquals(listOf(CaptureState.PREVIEW_ACTIVE), reporter.states)
+        assertEquals(listOf(AnalyticsEvent.ProductPhotoCaptureStarted), logger.loggedEvents)
+    }
+
+    @Test
+    fun `logPhotoCaptureCompleted sets captured state and logs event`() = runTest {
+        val logger = FakeAnalyticsLogger()
+        val reporter = FakePhotoCaptureReporter()
+        val sut = viewModel(FakeProductRepository(), logger, reporter = reporter)
+
+        sut.logPhotoCaptureCompleted()
+
+        assertEquals(listOf(CaptureState.CAPTURED), reporter.states)
+        assertEquals(listOf(AnalyticsEvent.ProductPhotoCaptureCompleted), logger.loggedEvents)
+    }
+
+    @Test
+    fun `logPhotoCaptureFailed with permission denied sets failed state and reason`() = runTest {
+        val logger = FakeAnalyticsLogger()
+        val reporter = FakePhotoCaptureReporter()
+        val sut = viewModel(FakeProductRepository(), logger, reporter = reporter)
+
+        sut.logPhotoCaptureFailed(PhotoCaptureFailureReason.PERMISSION_DENIED)
+
+        assertEquals(listOf(CaptureState.FAILED), reporter.states)
+        assertEquals(listOf(CaptureFailureReason.PERMISSION_DENIED), reporter.failureReasons)
+        assertEquals(
+            listOf(AnalyticsEvent.ProductPhotoCaptureFailed(reason = PhotoCaptureFailureReason.PERMISSION_DENIED)),
+            logger.loggedEvents,
+        )
+    }
+
+    @Test
+    fun `resetPhotoCaptureReporting resets the reporter`() = runTest {
+        val reporter = FakePhotoCaptureReporter()
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger(), reporter = reporter)
+
+        sut.resetPhotoCaptureReporting()
+
+        assertEquals(1, reporter.resetCount)
     }
 
     @Test

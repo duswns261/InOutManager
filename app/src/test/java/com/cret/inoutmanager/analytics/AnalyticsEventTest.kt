@@ -25,6 +25,41 @@ class AnalyticsEventTest {
     }
 
     @Test
+    fun `product created with image has has_image true and quantity range`() {
+        val event = AnalyticsEvent.ProductCreated(quantity = 5, hasImage = true)
+
+        assertEquals("product_created", event.name)
+        assertEquals(
+            mapOf("has_image" to "true", "quantity_range" to "1_10"),
+            event.params,
+        )
+    }
+
+    @Test
+    fun `product photo capture started has no parameters`() {
+        val event = AnalyticsEvent.ProductPhotoCaptureStarted
+
+        assertEquals("product_photo_capture_started", event.name)
+        assertEquals(emptyMap<String, String>(), event.params)
+    }
+
+    @Test
+    fun `product photo capture completed has no parameters`() {
+        val event = AnalyticsEvent.ProductPhotoCaptureCompleted
+
+        assertEquals("product_photo_capture_completed", event.name)
+        assertEquals(emptyMap<String, String>(), event.params)
+    }
+
+    @Test
+    fun `product photo capture failed has allowlisted failure reason`() {
+        val event = AnalyticsEvent.ProductPhotoCaptureFailed(reason = PhotoCaptureFailureReason.PERMISSION_DENIED)
+
+        assertEquals("product_photo_capture_failed", event.name)
+        assertEquals(mapOf("failure_reason" to "permission_denied"), event.params)
+    }
+
+    @Test
     fun `outbound started has no parameters`() {
         val event = AnalyticsEvent.OutboundStarted
 
