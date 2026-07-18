@@ -290,7 +290,7 @@ fun PreviewInventoryApp() {
         getProducts = GetProductsUseCase(fakeRepository),
         addProduct = AddProductUseCase(fakeRepository, fakeImageStorage),
         decreaseProductQuantity = DecreaseProductQuantityUseCase(fakeRepository),
-        deleteProduct = DeleteProductUseCase(fakeRepository),
+        deleteProduct = DeleteProductUseCase(fakeRepository, fakeImageStorage),
         createTemporaryProductImage = CreateTemporaryProductImageUseCase(fakeImageStorage),
         discardProductImage = DiscardProductImageUseCase(fakeImageStorage)
     )
