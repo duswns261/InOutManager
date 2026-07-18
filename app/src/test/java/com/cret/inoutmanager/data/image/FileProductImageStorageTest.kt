@@ -110,4 +110,18 @@ class FileProductImageStorageTest {
 
         assertTrue(committedFile.exists())
     }
+
+    @Test
+    fun `delete does not throw when the managed permanent file has already been lost`() {
+        val sut = storage()
+        val temporaryFile = sut.createTemporaryFile()
+        temporaryFile.writeText("x")
+        val committedFile = sut.commit(temporaryFile)
+        committedFile.delete()
+        assertFalse(committedFile.exists())
+
+        sut.delete(committedFile)
+
+        assertFalse(committedFile.exists())
+    }
 }
