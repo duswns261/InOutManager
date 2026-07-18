@@ -30,6 +30,7 @@ import java.io.File
 /** [ProductCameraDialog] 촬영 실패의 원인입니다. 권한 처리는 호출부 책임이라 포함하지 않습니다. */
 enum class CameraCaptureFailure {
     CAPTURE_ERROR,
+    CAMERA_UNAVAILABLE,
 }
 
 private enum class CameraDialogStep { PREVIEW, REVIEW }
@@ -76,11 +77,16 @@ fun ProductCameraDialog(
                         pendingOutputFile = null
                         onCaptureFailed(CameraCaptureFailure.CAPTURE_ERROR)
                     },
+                    onCameraUnavailable = {
+                        onCaptureFailed(CameraCaptureFailure.CAMERA_UNAVAILABLE)
+                        dismissAndCleanUp()
+                    },
                     prepareOutputFile = {
                         val file = createTemporaryFile()
                         pendingOutputFile = file
                         file
                     },
+                    discardOutputFile = discardTemporaryFile,
                 )
 
                 CameraDialogStep.REVIEW -> capturedFile?.let { file ->
@@ -107,12 +113,22 @@ private fun CameraPreviewContent(
     onClose: () -> Unit,
     onImageCaptured: (File) -> Unit,
     onImageCaptureFailed: (File) -> Unit,
+    onCameraUnavailable: () -> Unit,
     prepareOutputFile: () -> File,
+    discardOutputFile: (File) -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val imageCapture = remember { ImageCapture.Builder().build() }
     var cameraReady by remember { mutableStateOf(false) }
+    var isCapturing by remember { mutableStateOf(false) }
+    // Compose가 이 컴포저블을 폐기(dismiss/재촬영 전환)한 뒤에도 비동기 촬영 콜백이 늦게 도착할 수 있어,
+    // 그 시점엔 파일을 상위 상태에 채택시키지 않고 바로 폐기하기 위한 활성 플래그입니다.
+    var isActive by remember { mutableStateOf(true) }
+
+    DisposableEffect(Unit) {
+        onDispose { isActive = false }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
@@ -122,18 +138,24 @@ private fun CameraPreviewContent(
                 val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
                 cameraProviderFuture.addListener(
                     {
-                        val cameraProvider = cameraProviderFuture.get()
-                        val preview = Preview.Builder().build().also {
-                            it.surfaceProvider = previewView.surfaceProvider
+                        try {
+                            val cameraProvider = cameraProviderFuture.get()
+                            val preview = Preview.Builder().build().also {
+                                it.surfaceProvider = previewView.surfaceProvider
+                            }
+                            cameraProvider.unbindAll()
+                            cameraProvider.bindToLifecycle(
+                                lifecycleOwner,
+                                CameraSelector.DEFAULT_BACK_CAMERA,
+                                preview,
+                                imageCapture,
+                            )
+                            cameraReady = true
+                        } catch (e: Exception) {
+                            if (isActive) {
+                                onCameraUnavailable()
+                            }
                         }
-                        cameraProvider.unbindAll()
-                        cameraProvider.bindToLifecycle(
-                            lifecycleOwner,
-                            CameraSelector.DEFAULT_BACK_CAMERA,
-                            preview,
-                            imageCapture,
-                        )
-                        cameraReady = true
                     },
                     ContextCompat.getMainExecutor(ctx),
                 )
@@ -156,6 +178,8 @@ private fun CameraPreviewContent(
 
         Button(
             onClick = {
+                if (isCapturing) return@Button
+                isCapturing = true
                 val outputFile = prepareOutputFile()
                 val outputOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
                 imageCapture.takePicture(
@@ -163,16 +187,26 @@ private fun CameraPreviewContent(
                     ContextCompat.getMainExecutor(context),
                     object : ImageCapture.OnImageSavedCallback {
                         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                            onImageCaptured(outputFile)
+                            if (isActive) {
+                                isCapturing = false
+                                onImageCaptured(outputFile)
+                            } else {
+                                discardOutputFile(outputFile)
+                            }
                         }
 
                         override fun onError(exception: ImageCaptureException) {
-                            onImageCaptureFailed(outputFile)
+                            if (isActive) {
+                                isCapturing = false
+                                onImageCaptureFailed(outputFile)
+                            } else {
+                                discardOutputFile(outputFile)
+                            }
                         }
                     },
                 )
             },
-            enabled = cameraReady,
+            enabled = cameraReady && !isCapturing,
             modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp),
             colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
         ) {
