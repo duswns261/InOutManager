@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.cret.inoutmanager.analytics.PhotoCaptureFailureReason
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.*
 import com.cret.inoutmanager.presentation.ui.components.NewProductDialog
@@ -202,11 +203,25 @@ fun InventoryApp(
 
         if (showAddDialog) {
             NewProductDialog(
-                onDismiss = { showAddDialog = false },
-                onConfirm = { name, location, qty ->
-                    viewModel.addProduct(name, location, qty)
+                onDismiss = {
+                    viewModel.resetPhotoCaptureReporting()
                     showAddDialog = false
-                }
+                },
+                onConfirm = { name, location, qty, imageFile, onResult ->
+                    viewModel.addProduct(name, location, qty, imageFile) { success ->
+                        onResult(success)
+                        if (success) {
+                            viewModel.resetPhotoCaptureReporting()
+                            showAddDialog = false
+                        }
+                    }
+                },
+                createTemporaryImageFile = viewModel::createTemporaryImageFile,
+                discardTemporaryImage = viewModel::discardTemporaryImage,
+                onCameraOpened = viewModel::logPhotoCaptureStarted,
+                onCameraCaptureCompleted = viewModel::logPhotoCaptureCompleted,
+                onCameraCaptureFailed = { viewModel.logPhotoCaptureFailed(PhotoCaptureFailureReason.CAPTURE_ERROR) },
+                onCameraPermissionDenied = { viewModel.logPhotoCaptureFailed(PhotoCaptureFailureReason.PERMISSION_DENIED) },
             )
         }
 
@@ -265,16 +280,30 @@ fun PreviewInventoryApp() {
         override suspend fun delete(product: Product) {}
     }
 
+    val fakeImageStorage = object : com.cret.inoutmanager.domain.repository.ProductImageStorage {
+        override fun createTemporaryFile() = java.io.File.createTempFile("preview", ".jpg")
+        override fun commit(temporaryFile: java.io.File) = temporaryFile
+        override fun delete(file: java.io.File) {}
+    }
+
     val fakeUseCases = ProductUseCases(
         getProducts = GetProductsUseCase(fakeRepository),
-        addProduct = AddProductUseCase(fakeRepository),
+        addProduct = AddProductUseCase(fakeRepository, fakeImageStorage),
         decreaseProductQuantity = DecreaseProductQuantityUseCase(fakeRepository),
-        deleteProduct = DeleteProductUseCase(fakeRepository)
+        deleteProduct = DeleteProductUseCase(fakeRepository),
+        createTemporaryProductImage = CreateTemporaryProductImageUseCase(fakeImageStorage),
+        discardProductImage = DiscardProductImageUseCase(fakeImageStorage)
     )
 
     val noOpAnalyticsLogger = com.cret.inoutmanager.analytics.AnalyticsLogger { }
 
-    val fakeViewModel = InventoryViewModel(fakeUseCases, noOpAnalyticsLogger)
+    val noOpPhotoCaptureReporter = object : com.cret.inoutmanager.reporting.ProductPhotoCaptureReporter {
+        override fun setState(state: com.cret.inoutmanager.reporting.CaptureState) {}
+        override fun setFailureReason(reason: com.cret.inoutmanager.reporting.CaptureFailureReason) {}
+        override fun reset() {}
+    }
+
+    val fakeViewModel = InventoryViewModel(fakeUseCases, noOpAnalyticsLogger, noOpPhotoCaptureReporter)
 
     InOutManagerTheme {
         InventoryApp(viewModel = fakeViewModel)

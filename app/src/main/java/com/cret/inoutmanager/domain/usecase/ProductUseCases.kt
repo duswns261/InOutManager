@@ -8,5 +8,7 @@ data class ProductUseCases(
     val getProducts: GetProductsUseCase,
     val addProduct: AddProductUseCase,
     val decreaseProductQuantity: DecreaseProductQuantityUseCase,
-    val deleteProduct: DeleteProductUseCase
+    val deleteProduct: DeleteProductUseCase,
+    val createTemporaryProductImage: CreateTemporaryProductImageUseCase,
+    val discardProductImage: DiscardProductImageUseCase
 )
