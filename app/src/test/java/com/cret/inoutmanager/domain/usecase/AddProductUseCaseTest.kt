@@ -94,4 +94,23 @@ class AddProductUseCaseTest {
         assertEquals(listOf(permanentFile), imageStorage.deleted)
         assertTrue(repository.inserted.isEmpty())
     }
+
+    @Test
+    fun `invoke deletes the original temporary file and rethrows when commit fails`() = runTest {
+        val repository = FakeProductRepository()
+        val imageStorage = FakeProductImageStorage()
+        imageStorage.commitResult = { throw RuntimeException("commit failed") }
+        val sut = AddProductUseCase(repository, imageStorage)
+        val temporaryFile = File.createTempFile("temp", ".jpg")
+
+        try {
+            sut(name = "펜", location = "A-1", quantity = 5, temporaryImageFile = temporaryFile)
+            fail("commit 실패가 예외로 전달되어야 합니다")
+        } catch (e: RuntimeException) {
+            assertEquals("commit failed", e.message)
+        }
+
+        assertEquals(listOf(temporaryFile), imageStorage.deleted)
+        assertTrue(repository.inserted.isEmpty())
+    }
 }

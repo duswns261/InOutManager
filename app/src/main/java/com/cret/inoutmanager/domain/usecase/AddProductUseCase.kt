@@ -20,19 +20,25 @@ class AddProductUseCase(
         quantity: Int,
         temporaryImageFile: File? = null,
     ) {
-        val committedImageFile = temporaryImageFile?.let { imageStorage.commit(it) }
-
-        val product = Product(
-            name = name,
-            location = location,
-            quantity = quantity.coerceAtLeast(0),
-            imagePath = committedImageFile?.absolutePath,
-        )
-
+        var committedImageFile: File? = null
         try {
+            committedImageFile = temporaryImageFile?.let { imageStorage.commit(it) }
+
+            val product = Product(
+                name = name,
+                location = location,
+                quantity = quantity.coerceAtLeast(0),
+                imagePath = committedImageFile?.absolutePath,
+            )
             repository.insert(product)
         } catch (e: Exception) {
-            committedImageFile?.let { imageStorage.delete(it) }
+            // commit()이 실패하면 원본 temp가 확정되지 못한 채 남고, insert()가 실패하면
+            // 이미 확정된 permanent 파일이 남는다. 실패 지점과 무관하게 남은 쪽을 정리한다.
+            if (committedImageFile != null) {
+                imageStorage.delete(committedImageFile)
+            } else {
+                temporaryImageFile?.let { imageStorage.delete(it) }
+            }
             throw e
         }
     }
