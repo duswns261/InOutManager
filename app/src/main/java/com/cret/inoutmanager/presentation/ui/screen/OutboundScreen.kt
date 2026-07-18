@@ -11,10 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.domain.model.Product
+import com.cret.inoutmanager.presentation.ui.components.ProductThumbnail
 import com.cret.inoutmanager.ui.theme.BrandAccentDark
 import com.cret.inoutmanager.ui.theme.BrandChipBackground
 import com.cret.inoutmanager.ui.theme.BrandSurface
@@ -38,19 +40,40 @@ fun OutboundScreen(
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            Text(text = product.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            Text(text = "현재 재고: ${product.quantity}개", fontSize = 12.sp, color = Color.Gray)
+                        ProductThumbnail(imagePath = product.imagePath, productName = product.name)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = product.name,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                text = "현재 재고: ${product.quantity}개",
+                                fontSize = 12.sp,
+                                color = Color.Gray,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
+                        Spacer(modifier = Modifier.width(8.dp))
                         Box(
                             modifier = Modifier
+                                .widthIn(max = 96.dp)
                                 .background(BrandChipBackground, RoundedCornerShape(4.dp))
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text(text = product.location, fontSize = 10.sp, color = BrandAccentDark)
+                            Text(
+                                text = product.location,
+                                fontSize = 10.sp,
+                                color = BrandAccentDark,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
                     }
                 }
