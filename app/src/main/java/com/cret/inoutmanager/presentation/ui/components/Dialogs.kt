@@ -170,6 +170,16 @@ fun NewProductDialog(
                                     // 성공 시에는 호출부가 다이얼로그를 닫으므로 이 Composable이 곧 폐기됩니다.
                                     if (!success) {
                                         isSubmitting = false
+                                        // 실패 시 AddProductUseCase가 확정된 파일을 이미 삭제했으므로
+                                        // 더 이상 존재하지 않는 경로를 들고 재시도하지 않도록 선택을 초기화합니다.
+                                        if (confirmedImageFile != null) {
+                                            confirmedImageFile = null
+                                            Toast.makeText(
+                                                context,
+                                                "등록에 실패해 첨부한 사진이 초기화되었습니다. 다시 촬영해주세요.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     }
                                 }
                             }
