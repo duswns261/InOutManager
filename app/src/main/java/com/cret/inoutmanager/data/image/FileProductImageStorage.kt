@@ -17,6 +17,20 @@ class FileProductImageStorage(
     private val temporaryDir: File = File(cacheRoot, IMAGE_DIR_NAME)
     private val permanentDir: File = File(filesRoot, IMAGE_DIR_NAME)
 
+    init {
+        clearStaleTemporaryFiles()
+    }
+
+    /**
+     * 이전 프로세스가 강제 종료돼 확정되지 못한 임시 파일이 남아있을 수 있어
+     * 이 storage가 프로세스당 한 번 구성될 때만 정리합니다. 이후 생성되는 임시 파일은
+     * 이 시점 뒤에 만들어지므로 진행 중인 촬영 흐름의 파일을 건드리지 않습니다.
+     * filesDir의 확정 파일은 대상에서 제외합니다.
+     */
+    private fun clearStaleTemporaryFiles() {
+        temporaryDir.listFiles()?.forEach { it.delete() }
+    }
+
     override fun createTemporaryFile(): File {
         temporaryDir.mkdirs()
         return File(temporaryDir, "${UUID.randomUUID()}.jpg")

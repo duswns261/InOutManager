@@ -7,6 +7,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.File
 
 class FileProductImageStorageTest {
 
@@ -84,5 +85,29 @@ class FileProductImageStorageTest {
         sut.delete(externalFile)
 
         assertTrue(externalFile.exists())
+    }
+
+    @Test
+    fun `constructing storage clears stale files left in the temporary directory`() {
+        val cacheRoot = tempFolder.newFolder("cache")
+        val filesRoot = tempFolder.newFolder("files")
+        val staleDir = File(cacheRoot, "product-images").apply { mkdirs() }
+        val staleFile = File(staleDir, "leftover-from-killed-process.jpg").apply { writeText("stale") }
+
+        FileProductImageStorage(cacheRoot, filesRoot)
+
+        assertFalse(staleFile.exists())
+    }
+
+    @Test
+    fun `constructing storage does not touch files already committed to the permanent directory`() {
+        val cacheRoot = tempFolder.newFolder("cache")
+        val filesRoot = tempFolder.newFolder("files")
+        val permanentDir = File(filesRoot, "product-images").apply { mkdirs() }
+        val committedFile = File(permanentDir, "already-registered.jpg").apply { writeText("kept") }
+
+        FileProductImageStorage(cacheRoot, filesRoot)
+
+        assertTrue(committedFile.exists())
     }
 }
