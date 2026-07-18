@@ -122,12 +122,21 @@ private fun CameraPreviewContent(
     val imageCapture = remember { ImageCapture.Builder().build() }
     var cameraReady by remember { mutableStateOf(false) }
     var isCapturing by remember { mutableStateOf(false) }
-    // Compose가 이 컴포저블을 폐기(dismiss/재촬영 전환)한 뒤에도 비동기 촬영 콜백이 늦게 도착할 수 있어,
-    // 그 시점엔 파일을 상위 상태에 채택시키지 않고 바로 폐기하기 위한 활성 플래그입니다.
+    // Compose가 이 컴포저블을 폐기(dismiss/재촬영 전환)한 뒤에도 provider 초기화나 촬영 콜백이
+    // 늦게 도착할 수 있어, 그 시점엔 bind/파일 채택을 하지 않고 그대로 무시하거나 폐기하기 위한 활성 플래그입니다.
     var isActive by remember { mutableStateOf(true) }
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
     DisposableEffect(Unit) {
-        onDispose { isActive = false }
+        onDispose {
+            isActive = false
+            // provider가 이미 준비된 경우에만 즉시 unbind한다. 아직 준비되지 않았다면 위 listener가
+            // isActive를 먼저 확인해 bind 자체를 하지 않으므로 정리할 대상이 없고, 여기서 블로킹
+            // get()을 호출해 메인 스레드를 막지 않는다.
+            if (cameraProviderFuture.isDone) {
+                runCatching { cameraProviderFuture.get().unbindAll() }
+            }
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -135,9 +144,9 @@ private fun CameraPreviewContent(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
                 val previewView = PreviewView(ctx)
-                val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
                 cameraProviderFuture.addListener(
                     {
+                        if (!isActive) return@addListener
                         try {
                             val cameraProvider = cameraProviderFuture.get()
                             val preview = Preview.Builder().build().also {
@@ -152,9 +161,7 @@ private fun CameraPreviewContent(
                             )
                             cameraReady = true
                         } catch (e: Exception) {
-                            if (isActive) {
-                                onCameraUnavailable()
-                            }
+                            onCameraUnavailable()
                         }
                     },
                     ContextCompat.getMainExecutor(ctx),
@@ -162,12 +169,6 @@ private fun CameraPreviewContent(
                 previewView
             },
         )
-
-        DisposableEffect(Unit) {
-            onDispose {
-                runCatching { ProcessCameraProvider.getInstance(context).get().unbindAll() }
-            }
-        }
 
         IconButton(
             onClick = onClose,
