@@ -98,7 +98,7 @@ class InventoryViewModelAnalyticsTest {
             getProducts = GetProductsUseCase(repository),
             addProduct = AddProductUseCase(repository, imageStorage),
             decreaseProductQuantity = DecreaseProductQuantityUseCase(repository),
-            deleteProduct = DeleteProductUseCase(repository),
+            deleteProduct = DeleteProductUseCase(repository, imageStorage),
             createTemporaryProductImage = CreateTemporaryProductImageUseCase(imageStorage),
             discardProductImage = DiscardProductImageUseCase(imageStorage),
         )

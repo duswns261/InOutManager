@@ -10,16 +10,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.domain.model.Product
+import com.cret.inoutmanager.presentation.ui.components.ProductCard
 import com.cret.inoutmanager.presentation.ui.components.SummaryCard
-import com.cret.inoutmanager.ui.theme.BrandAccent
 import com.cret.inoutmanager.ui.theme.BrandSurface
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -45,29 +43,17 @@ fun StatusScreen(
         Spacer(modifier = Modifier.height(8.dp))
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(products) { product ->
-                Card(colors = CardDefaults.cardColors(containerColor = BrandSurface),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .combinedClickable(
-                            onClick = {},
-                            onLongClick = {
-                                // 삭제는 실수 방지를 위해 길게 누른 뒤 확인 다이얼로그를 거치도록 합니다.
-                                productToDelete = product
-                                showDeleteDialog = true
-                            }
-                        )) {
-                    Row(
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(text = product.name, fontWeight = FontWeight.Bold)
-                            Text(text = product.location, fontSize = 12.sp, color = Color.Gray)
+                ProductCard(
+                    product = product,
+                    modifier = Modifier.combinedClickable(
+                        onClick = {},
+                        onLongClick = {
+                            // 삭제는 실수 방지를 위해 길게 누른 뒤 확인 다이얼로그를 거치도록 합니다.
+                            productToDelete = product
+                            showDeleteDialog = true
                         }
-                        Text(text = "${product.quantity}개", color = BrandAccent, fontWeight = FontWeight.Bold)
-                    }
-                }
+                    )
+                )
             }
         }
     }
