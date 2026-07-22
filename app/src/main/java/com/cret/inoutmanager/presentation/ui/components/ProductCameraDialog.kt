@@ -1,9 +1,11 @@
 package com.cret.inoutmanager.presentation.ui.components
 
+import android.hardware.display.DisplayManager
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
+import androidx.camera.core.UseCaseGroup
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.*
@@ -119,13 +121,67 @@ private fun CameraPreviewContent(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val imageCapture = remember { ImageCapture.Builder().build() }
     var cameraReady by remember { mutableStateOf(false) }
     var isCapturing by remember { mutableStateOf(false) }
+    // Preview와 같은 ViewPort로 bind된, 현재 촬영에 쓸 수 있는 ImageCapture입니다.
+    // rebind가 일어나면 이전 인스턴스 대신 새로 bind된 인스턴스로 교체됩니다.
+    var boundImageCapture by remember { mutableStateOf<ImageCapture?>(null) }
+    // 마지막으로 bind에 사용한 PreviewView 크기/rotation입니다. 값이 바뀌면 오래된 ViewPort로
+    // 촬영하지 않도록 다시 bind합니다.
+    var lastBoundKey by remember { mutableStateOf<CameraBindKey?>(null) }
     // Compose가 이 컴포저블을 폐기(dismiss/재촬영 전환)한 뒤에도 provider 초기화나 촬영 콜백이
     // 늦게 도착할 수 있어, 그 시점엔 bind/파일 채택을 하지 않고 그대로 무시하거나 폐기하기 위한 활성 플래그입니다.
     var isActive by remember { mutableStateOf(true) }
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    // DisplayManager.DisplayListener가 tryBind()를 다시 호출할 때 대상 PreviewView를 찾기 위한
+    // 참조입니다. AndroidView factory는 한 번만 실행되므로 최초 생성된 이후 값이 바뀌지 않습니다.
+    var previewViewRef by remember { mutableStateOf<PreviewView?>(null) }
+
+    // PreviewView가 layout되어 실제 크기와 display rotation을 확보하기 전에는 viewPort가 null이라
+    // bind할 수 없습니다. camera provider 준비와 view layout 준비가 각각 다른 타이밍에 끝날 수 있어
+    // 두 콜백(provider 리스너, layout change 리스너)이 모두 이 함수를 호출하고, 여기서 준비 상태와
+    // rebind 필요 여부를 함께 판단합니다.
+    fun tryBind(previewView: PreviewView) {
+        if (!isActive || !cameraProviderFuture.isDone) return
+        val display = previewView.display ?: return
+        val width = previewView.width
+        val height = previewView.height
+        if (!isCameraBindReady(width, height)) return
+        val viewPort = previewView.viewPort ?: return
+
+        val key = CameraBindKey(width = width, height = height, rotation = display.rotation)
+        if (!shouldRebindCamera(lastBoundKey, key)) return
+
+        try {
+            val cameraProvider = cameraProviderFuture.get()
+            val preview = Preview.Builder().build().also {
+                it.surfaceProvider = previewView.surfaceProvider
+            }
+            val imageCapture = ImageCapture.Builder()
+                .setTargetRotation(display.rotation)
+                .build()
+            val useCaseGroup = UseCaseGroup.Builder()
+                .addUseCase(preview)
+                .addUseCase(imageCapture)
+                .setViewPort(viewPort)
+                .build()
+
+            cameraReady = false
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                lifecycleOwner,
+                CameraSelector.DEFAULT_BACK_CAMERA,
+                useCaseGroup,
+            )
+            boundImageCapture = imageCapture
+            lastBoundKey = key
+            cameraReady = true
+        } catch (e: Exception) {
+            cameraReady = false
+            boundImageCapture = null
+            onCameraUnavailable()
+        }
+    }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -139,31 +195,47 @@ private fun CameraPreviewContent(
         }
     }
 
+    // PreviewView의 width/height가 그대로인 rotation(예: 180도 회전)은 OnLayoutChangeListener를
+    // 트리거하지 않는다. CameraX 공식 rotation 가이드가 권장하는 대로 DisplayManager의 display
+    // 변경 이벤트를 별도로 관찰해, 그런 경우에도 최신 rotation으로 다시 bind를 시도한다.
+    // https://developer.android.com/media/camera/camerax/orientation-rotation
+    DisposableEffect(Unit) {
+        val displayManager = context.getSystemService(DisplayManager::class.java)
+        val displayListener = object : DisplayManager.DisplayListener {
+            override fun onDisplayAdded(displayId: Int) = Unit
+            override fun onDisplayRemoved(displayId: Int) = Unit
+            override fun onDisplayChanged(displayId: Int) {
+                val previewView = previewViewRef ?: return
+                if (previewView.display?.displayId == displayId) {
+                    tryBind(previewView)
+                }
+            }
+        }
+        displayManager?.registerDisplayListener(displayListener, null)
+        onDispose {
+            displayManager?.unregisterDisplayListener(displayListener)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
-                val previewView = PreviewView(ctx)
+                val previewView = PreviewView(ctx).apply {
+                    // CameraX WYSIWYG 문서의 ViewPort 예시는 FILL_CENTER를 전제로 하며, 이 값이
+                    // Preview에 보이는 영역과 ViewPort가 계산하는 crop 영역을 일치시키는 명시적 계약입니다.
+                    scaleType = PreviewView.ScaleType.FILL_CENTER
+                }
+                previewViewRef = previewView
+                // 화면 크기/rotation이 바뀔 때마다(최초 layout 포함) 다시 bind를 시도합니다.
+                previewView.addOnLayoutChangeListener { _, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+                    val sizeChanged = (right - left) != (oldRight - oldLeft) || (bottom - top) != (oldBottom - oldTop)
+                    if (sizeChanged) {
+                        tryBind(previewView)
+                    }
+                }
                 cameraProviderFuture.addListener(
-                    {
-                        if (!isActive) return@addListener
-                        try {
-                            val cameraProvider = cameraProviderFuture.get()
-                            val preview = Preview.Builder().build().also {
-                                it.surfaceProvider = previewView.surfaceProvider
-                            }
-                            cameraProvider.unbindAll()
-                            cameraProvider.bindToLifecycle(
-                                lifecycleOwner,
-                                CameraSelector.DEFAULT_BACK_CAMERA,
-                                preview,
-                                imageCapture,
-                            )
-                            cameraReady = true
-                        } catch (e: Exception) {
-                            onCameraUnavailable()
-                        }
-                    },
+                    { tryBind(previewView) },
                     ContextCompat.getMainExecutor(ctx),
                 )
                 previewView
@@ -180,10 +252,11 @@ private fun CameraPreviewContent(
         Button(
             onClick = {
                 if (isCapturing) return@Button
+                val currentImageCapture = boundImageCapture ?: return@Button
                 isCapturing = true
                 val outputFile = prepareOutputFile()
                 val outputOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
-                imageCapture.takePicture(
+                currentImageCapture.takePicture(
                     outputOptions,
                     ContextCompat.getMainExecutor(context),
                     object : ImageCapture.OnImageSavedCallback {
@@ -207,7 +280,7 @@ private fun CameraPreviewContent(
                     },
                 )
             },
-            enabled = cameraReady && !isCapturing,
+            enabled = cameraReady && !isCapturing && boundImageCapture != null,
             modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp),
             colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
         ) {
