@@ -18,6 +18,13 @@
 # User-specific stuff
 .idea/shelf
 .idea/dictionaries
+/.idea/
+/.vscode/
+
+# Local analysis/output artifacts
+/ARCHITECTURE.md
+/output/
+/tmp/
 
 # Keystore files
 *.jks
