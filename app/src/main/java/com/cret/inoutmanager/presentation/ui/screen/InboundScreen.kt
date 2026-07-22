@@ -1,5 +1,6 @@
 package com.cret.inoutmanager.presentation.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,11 +12,14 @@ import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.presentation.ui.components.ProductCard
 
 @Composable
-fun InboundScreen(products: List<Product>) {
+fun InboundScreen(products: List<Product>, onProductClick: (Product) -> Unit = {}) {
     Column(modifier = Modifier.padding(16.dp)) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(products) { product ->
-                ProductCard(product)
+                ProductCard(
+                    product = product,
+                    modifier = Modifier.clickable { onProductClick(product) },
+                )
             }
         }
     }

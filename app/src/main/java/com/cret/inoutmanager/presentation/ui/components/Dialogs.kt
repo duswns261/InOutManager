@@ -1,23 +1,18 @@
 package com.cret.inoutmanager.presentation.ui.components
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,18 +20,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.core.content.ContextCompat
-import coil3.compose.AsyncImage
+import com.cret.inoutmanager.presentation.model.ProductImageOrigin
 import com.cret.inoutmanager.ui.theme.BrandAccent
 import com.cret.inoutmanager.ui.theme.BrandSurface
 import java.io.File
+import java.io.InputStream
 
 @Composable
 fun NewProductDialog(
     onDismiss: () -> Unit,
-    onConfirm: (name: String, location: String, quantity: String, imageFile: File?, onResult: (Boolean) -> Unit) -> Unit,
+    onConfirm: (name: String, location: String, quantity: String, imageFile: File?, imageOrigin: ProductImageOrigin, onResult: (Boolean) -> Unit) -> Unit,
     createTemporaryImageFile: () -> File,
     discardTemporaryImage: (File) -> Unit,
+    importImage: (openStream: () -> InputStream, onResult: (Result<File>) -> Unit) -> Unit,
     onCameraOpened: () -> Unit = {},
     onCameraCaptureCompleted: () -> Unit = {},
     onCameraCaptureFailed: (CameraCaptureFailure) -> Unit = {},
@@ -46,8 +42,7 @@ fun NewProductDialog(
     var location by remember { mutableStateOf("") }
     var quantity by remember { mutableStateOf("") }
     var confirmedImageFile by remember { mutableStateOf<File?>(null) }
-    var showCamera by remember { mutableStateOf(false) }
-    var permissionDeniedOnce by remember { mutableStateOf(false) }
+    var confirmedImageOrigin by remember { mutableStateOf(ProductImageOrigin.CAMERA) }
     var isSubmitting by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -57,35 +52,17 @@ fun NewProductDialog(
         onDismiss()
     }
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            showCamera = true
-            onCameraOpened()
-        } else {
-            permissionDeniedOnce = true
-            onCameraPermissionDenied()
-        }
-    }
-
-    fun openCamera() {
-        val hasPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED
-        if (hasPermission) {
-            showCamera = true
-            onCameraOpened()
-        } else {
-            permissionLauncher.launch(Manifest.permission.CAMERA)
-        }
+    fun acquireImage(file: File, origin: ProductImageOrigin) {
+        confirmedImageFile?.let(discardTemporaryImage)
+        confirmedImageFile = file
+        confirmedImageOrigin = origin
     }
 
     Dialog(onDismissRequest = ::dismissAndCleanUp) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = BrandSurface)
+            colors = CardDefaults.cardColors(containerColor = BrandSurface),
+            modifier = Modifier.heightIn(max = 640.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Row(
@@ -99,62 +76,48 @@ fun NewProductDialog(
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("제품명") }, modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("위치") }, modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = quantity,
-                    onValueChange = { input ->
-                        if (input.all { char -> char.isDigit() }) {
-                            quantity = input
-                        }
-                    },
-                    label = { Text("수량") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
 
-                if (confirmedImageFile != null) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        AsyncImage(
-                            model = confirmedImageFile,
-                            contentDescription = "촬영한 제품 사진",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            TextButton(onClick = { if (!isSubmitting) openCamera() }) { Text("다시 촬영") }
-                            TextButton(
-                                onClick = {
-                                    if (isSubmitting) return@TextButton
-                                    confirmedImageFile?.let(discardTemporaryImage)
-                                    confirmedImageFile = null
-                                }
-                            ) { Text("사진 제거") }
-                        }
-                    }
-                } else {
-                    OutlinedButton(
-                        onClick = { openCamera() },
-                        enabled = !isSubmitting,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("사진 촬영 (선택)")
-                    }
-                    if (permissionDeniedOnce) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            "카메라 권한이 거부되어 사진 없이 등록할 수 있습니다.",
-                            color = Color.Gray,
-                            fontSize = 12.sp
+                Column(
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        ProductImageSelection(
+                            currentImage = confirmedImageFile,
+                            productName = name.ifBlank { "신규 제품" },
+                            onImageAcquired = ::acquireImage,
+                            createTemporaryImageFile = createTemporaryImageFile,
+                            discardTemporaryImage = discardTemporaryImage,
+                            importImage = importImage,
+                            enabled = !isSubmitting,
+                            onRemoveRequested = {
+                                confirmedImageFile?.let(discardTemporaryImage)
+                                confirmedImageFile = null
+                            },
+                            onCameraOpened = onCameraOpened,
+                            onCameraCaptureCompleted = onCameraCaptureCompleted,
+                            onCameraCaptureFailed = onCameraCaptureFailed,
+                            onCameraPermissionDenied = onCameraPermissionDenied,
                         )
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("제품명") }, modifier = Modifier.fillMaxWidth())
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("위치") }, modifier = Modifier.fillMaxWidth())
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = quantity,
+                        onValueChange = { input ->
+                            if (input.all { char -> char.isDigit() }) {
+                                quantity = input
+                            }
+                        },
+                        label = { Text("수량") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -166,7 +129,7 @@ fun NewProductDialog(
                                 Toast.makeText(context, "제품명을 입력해주세요.", Toast.LENGTH_SHORT).show()
                             } else {
                                 isSubmitting = true
-                                onConfirm(name, location, quantity, confirmedImageFile) { success ->
+                                onConfirm(name, location, quantity, confirmedImageFile, confirmedImageOrigin) { success ->
                                     // 성공 시에는 호출부가 다이얼로그를 닫으므로 이 Composable이 곧 폐기됩니다.
                                     if (!success) {
                                         isSubmitting = false
@@ -176,7 +139,7 @@ fun NewProductDialog(
                                             confirmedImageFile = null
                                             Toast.makeText(
                                                 context,
-                                                "등록에 실패해 첨부한 사진이 초기화되었습니다. 다시 촬영해주세요.",
+                                                "등록에 실패해 첨부한 사진이 초기화되었습니다. 다시 선택해주세요.",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
@@ -191,21 +154,6 @@ fun NewProductDialog(
                 }
             }
         }
-    }
-
-    if (showCamera) {
-        ProductCameraDialog(
-            createTemporaryFile = createTemporaryImageFile,
-            discardTemporaryFile = discardTemporaryImage,
-            onPhotoConfirmed = { file ->
-                confirmedImageFile?.let(discardTemporaryImage)
-                confirmedImageFile = file
-                showCamera = false
-            },
-            onDismiss = { showCamera = false },
-            onCaptureCompleted = onCameraCaptureCompleted,
-            onCaptureFailed = onCameraCaptureFailed,
-        )
     }
 }
 
@@ -270,9 +218,10 @@ fun OutboundQuantityDialog(
 fun PreviewNewProductDialog() {
     NewProductDialog(
         onDismiss = {},
-        onConfirm = { _, _, _, _, _ -> },
+        onConfirm = { _, _, _, _, _, _ -> },
         createTemporaryImageFile = { File.createTempFile("preview", ".jpg") },
         discardTemporaryImage = {},
+        importImage = { _, _ -> },
     )
 }
 

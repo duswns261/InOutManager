@@ -54,17 +54,26 @@ internal const val ProductThumbnailPlaceholderIconTag = "product-thumbnail-place
  *
  * `size`/`cornerRadius`는 목록 64dp 호출부의 기존 동작을 바꾸지 않는 기본값을 가지며,
  * 제품 등록·요약 화면처럼 더 큰 이미지 영역에서 같은 placeholder를 재사용할 때만 지정한다.
+ *
+ * `imagePath`는 Coil의 `AsyncImage`가 그대로 받아들이는 model이라면 영구 저장 경로 `String`뿐
+ * 아니라 등록 중인 미확정 선택을 나타내는 `File`도 받을 수 있어, 신규 등록·이미지 선택 UI가
+ * 같은 placeholder/로딩 상태 경계를 재사용할 수 있습니다.
  */
 @Composable
 fun ProductThumbnail(
-    imagePath: String?,
+    imagePath: Any?,
     productName: String,
     modifier: Modifier = Modifier,
     size: Dp = ThumbnailSize,
     cornerRadius: Dp = ThumbnailCornerRadius,
 ) {
+    val hasImage = when (imagePath) {
+        null -> false
+        is String -> imagePath.isNotBlank()
+        else -> true
+    }
     var isImageLoaded by remember(imagePath) { mutableStateOf(false) }
-    var hasSettled by remember(imagePath) { mutableStateOf(imagePath.isNullOrBlank()) }
+    var hasSettled by remember(imagePath) { mutableStateOf(!hasImage) }
 
     Box(
         modifier = modifier
@@ -77,7 +86,7 @@ fun ProductThumbnail(
     ) {
         ThumbnailPlaceholder(size = size)
 
-        if (!imagePath.isNullOrBlank()) {
+        if (hasImage) {
             AsyncImage(
                 model = imagePath,
                 contentDescription = null,
