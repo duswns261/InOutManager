@@ -283,6 +283,8 @@ fun PreviewInventoryApp() {
     val fakeImageStorage = object : com.cret.inoutmanager.domain.repository.ProductImageStorage {
         override fun createTemporaryFile() = java.io.File.createTempFile("preview", ".jpg")
         override fun commit(temporaryFile: java.io.File) = temporaryFile
+        override fun importTemporaryFile(input: java.io.InputStream) = java.io.File.createTempFile("preview", ".jpg")
+        override fun isUsableManagedImage(file: java.io.File) = file.exists()
         override fun delete(file: java.io.File) {}
     }
 
@@ -292,7 +294,9 @@ fun PreviewInventoryApp() {
         decreaseProductQuantity = DecreaseProductQuantityUseCase(fakeRepository),
         deleteProduct = DeleteProductUseCase(fakeRepository, fakeImageStorage),
         createTemporaryProductImage = CreateTemporaryProductImageUseCase(fakeImageStorage),
-        discardProductImage = DiscardProductImageUseCase(fakeImageStorage)
+        discardProductImage = DiscardProductImageUseCase(fakeImageStorage),
+        importProductImage = com.cret.inoutmanager.domain.usecase.ImportProductImageUseCase(fakeImageStorage),
+        attachProductImage = com.cret.inoutmanager.domain.usecase.AttachProductImageUseCase(fakeRepository, fakeImageStorage),
     )
 
     val noOpAnalyticsLogger = com.cret.inoutmanager.analytics.AnalyticsLogger { }

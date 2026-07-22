@@ -8,6 +8,7 @@ import com.cret.inoutmanager.analytics.EntryPoint
 import com.cret.inoutmanager.analytics.PhotoCaptureFailureReason
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
+import com.cret.inoutmanager.presentation.model.ProductImageOrigin
 import com.cret.inoutmanager.reporting.CaptureFailureReason
 import com.cret.inoutmanager.reporting.CaptureState
 import com.cret.inoutmanager.reporting.ProductPhotoCaptureReporter
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.InputStream
 import javax.inject.Inject
 
 /**
@@ -52,6 +54,7 @@ class InventoryViewModel @Inject constructor(
         location: String,
         quantityStr: String,
         imageFile: File? = null,
+        imageOrigin: ProductImageOrigin = ProductImageOrigin.CAMERA,
         onResult: (Boolean) -> Unit = {},
     ) {
         val qty = quantityStr.toIntOrNull() ?: 0
@@ -62,7 +65,7 @@ class InventoryViewModel @Inject constructor(
                 onResult(true)
             } catch (e: Exception) {
                 _uiState.update { it.copy(errorMessage = e.message) }
-                if (imageFile != null) {
+                if (imageFile != null && imageOrigin == ProductImageOrigin.CAMERA) {
                     logPhotoCaptureFailed(PhotoCaptureFailureReason.SAVE_ERROR)
                 }
                 onResult(false)
@@ -77,6 +80,47 @@ class InventoryViewModel @Inject constructor(
     fun discardTemporaryImage(file: File) {
         viewModelScope.launch {
             useCases.discardProductImage(file)
+        }
+    }
+
+    // --- 제품 이미지 선택(Photo Picker) / 기존 제품 이미지 추가·교체 ---
+
+    /**
+     * Photo Picker 등이 제공한 일회성 스트림 공급자를 열어 관리 대상 임시 파일로 가져옵니다.
+     * 실패해도 UI 상태를 바꾸지 않고 [onResult]로만 결과를 돌려줍니다(기존 선택/입력 유지는 호출부 책임).
+     */
+    fun importProductImage(openStream: () -> InputStream, onResult: (Result<File>) -> Unit) {
+        viewModelScope.launch {
+            val result = try {
+                Result.success(useCases.importProductImage(openStream))
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+            onResult(result)
+        }
+    }
+
+    /**
+     * 기존 제품에 새 이미지를 최초로 추가하거나 교체합니다.
+     * 저장 실패에는 카메라 출처일 때만 기존 SAVE_ERROR 촬영 실패 reporting을 적용합니다.
+     */
+    fun attachProductImage(
+        product: Product,
+        temporaryImageFile: File,
+        imageOrigin: ProductImageOrigin,
+        onResult: (Boolean) -> Unit = {},
+    ) {
+        viewModelScope.launch {
+            try {
+                useCases.attachProductImage(product, temporaryImageFile)
+                onResult(true)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message) }
+                if (imageOrigin == ProductImageOrigin.CAMERA) {
+                    logPhotoCaptureFailed(PhotoCaptureFailureReason.SAVE_ERROR)
+                }
+                onResult(false)
+            }
         }
     }
 

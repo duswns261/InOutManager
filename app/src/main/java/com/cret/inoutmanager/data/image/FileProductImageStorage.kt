@@ -1,17 +1,24 @@
 package com.cret.inoutmanager.data.image
 
+import android.graphics.BitmapFactory
 import com.cret.inoutmanager.domain.repository.ProductImageStorage
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
 import java.util.UUID
 
 /**
  * [ProductImageStorage]를 앱 전용 파일시스템으로 구현합니다.
  * 임시 파일은 [cacheRoot] 하위 전용 디렉터리, 영구 파일은 [filesRoot] 하위 전용 디렉터리에 둡니다.
  * 파일명은 사용자 입력을 포함하지 않는 UUID 기반 값을 사용합니다.
+ *
+ * [canDecodeImage]는 실제 decode 가능 여부 판정을 담당하며, 기본값은 [BitmapFactory]를 사용합니다.
+ * unit test에서는 Android framework 없이 검증할 수 있도록 이 판정을 대체할 수 있습니다.
  */
 class FileProductImageStorage(
     cacheRoot: File,
     filesRoot: File,
+    private val canDecodeImage: (File) -> Boolean = ::decodesAsBitmap,
 ) : ProductImageStorage {
 
     private val temporaryDir: File = File(cacheRoot, IMAGE_DIR_NAME)
@@ -56,6 +63,24 @@ class FileProductImageStorage(
         }
     }
 
+    override fun importTemporaryFile(input: InputStream): File {
+        temporaryDir.mkdirs()
+        val target = File(temporaryDir, "${UUID.randomUUID()}.jpg")
+        try {
+            target.outputStream().use { output -> input.copyTo(output) }
+            if (target.length() == 0L || !canDecodeImage(target)) {
+                throw IOException("Selected content could not be decoded as an image")
+            }
+            return target
+        } catch (e: Exception) {
+            target.delete()
+            throw e
+        }
+    }
+
+    override fun isUsableManagedImage(file: File): Boolean =
+        isManaged(file) && file.exists() && canDecodeImage(file)
+
     override fun delete(file: File) {
         if (isManaged(file)) {
             file.delete()
@@ -76,4 +101,10 @@ class FileProductImageStorage(
     companion object {
         private const val IMAGE_DIR_NAME = "product-images"
     }
+}
+
+private fun decodesAsBitmap(file: File): Boolean {
+    val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeFile(file.absolutePath, options)
+    return options.outWidth > 0 && options.outHeight > 0
 }

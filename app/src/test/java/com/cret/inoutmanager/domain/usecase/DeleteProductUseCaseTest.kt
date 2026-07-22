@@ -11,6 +11,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
+import java.io.InputStream
 
 class DeleteProductUseCaseTest {
 
@@ -31,6 +32,8 @@ class DeleteProductUseCaseTest {
         val deleted = mutableListOf<File>()
         override fun createTemporaryFile(): File = File.createTempFile("test", ".jpg")
         override fun commit(temporaryFile: File): File = temporaryFile
+        override fun importTemporaryFile(input: InputStream): File = File.createTempFile("test", ".jpg")
+        override fun isUsableManagedImage(file: File): Boolean = file.exists()
         override fun delete(file: File) {
             deleted += file
         }
@@ -110,6 +113,8 @@ class DeleteProductUseCaseTest {
         val imageStorage = object : ProductImageStorage {
             override fun createTemporaryFile(): File = File.createTempFile("test", ".jpg")
             override fun commit(temporaryFile: File): File = temporaryFile
+            override fun importTemporaryFile(input: InputStream): File = File.createTempFile("test", ".jpg")
+            override fun isUsableManagedImage(file: File): Boolean = file.exists()
             override fun delete(file: File) {
                 callOrder += "storage"
             }
