@@ -1,11 +1,18 @@
 package com.cret.inoutmanager.presentation.ui.components
 
+import android.graphics.Bitmap
+import android.graphics.Color
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
+import androidx.test.platform.app.InstrumentationRegistry
+import java.io.File
+import java.io.FileOutputStream
 import org.junit.Rule
 import org.junit.Test
 
@@ -24,6 +31,18 @@ class ProductThumbnailTest {
             .onNodeWithContentDescription("제품 사진 없음")
             .assertWidthIsEqualTo(64.dp)
             .assertHeightIsEqualTo(64.dp)
+
+        composeTestRule
+            .onNodeWithTag(ProductThumbnailPlaceholderIconTag)
+            .assertExists()
+
+        composeTestRule
+            .onNodeWithText("테")
+            .assertDoesNotExist()
+
+        composeTestRule
+            .onNodeWithText("?")
+            .assertDoesNotExist()
     }
 
     @Test
@@ -48,5 +67,41 @@ class ProductThumbnailTest {
             .onNodeWithContentDescription("제품 사진 없음")
             .assertWidthIsEqualTo(64.dp)
             .assertHeightIsEqualTo(64.dp)
+
+        composeTestRule
+            .onNodeWithTag(ProductThumbnailPlaceholderIconTag)
+            .assertExists()
+    }
+
+    @Test
+    fun successfulImageLoadSwitchesSemanticsFromPlaceholderToProductPhoto() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val imageFile = File(context.cacheDir, "product-thumbnail-test-${System.nanoTime()}.png")
+        val bitmap = Bitmap.createBitmap(4, 4, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(Color.RED)
+        }
+        FileOutputStream(imageFile).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        }
+
+        try {
+            composeTestRule.setContent {
+                ProductThumbnail(imagePath = imageFile.absolutePath, productName = "테스트 제품")
+            }
+
+            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                composeTestRule
+                    .onAllNodesWithTag(ProductThumbnailSettledTag)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            }
+
+            composeTestRule
+                .onNodeWithContentDescription("테스트 제품 제품 사진")
+                .assertWidthIsEqualTo(64.dp)
+                .assertHeightIsEqualTo(64.dp)
+        } finally {
+            imageFile.delete()
+        }
     }
 }
