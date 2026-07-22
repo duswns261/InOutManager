@@ -13,4 +13,5 @@ data class ProductUseCases(
     val discardProductImage: DiscardProductImageUseCase,
     val importProductImage: ImportProductImageUseCase,
     val attachProductImage: AttachProductImageUseCase,
+    val removeProductImage: RemoveProductImageUseCase,
 )

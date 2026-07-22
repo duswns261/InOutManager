@@ -11,6 +11,7 @@ import com.cret.inoutmanager.domain.usecase.DiscardProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.GetProductsUseCase
 import com.cret.inoutmanager.domain.usecase.ImportProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
+import com.cret.inoutmanager.domain.usecase.RemoveProductImageUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,5 +37,6 @@ object UseCaseModule {
             discardProductImage = DiscardProductImageUseCase(imageStorage),
             importProductImage = ImportProductImageUseCase(imageStorage),
             attachProductImage = AttachProductImageUseCase(repository, imageStorage),
+            removeProductImage = RemoveProductImageUseCase(repository, imageStorage),
         )
 }

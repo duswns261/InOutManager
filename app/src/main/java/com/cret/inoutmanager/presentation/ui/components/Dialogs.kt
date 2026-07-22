@@ -16,7 +16,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -25,6 +28,36 @@ import com.cret.inoutmanager.ui.theme.BrandAccent
 import com.cret.inoutmanager.ui.theme.BrandSurface
 import java.io.File
 import java.io.InputStream
+
+/**
+ * 신규 등록/제품 요약 다이얼로그가 공유하는 헤더입니다.
+ * 제목을 닫기 버튼 유무와 무관하게 가로 중앙에 배치하기 위해, 닫기 버튼과 대칭인
+ * 여백을 제목 양쪽에 확보합니다.
+ */
+@Composable
+internal fun DialogHeader(
+    title: String,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = 18.sp,
+) {
+    Box(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            fontWeight = FontWeight.Bold,
+            fontSize = fontSize,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(horizontal = 48.dp),
+        )
+        IconButton(onClick = onClose, modifier = Modifier.align(Alignment.CenterEnd)) {
+            Icon(Icons.Default.Close, contentDescription = "닫기")
+        }
+    }
+}
 
 @Composable
 fun NewProductDialog(
@@ -65,16 +98,7 @@ fun NewProductDialog(
             modifier = Modifier.heightIn(max = 640.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("신규 제품 등록", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    IconButton(onClick = ::dismissAndCleanUp) {
-                        Icon(Icons.Default.Close, contentDescription = "닫기")
-                    }
-                }
+                DialogHeader(title = "신규 제품 등록", onClose = ::dismissAndCleanUp)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Column(

@@ -62,26 +62,13 @@ class ProductImageSelectionTest {
     }
 
     @Test
-    fun tappingButtonOpensSourceMenuWithCameraPickerAndCancel() {
+    fun tappingButtonOpensSourceMenuWithAlbumAndCameraOptions() {
         setContent(currentImage = null)
 
         composeTestRule.onNodeWithTag(ProductImageSelectionButtonTag).performClick()
 
-        composeTestRule.onNodeWithTag(ProductImageSelectionCameraOptionTag).assertIsDisplayed()
         composeTestRule.onNodeWithTag(ProductImageSelectionPickerOptionTag).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(ProductImageSelectionCancelOptionTag).assertIsDisplayed()
-    }
-
-    @Test
-    fun cancelOptionDismissesMenuWithoutAcquiringImage() {
-        var acquired = false
-        setContent(currentImage = null, onImageAcquired = { _, _ -> acquired = true })
-
-        composeTestRule.onNodeWithTag(ProductImageSelectionButtonTag).performClick()
-        composeTestRule.onNodeWithTag(ProductImageSelectionCancelOptionTag).performClick()
-
-        composeTestRule.onNodeWithTag(ProductImageSelectionCameraOptionTag).assertDoesNotExist()
-        assert(!acquired) { "취소를 눌렀을 때 이미지가 확정되면 안 됩니다" }
+        composeTestRule.onNodeWithTag(ProductImageSelectionCameraOptionTag).assertIsDisplayed()
     }
 
     @Test

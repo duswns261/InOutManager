@@ -242,6 +242,9 @@ fun InventoryApp(
                 attachImage = { temporaryImageFile, imageOrigin, onResult ->
                     viewModel.attachProductImage(selectedProductForSummary, temporaryImageFile, imageOrigin, onResult)
                 },
+                removeImage = { onResult ->
+                    viewModel.removeProductImage(selectedProductForSummary, onResult)
+                },
                 createTemporaryImageFile = viewModel::createTemporaryImageFile,
                 discardTemporaryImage = viewModel::discardTemporaryImage,
                 importImage = viewModel::importProductImage,
@@ -324,6 +327,7 @@ fun PreviewInventoryApp() {
         discardProductImage = DiscardProductImageUseCase(fakeImageStorage),
         importProductImage = com.cret.inoutmanager.domain.usecase.ImportProductImageUseCase(fakeImageStorage),
         attachProductImage = com.cret.inoutmanager.domain.usecase.AttachProductImageUseCase(fakeRepository, fakeImageStorage),
+        removeProductImage = com.cret.inoutmanager.domain.usecase.RemoveProductImageUseCase(fakeRepository, fakeImageStorage),
     )
 
     val noOpAnalyticsLogger = com.cret.inoutmanager.analytics.AnalyticsLogger { }

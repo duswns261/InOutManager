@@ -6,10 +6,11 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
@@ -23,16 +24,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.cret.inoutmanager.R
 import com.cret.inoutmanager.presentation.model.ProductImageOrigin
-import com.cret.inoutmanager.ui.theme.BrandAccent
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -40,13 +43,16 @@ import java.io.InputStream
 private val ProductImageSelectionDefaultSize = 160.dp
 private val ProductImageSelectionCornerRadius = 16.dp
 private val ProductImageSelectionButtonSize = 40.dp
+private val ProductImageSelectionButtonIconSize = 20.dp
+private val ProductImageSelectionButtonBorderColor = Color(0xFFE0E0E0)
+private val ProductImageSelectionButtonIconColor = Color(0xFF3A3A3A)
+private val ProductImageSelectionMenuCornerRadius = 16.dp
 
-/** 이미지 선택 + 버튼과 촬영/파일 선택/제거 메뉴를 여는 진입점을 찾기 위한 테스트 전용 tag. */
+/** 이미지 선택 + 버튼과 앨범/카메라/제거 메뉴를 여는 진입점을 찾기 위한 테스트 전용 tag. */
 internal const val ProductImageSelectionButtonTag = "product-image-selection-button"
 internal const val ProductImageSelectionCameraOptionTag = "product-image-selection-camera-option"
 internal const val ProductImageSelectionPickerOptionTag = "product-image-selection-picker-option"
 internal const val ProductImageSelectionRemoveOptionTag = "product-image-selection-remove-option"
-internal const val ProductImageSelectionCancelOptionTag = "product-image-selection-cancel-option"
 
 /**
  * 신규 등록과 기존 제품 요약이 공유하는 이미지 선택 영역입니다.
@@ -144,32 +150,47 @@ fun ProductImageSelection(
                 enabled = enabled,
                 modifier = Modifier
                     .size(ProductImageSelectionButtonSize)
+                    .shadow(elevation = 2.dp, shape = CircleShape, clip = false)
+                    .border(width = 1.dp, color = ProductImageSelectionButtonBorderColor, shape = CircleShape)
                     .testTag(ProductImageSelectionButtonTag)
                     .semantics {
                         contentDescription = if (hasImage) "제품 이미지 변경" else "제품 이미지 추가"
                     },
-                colors = IconButtonDefaults.filledIconButtonColors(containerColor = BrandAccent),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = Color.White,
+                    contentColor = ProductImageSelectionButtonIconColor,
+                ),
             ) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_photo_camera_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(ProductImageSelectionButtonIconSize),
+                    tint = ProductImageSelectionButtonIconColor,
+                )
             }
 
-            DropdownMenu(expanded = showSourceMenu, onDismissRequest = { showSourceMenu = false }) {
+            DropdownMenu(
+                expanded = showSourceMenu,
+                onDismissRequest = { showSourceMenu = false },
+                shape = RoundedCornerShape(ProductImageSelectionMenuCornerRadius),
+                containerColor = Color.White,
+            ) {
                 DropdownMenuItem(
-                    text = { Text("카메라로 촬영") },
-                    modifier = Modifier.testTag(ProductImageSelectionCameraOptionTag),
-                    onClick = {
-                        showSourceMenu = false
-                        openCamera()
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text("파일에서 선택") },
+                    text = { Text("앨범에서 사진 선택") },
                     modifier = Modifier.testTag(ProductImageSelectionPickerOptionTag),
                     onClick = {
                         showSourceMenu = false
                         pickMediaLauncher.launch(
                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                         )
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text("카메라로 촬영") },
+                    modifier = Modifier.testTag(ProductImageSelectionCameraOptionTag),
+                    onClick = {
+                        showSourceMenu = false
+                        openCamera()
                     },
                 )
                 if (onRemoveRequested != null && hasImage) {
@@ -182,11 +203,6 @@ fun ProductImageSelection(
                         },
                     )
                 }
-                DropdownMenuItem(
-                    text = { Text("취소") },
-                    modifier = Modifier.testTag(ProductImageSelectionCancelOptionTag),
-                    onClick = { showSourceMenu = false },
-                )
             }
         }
     }

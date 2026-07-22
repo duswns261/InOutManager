@@ -124,6 +124,22 @@ class InventoryViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 기존 제품의 이미지를 독립적으로 제거해 이미지 없는 상태로 되돌립니다.
+     * DB update 실패 시 기존 이미지를 그대로 유지합니다.
+     */
+    fun removeProductImage(product: Product, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                useCases.removeProductImage(product)
+                onResult(true)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message) }
+                onResult(false)
+            }
+        }
+    }
+
     // --- 촬영 흐름 Analytics/Crashlytics ---
 
     fun logPhotoCaptureStarted() {

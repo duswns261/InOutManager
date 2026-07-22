@@ -17,6 +17,7 @@ import com.cret.inoutmanager.domain.usecase.DiscardProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.GetProductsUseCase
 import com.cret.inoutmanager.domain.usecase.ImportProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
+import com.cret.inoutmanager.domain.usecase.RemoveProductImageUseCase
 import com.cret.inoutmanager.presentation.model.ProductImageOrigin
 import com.cret.inoutmanager.reporting.CaptureFailureReason
 import com.cret.inoutmanager.reporting.CaptureState
@@ -109,6 +110,7 @@ class InventoryViewModelAnalyticsTest {
             discardProductImage = DiscardProductImageUseCase(imageStorage),
             importProductImage = ImportProductImageUseCase(imageStorage),
             attachProductImage = AttachProductImageUseCase(repository, imageStorage),
+            removeProductImage = RemoveProductImageUseCase(repository, imageStorage),
         )
         return InventoryViewModel(useCases, logger, reporter)
     }
@@ -326,6 +328,29 @@ class InventoryViewModelAnalyticsTest {
         assertEquals(false, result)
         assertEquals(emptyList<AnalyticsEvent>(), logger.loggedEvents)
         assertTrue(reporter.states.isEmpty())
+        assertNotNull(sut.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `removeProductImage success calls onResult with true`() = runTest {
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger())
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5, imagePath = "/data/old.jpg")
+        var result: Boolean? = null
+
+        sut.removeProductImage(product, onResult = { result = it })
+
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `removeProductImage failure calls onResult with false and sets error message`() = runTest {
+        val sut = viewModel(FakeProductRepository(updateError = RuntimeException("update failed")), FakeAnalyticsLogger())
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5, imagePath = "/data/old.jpg")
+        var result: Boolean? = null
+
+        sut.removeProductImage(product, onResult = { result = it })
+
+        assertEquals(false, result)
         assertNotNull(sut.uiState.value.errorMessage)
     }
 
