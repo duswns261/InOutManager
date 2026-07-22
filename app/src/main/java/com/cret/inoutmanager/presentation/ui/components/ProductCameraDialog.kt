@@ -1,5 +1,6 @@
 package com.cret.inoutmanager.presentation.ui.components
 
+import android.hardware.display.DisplayManager
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -132,6 +133,9 @@ private fun CameraPreviewContent(
     // 늦게 도착할 수 있어, 그 시점엔 bind/파일 채택을 하지 않고 그대로 무시하거나 폐기하기 위한 활성 플래그입니다.
     var isActive by remember { mutableStateOf(true) }
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    // DisplayManager.DisplayListener가 tryBind()를 다시 호출할 때 대상 PreviewView를 찾기 위한
+    // 참조입니다. AndroidView factory는 한 번만 실행되므로 최초 생성된 이후 값이 바뀌지 않습니다.
+    var previewViewRef by remember { mutableStateOf<PreviewView?>(null) }
 
     // PreviewView가 layout되어 실제 크기와 display rotation을 확보하기 전에는 viewPort가 null이라
     // bind할 수 없습니다. camera provider 준비와 view layout 준비가 각각 다른 타이밍에 끝날 수 있어
@@ -191,6 +195,28 @@ private fun CameraPreviewContent(
         }
     }
 
+    // PreviewView의 width/height가 그대로인 rotation(예: 180도 회전)은 OnLayoutChangeListener를
+    // 트리거하지 않는다. CameraX 공식 rotation 가이드가 권장하는 대로 DisplayManager의 display
+    // 변경 이벤트를 별도로 관찰해, 그런 경우에도 최신 rotation으로 다시 bind를 시도한다.
+    // https://developer.android.com/media/camera/camerax/orientation-rotation
+    DisposableEffect(Unit) {
+        val displayManager = context.getSystemService(DisplayManager::class.java)
+        val displayListener = object : DisplayManager.DisplayListener {
+            override fun onDisplayAdded(displayId: Int) = Unit
+            override fun onDisplayRemoved(displayId: Int) = Unit
+            override fun onDisplayChanged(displayId: Int) {
+                val previewView = previewViewRef ?: return
+                if (previewView.display?.displayId == displayId) {
+                    tryBind(previewView)
+                }
+            }
+        }
+        displayManager?.registerDisplayListener(displayListener, null)
+        onDispose {
+            displayManager?.unregisterDisplayListener(displayListener)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
@@ -200,6 +226,7 @@ private fun CameraPreviewContent(
                     // Preview에 보이는 영역과 ViewPort가 계산하는 crop 영역을 일치시키는 명시적 계약입니다.
                     scaleType = PreviewView.ScaleType.FILL_CENTER
                 }
+                previewViewRef = previewView
                 // 화면 크기/rotation이 바뀔 때마다(최초 layout 포함) 다시 bind를 시도합니다.
                 previewView.addOnLayoutChangeListener { _, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
                     val sizeChanged = (right - left) != (oldRight - oldLeft) || (bottom - top) != (oldBottom - oldTop)
