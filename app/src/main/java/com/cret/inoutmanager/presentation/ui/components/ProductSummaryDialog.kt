@@ -47,7 +47,7 @@ private val SummaryImageSize = 200.dp
 
 /**
  * 입고 목록에서 제품 카드를 눌렀을 때 여는 요약 modal입니다.
- * 큰 이미지 → 전체 제품명 → 전체 위치 → 현재 수량 순으로 표시하고,
+ * 전체 제품명 → 큰 이미지 → 위치 → 현재 수량 순으로 표시하고,
  * 이미지 유무와 관계없이 [ProductImageSelection]의 + 버튼으로 최초 추가 또는 교체를 제공합니다.
  * 독립적인 이미지 삭제 명령은 제공하지 않습니다.
  *
@@ -100,10 +100,18 @@ fun ProductSummaryDialog(
 
                 Column(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .weight(1f, fill = false)
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    Text(
+                        text = product.name,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                     ProductImageSelection(
                         currentImage = product.imagePath,
                         productName = product.name,
@@ -121,14 +129,7 @@ fun ProductSummaryDialog(
 
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = product.name,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = product.location,
+                        text = "위치: ${product.location}",
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center,
                     )
