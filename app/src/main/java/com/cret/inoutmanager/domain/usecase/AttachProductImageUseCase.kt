@@ -19,7 +19,7 @@ class AttachProductImageUseCase(
         val committedImageFile = try {
             imageStorage.commit(temporaryImageFile)
         } catch (e: Exception) {
-            imageStorage.delete(temporaryImageFile)
+            cleanUpAfterFailure(temporaryImageFile, e)
             throw e
         }
 
@@ -27,7 +27,7 @@ class AttachProductImageUseCase(
         try {
             repository.update(updatedProduct)
         } catch (e: Exception) {
-            imageStorage.delete(committedImageFile)
+            cleanUpAfterFailure(committedImageFile, e)
             throw e
         }
 
@@ -44,5 +44,16 @@ class AttachProductImageUseCase(
     private fun cleanUpPreviousImage(previousImagePath: String?, newImageFile: File): Boolean {
         if (previousImagePath.isNullOrBlank() || previousImagePath == newImageFile.absolutePath) return true
         return runCatching { imageStorage.delete(File(previousImagePath)) }.getOrDefault(false)
+    }
+
+    /**
+     * commit 또는 DB update 실패 후 새로 생긴 [file]을 정리합니다. 정리 자체가 실패해도(예외 또는
+     * `delete() == false`) [originalError]를 덮어쓰거나 가리지 않고, `addSuppressed`로 함께
+     * 보존해 원래 실패는 그대로 propagate되면서 cleanup 실패도 관찰할 수 있게 합니다.
+     */
+    private fun cleanUpAfterFailure(file: File, originalError: Exception) {
+        runCatching { imageStorage.delete(file) }
+            .onSuccess { deleted -> if (!deleted) originalError.addSuppressed(ProductImageCleanupFailedException(file)) }
+            .onFailure { cleanupError -> originalError.addSuppressed(cleanupError) }
     }
 }

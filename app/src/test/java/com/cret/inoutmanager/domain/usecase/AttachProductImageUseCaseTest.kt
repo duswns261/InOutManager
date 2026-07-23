@@ -192,4 +192,88 @@ class AttachProductImageUseCaseTest {
         assertEquals(newPermanentFile.absolutePath, result.product.imagePath)
         assertTrue(!result.cleanupSucceeded)
     }
+
+    @Test
+    fun `invoke preserves the original commit failure and suppresses the cleanup exception when temp file cleanup throws`() = runTest {
+        val repository = FakeProductRepository()
+        val imageStorage = FakeProductImageStorage(
+            commitError = RuntimeException("commit failed"),
+            deleteError = IllegalStateException("cleanup threw"),
+        )
+        val sut = AttachProductImageUseCase(repository, imageStorage)
+        val temporaryFile = File.createTempFile("temp", ".jpg")
+        val target = product(imagePath = "/data/product-images/old.jpg")
+
+        try {
+            sut(target, temporaryFile)
+            fail("commit 실패가 예외로 전달되어야 합니다")
+        } catch (e: RuntimeException) {
+            // rollback cleanup이 예외를 던져도 원래 commit 실패가 그대로 전달되고, cleanup 예외는 덮어쓰지 않고 suppressed로 보존되어야 한다.
+            assertEquals("commit failed", e.message)
+            assertEquals(1, e.suppressed.size)
+            assertEquals("cleanup threw", e.suppressed[0].message)
+        }
+    }
+
+    @Test
+    fun `invoke preserves the original commit failure and attaches a cleanup-failed suppressed exception when temp file delete returns false`() = runTest {
+        val repository = FakeProductRepository()
+        val imageStorage = FakeProductImageStorage(
+            commitError = RuntimeException("commit failed"),
+            deleteResult = false,
+        )
+        val sut = AttachProductImageUseCase(repository, imageStorage)
+        val temporaryFile = File.createTempFile("temp", ".jpg")
+        val target = product(imagePath = "/data/product-images/old.jpg")
+
+        try {
+            sut(target, temporaryFile)
+            fail("commit 실패가 예외로 전달되어야 합니다")
+        } catch (e: RuntimeException) {
+            // delete() == false는 예외를 던지지 않지만, 그 실패도 원래 오류에 suppressed로 보존되어야 한다(조용히 사라지면 안 됨).
+            assertEquals("commit failed", e.message)
+            assertEquals(1, e.suppressed.size)
+            assertTrue(e.suppressed[0] is ProductImageCleanupFailedException)
+        }
+    }
+
+    @Test
+    fun `invoke preserves the original DB update failure and suppresses the cleanup exception when committed file cleanup throws`() = runTest {
+        val repository = FakeProductRepository(updateError = RuntimeException("update failed"))
+        val imageStorage = FakeProductImageStorage(deleteError = IllegalStateException("cleanup threw"))
+        val newPermanentFile = File.createTempFile("new-permanent", ".jpg")
+        imageStorage.commitResult = { newPermanentFile }
+        val sut = AttachProductImageUseCase(repository, imageStorage)
+        val temporaryFile = File.createTempFile("temp", ".jpg")
+        val target = product(imagePath = "/data/product-images/old.jpg")
+
+        try {
+            sut(target, temporaryFile)
+            fail("DB update 실패가 예외로 전달되어야 합니다")
+        } catch (e: RuntimeException) {
+            assertEquals("update failed", e.message)
+            assertEquals(1, e.suppressed.size)
+            assertEquals("cleanup threw", e.suppressed[0].message)
+        }
+    }
+
+    @Test
+    fun `invoke preserves the original DB update failure and attaches a cleanup-failed suppressed exception when committed file delete returns false`() = runTest {
+        val repository = FakeProductRepository(updateError = RuntimeException("update failed"))
+        val imageStorage = FakeProductImageStorage(deleteResult = false)
+        val newPermanentFile = File.createTempFile("new-permanent", ".jpg")
+        imageStorage.commitResult = { newPermanentFile }
+        val sut = AttachProductImageUseCase(repository, imageStorage)
+        val temporaryFile = File.createTempFile("temp", ".jpg")
+        val target = product(imagePath = "/data/product-images/old.jpg")
+
+        try {
+            sut(target, temporaryFile)
+            fail("DB update 실패가 예외로 전달되어야 합니다")
+        } catch (e: RuntimeException) {
+            assertEquals("update failed", e.message)
+            assertEquals(1, e.suppressed.size)
+            assertTrue(e.suppressed[0] is ProductImageCleanupFailedException)
+        }
+    }
 }
