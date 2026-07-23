@@ -22,6 +22,7 @@ fun InventoryNavGraph(
     modifier: Modifier = Modifier,
     products: List<Product>,
     onNavigateToFeature: (String) -> Unit,
+    onProductClick: (Product) -> Unit,
     onOutboundClick: (Product) -> Unit,
     onDeleteRequest: (Product) -> Unit,
 ) {
@@ -54,7 +55,7 @@ fun InventoryNavGraph(
             HomeScreen(onNavigate = onNavigateToFeature)
         }
         composable(InventoryRoute.Inbound.route) {
-            InboundScreen(products = products)
+            InboundScreen(products = products, onProductClick = onProductClick)
         }
         composable(InventoryRoute.Outbound.route) {
             OutboundScreen(

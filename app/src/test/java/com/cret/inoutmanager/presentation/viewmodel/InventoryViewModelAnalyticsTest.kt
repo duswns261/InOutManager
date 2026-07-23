@@ -9,12 +9,16 @@ import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.repository.ProductImageStorage
 import com.cret.inoutmanager.domain.repository.ProductRepository
 import com.cret.inoutmanager.domain.usecase.AddProductUseCase
+import com.cret.inoutmanager.domain.usecase.AttachProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.CreateTemporaryProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.DecreaseProductQuantityUseCase
 import com.cret.inoutmanager.domain.usecase.DeleteProductUseCase
 import com.cret.inoutmanager.domain.usecase.DiscardProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.GetProductsUseCase
+import com.cret.inoutmanager.domain.usecase.ImportProductImageUseCase
 import com.cret.inoutmanager.domain.usecase.ProductUseCases
+import com.cret.inoutmanager.domain.usecase.RemoveProductImageUseCase
+import com.cret.inoutmanager.presentation.model.ProductImageOrigin
 import com.cret.inoutmanager.reporting.CaptureFailureReason
 import com.cret.inoutmanager.reporting.CaptureState
 import com.cret.inoutmanager.reporting.ProductPhotoCaptureReporter
@@ -23,10 +27,12 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
+import java.io.InputStream
 
 class InventoryViewModelAnalyticsTest {
 
@@ -60,12 +66,17 @@ class InventoryViewModelAnalyticsTest {
         }
     }
 
-    private class FakeProductImageStorage : ProductImageStorage {
+    private class FakeProductImageStorage(
+        private val deleteResult: Boolean = true,
+    ) : ProductImageStorage {
         val deleted = mutableListOf<File>()
         override fun createTemporaryFile(): File = File.createTempFile("test", ".jpg")
         override fun commit(temporaryFile: File): File = temporaryFile
-        override fun delete(file: File) {
+        override fun importTemporaryFile(input: InputStream): File = File.createTempFile("test", ".jpg")
+        override fun isUsableManagedImage(file: File): Boolean = file.exists()
+        override fun delete(file: File): Boolean {
             deleted += file
+            return deleteResult
         }
     }
 
@@ -101,6 +112,9 @@ class InventoryViewModelAnalyticsTest {
             deleteProduct = DeleteProductUseCase(repository, imageStorage),
             createTemporaryProductImage = CreateTemporaryProductImageUseCase(imageStorage),
             discardProductImage = DiscardProductImageUseCase(imageStorage),
+            importProductImage = ImportProductImageUseCase(imageStorage),
+            attachProductImage = AttachProductImageUseCase(repository, imageStorage),
+            removeProductImage = RemoveProductImageUseCase(repository, imageStorage),
         )
         return InventoryViewModel(useCases, logger, reporter)
     }
@@ -184,6 +198,201 @@ class InventoryViewModelAnalyticsTest {
 
         assertEquals(emptyList<AnalyticsEvent>(), logger.loggedEvents)
         assertTrue(reporter.states.isEmpty())
+    }
+
+    @Test
+    fun `addProduct failure with picker image does not log photo capture failure`() = runTest {
+        val logger = FakeAnalyticsLogger()
+        val reporter = FakePhotoCaptureReporter()
+        val sut = viewModel(
+            FakeProductRepository(insertError = RuntimeException("insert failed")),
+            logger,
+            reporter = reporter,
+        )
+        val imageFile = File.createTempFile("test", ".jpg")
+        var result: Boolean? = null
+
+        sut.addProduct(
+            name = "펜",
+            location = "A-1",
+            quantityStr = "5",
+            imageFile = imageFile,
+            imageOrigin = ProductImageOrigin.PICKER,
+            onResult = { result = it },
+        )
+
+        assertEquals(false, result)
+        assertEquals(emptyList<AnalyticsEvent>(), logger.loggedEvents)
+        assertTrue(reporter.states.isEmpty())
+    }
+
+    @Test
+    fun `importProductImage delegates to useCases and returns success`() = runTest {
+        val imageStorage = FakeProductImageStorage()
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger(), imageStorage = imageStorage)
+        val source = File.createTempFile("source", ".jpg").apply { writeBytes(byteArrayOf(1, 2, 3)) }
+        val latch = java.util.concurrent.CountDownLatch(1)
+        var result: Result<File>? = null
+
+        sut.importProductImage(
+            openStream = { source.inputStream() },
+            onResult = { result = it; latch.countDown() },
+        )
+
+        assertTrue(latch.await(5, java.util.concurrent.TimeUnit.SECONDS))
+        assertTrue(result?.isSuccess == true)
+    }
+
+    @Test
+    fun `importProductImage failure returns failure result without changing ui state`() = runTest {
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger())
+        val latch = java.util.concurrent.CountDownLatch(1)
+        var result: Result<File>? = null
+
+        sut.importProductImage(
+            openStream = { throw java.io.IOException("open failed") },
+            onResult = { result = it; latch.countDown() },
+        )
+
+        assertTrue(latch.await(5, java.util.concurrent.TimeUnit.SECONDS))
+        assertTrue(result?.isFailure == true)
+        assertNotNull(sut.uiState.value)
+    }
+
+    @Test
+    fun `attachProductImage success calls onResult with true and does not log photo capture events`() = runTest {
+        val logger = FakeAnalyticsLogger()
+        val reporter = FakePhotoCaptureReporter()
+        val sut = viewModel(FakeProductRepository(), logger, reporter = reporter)
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5)
+        val imageFile = File.createTempFile("test", ".jpg")
+        var result: Boolean? = null
+
+        sut.attachProductImage(
+            product = product,
+            temporaryImageFile = imageFile,
+            imageOrigin = ProductImageOrigin.PICKER,
+            onResult = { result = it },
+        )
+
+        assertEquals(true, result)
+        assertEquals(emptyList<AnalyticsEvent>(), logger.loggedEvents)
+        assertTrue(reporter.states.isEmpty())
+    }
+
+    @Test
+    fun `attachProductImage failure with camera origin logs SAVE_ERROR`() = runTest {
+        val logger = FakeAnalyticsLogger()
+        val reporter = FakePhotoCaptureReporter()
+        val sut = viewModel(
+            FakeProductRepository(updateError = RuntimeException("update failed")),
+            logger,
+            reporter = reporter,
+        )
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5)
+        val imageFile = File.createTempFile("test", ".jpg")
+        var result: Boolean? = null
+
+        sut.attachProductImage(
+            product = product,
+            temporaryImageFile = imageFile,
+            imageOrigin = ProductImageOrigin.CAMERA,
+            onResult = { result = it },
+        )
+
+        assertEquals(false, result)
+        assertEquals(
+            listOf(AnalyticsEvent.ProductPhotoCaptureFailed(reason = PhotoCaptureFailureReason.SAVE_ERROR)),
+            logger.loggedEvents,
+        )
+        assertEquals(listOf(CaptureState.FAILED), reporter.states)
+        assertNotNull(sut.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `attachProductImage failure with picker origin does not log photo capture failure`() = runTest {
+        val logger = FakeAnalyticsLogger()
+        val reporter = FakePhotoCaptureReporter()
+        val sut = viewModel(
+            FakeProductRepository(updateError = RuntimeException("update failed")),
+            logger,
+            reporter = reporter,
+        )
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5)
+        val imageFile = File.createTempFile("test", ".jpg")
+        var result: Boolean? = null
+
+        sut.attachProductImage(
+            product = product,
+            temporaryImageFile = imageFile,
+            imageOrigin = ProductImageOrigin.PICKER,
+            onResult = { result = it },
+        )
+
+        assertEquals(false, result)
+        assertEquals(emptyList<AnalyticsEvent>(), logger.loggedEvents)
+        assertTrue(reporter.states.isEmpty())
+        assertNotNull(sut.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `attachProductImage still reports success when previous image cleanup fails, but flags a cleanup warning`() = runTest {
+        val imageStorage = FakeProductImageStorage(deleteResult = false)
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger(), imageStorage = imageStorage)
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5, imagePath = "/data/old.jpg")
+        val imageFile = File.createTempFile("test", ".jpg")
+        var result: Boolean? = null
+
+        sut.attachProductImage(
+            product = product,
+            temporaryImageFile = imageFile,
+            imageOrigin = ProductImageOrigin.PICKER,
+            onResult = { result = it },
+        )
+
+        assertEquals(true, result)
+        assertNull(sut.uiState.value.errorMessage)
+        assertTrue(sut.uiState.value.imageCleanupWarning)
+    }
+
+    @Test
+    fun `consumeImageCleanupWarning resets the warning flag`() = runTest {
+        val imageStorage = FakeProductImageStorage(deleteResult = false)
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger(), imageStorage = imageStorage)
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5, imagePath = "/data/old.jpg")
+        sut.attachProductImage(
+            product = product,
+            temporaryImageFile = File.createTempFile("test", ".jpg"),
+            imageOrigin = ProductImageOrigin.PICKER,
+        )
+        assertTrue(sut.uiState.value.imageCleanupWarning)
+
+        sut.consumeImageCleanupWarning()
+
+        assertTrue(!sut.uiState.value.imageCleanupWarning)
+    }
+
+    @Test
+    fun `removeProductImage success calls onResult with true`() = runTest {
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger())
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5, imagePath = "/data/old.jpg")
+        var result: Boolean? = null
+
+        sut.removeProductImage(product, onResult = { result = it })
+
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `removeProductImage failure calls onResult with false and sets error message`() = runTest {
+        val sut = viewModel(FakeProductRepository(updateError = RuntimeException("update failed")), FakeAnalyticsLogger())
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5, imagePath = "/data/old.jpg")
+        var result: Boolean? = null
+
+        sut.removeProductImage(product, onResult = { result = it })
+
+        assertEquals(false, result)
+        assertNotNull(sut.uiState.value.errorMessage)
     }
 
     @Test

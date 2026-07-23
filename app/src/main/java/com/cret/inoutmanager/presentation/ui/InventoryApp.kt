@@ -29,6 +29,7 @@ import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.*
 import com.cret.inoutmanager.presentation.ui.components.NewProductDialog
 import com.cret.inoutmanager.presentation.ui.components.OutboundQuantityDialog
+import com.cret.inoutmanager.presentation.ui.components.ProductSummaryDialog
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryNavGraph
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
 import com.cret.inoutmanager.presentation.viewmodel.InventoryViewModel
@@ -53,6 +54,8 @@ fun InventoryApp(
     var selectedProductForOutbound by remember { mutableStateOf<Product?>(null) }
     var outboundQuantityInput by remember { mutableStateOf("") }
     var showConfirmDialog by remember { mutableStateOf(false) }
+    var selectedProductIdForSummary by remember { mutableStateOf<Int?>(null) }
+    val selectedProductForSummary = uiState.products.find { it.id == selectedProductIdForSummary }
 
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -65,6 +68,7 @@ fun InventoryApp(
         }
     }
 
+
     fun navigateToFeature(route: String) {
         if (route == currentRoute) return
         navController.navigate(route) {
@@ -76,6 +80,13 @@ fun InventoryApp(
     }
 
     val context = LocalContext.current
+    LaunchedEffect(uiState.imageCleanupWarning) {
+        if (uiState.imageCleanupWarning) {
+            Toast.makeText(context, "이미지는 저장됐지만 이전 파일 정리에 실패했습니다.", Toast.LENGTH_SHORT).show()
+            viewModel.consumeImageCleanupWarning()
+        }
+    }
+
     var lastBackPressTime by remember { mutableStateOf(0L) }
     BackHandler(enabled = isHome) {
         val now = System.currentTimeMillis()
@@ -187,6 +198,9 @@ fun InventoryApp(
                 modifier = Modifier.fillMaxSize(),
                 products = uiState.products,
                 onNavigateToFeature = ::navigateToFeature,
+                onProductClick = { product ->
+                    selectedProductIdForSummary = product.id
+                },
                 onOutboundClick = { product ->
                     selectedProductForOutbound = product
                     outboundQuantityInput = ""
@@ -207,8 +221,8 @@ fun InventoryApp(
                     viewModel.resetPhotoCaptureReporting()
                     showAddDialog = false
                 },
-                onConfirm = { name, location, qty, imageFile, onResult ->
-                    viewModel.addProduct(name, location, qty, imageFile) { success ->
+                onConfirm = { name, location, qty, imageFile, imageOrigin, onResult ->
+                    viewModel.addProduct(name, location, qty, imageFile, imageOrigin) { success ->
                         onResult(success)
                         if (success) {
                             viewModel.resetPhotoCaptureReporting()
@@ -218,6 +232,30 @@ fun InventoryApp(
                 },
                 createTemporaryImageFile = viewModel::createTemporaryImageFile,
                 discardTemporaryImage = viewModel::discardTemporaryImage,
+                importImage = viewModel::importProductImage,
+                onCameraOpened = viewModel::logPhotoCaptureStarted,
+                onCameraCaptureCompleted = viewModel::logPhotoCaptureCompleted,
+                onCameraCaptureFailed = { viewModel.logPhotoCaptureFailed(PhotoCaptureFailureReason.CAPTURE_ERROR) },
+                onCameraPermissionDenied = { viewModel.logPhotoCaptureFailed(PhotoCaptureFailureReason.PERMISSION_DENIED) },
+            )
+        }
+
+        if (selectedProductForSummary != null) {
+            ProductSummaryDialog(
+                product = selectedProductForSummary,
+                onDismiss = {
+                    viewModel.resetPhotoCaptureReporting()
+                    selectedProductIdForSummary = null
+                },
+                attachImage = { temporaryImageFile, imageOrigin, onResult ->
+                    viewModel.attachProductImage(selectedProductForSummary, temporaryImageFile, imageOrigin, onResult)
+                },
+                removeImage = { onResult ->
+                    viewModel.removeProductImage(selectedProductForSummary, onResult)
+                },
+                createTemporaryImageFile = viewModel::createTemporaryImageFile,
+                discardTemporaryImage = viewModel::discardTemporaryImage,
+                importImage = viewModel::importProductImage,
                 onCameraOpened = viewModel::logPhotoCaptureStarted,
                 onCameraCaptureCompleted = viewModel::logPhotoCaptureCompleted,
                 onCameraCaptureFailed = { viewModel.logPhotoCaptureFailed(PhotoCaptureFailureReason.CAPTURE_ERROR) },
@@ -283,7 +321,9 @@ fun PreviewInventoryApp() {
     val fakeImageStorage = object : com.cret.inoutmanager.domain.repository.ProductImageStorage {
         override fun createTemporaryFile() = java.io.File.createTempFile("preview", ".jpg")
         override fun commit(temporaryFile: java.io.File) = temporaryFile
-        override fun delete(file: java.io.File) {}
+        override fun importTemporaryFile(input: java.io.InputStream) = java.io.File.createTempFile("preview", ".jpg")
+        override fun isUsableManagedImage(file: java.io.File) = file.exists()
+        override fun delete(file: java.io.File) = true
     }
 
     val fakeUseCases = ProductUseCases(
@@ -292,7 +332,10 @@ fun PreviewInventoryApp() {
         decreaseProductQuantity = DecreaseProductQuantityUseCase(fakeRepository),
         deleteProduct = DeleteProductUseCase(fakeRepository, fakeImageStorage),
         createTemporaryProductImage = CreateTemporaryProductImageUseCase(fakeImageStorage),
-        discardProductImage = DiscardProductImageUseCase(fakeImageStorage)
+        discardProductImage = DiscardProductImageUseCase(fakeImageStorage),
+        importProductImage = com.cret.inoutmanager.domain.usecase.ImportProductImageUseCase(fakeImageStorage),
+        attachProductImage = com.cret.inoutmanager.domain.usecase.AttachProductImageUseCase(fakeRepository, fakeImageStorage),
+        removeProductImage = com.cret.inoutmanager.domain.usecase.RemoveProductImageUseCase(fakeRepository, fakeImageStorage),
     )
 
     val noOpAnalyticsLogger = com.cret.inoutmanager.analytics.AnalyticsLogger { }

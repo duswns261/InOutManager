@@ -12,6 +12,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.File
+import java.io.InputStream
 
 class AddProductUseCaseTest {
 
@@ -42,8 +43,12 @@ class AddProductUseCaseTest {
             return commitResult(temporaryFile)
         }
 
-        override fun delete(file: File) {
+        override fun importTemporaryFile(input: InputStream): File = File.createTempFile("test", ".jpg")
+        override fun isUsableManagedImage(file: File): Boolean = file.exists()
+
+        override fun delete(file: File): Boolean {
             deleted += file
+            return true
         }
     }
 
