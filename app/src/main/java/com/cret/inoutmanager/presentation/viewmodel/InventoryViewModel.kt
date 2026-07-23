@@ -208,7 +208,7 @@ class InventoryViewModel @Inject constructor(
     // --- Analytics 시작/화면 이벤트 ---
 
     fun logProductRegistrationStarted() {
-        analyticsLogger.log(AnalyticsEvent.ProductRegistrationStarted(entryPoint = EntryPoint.INBOUND_FAB))
+        analyticsLogger.log(AnalyticsEvent.ProductRegistrationStarted(entryPoint = EntryPoint.INBOUND_APP_BAR))
     }
 
     fun logOutboundStarted() {
