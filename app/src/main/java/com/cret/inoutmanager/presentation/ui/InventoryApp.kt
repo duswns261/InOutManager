@@ -68,6 +68,7 @@ fun InventoryApp(
         }
     }
 
+
     fun navigateToFeature(route: String) {
         if (route == currentRoute) return
         navController.navigate(route) {
@@ -79,6 +80,13 @@ fun InventoryApp(
     }
 
     val context = LocalContext.current
+    LaunchedEffect(uiState.imageCleanupWarning) {
+        if (uiState.imageCleanupWarning) {
+            Toast.makeText(context, "이미지는 저장됐지만 이전 파일 정리에 실패했습니다.", Toast.LENGTH_SHORT).show()
+            viewModel.consumeImageCleanupWarning()
+        }
+    }
+
     var lastBackPressTime by remember { mutableStateOf(0L) }
     BackHandler(enabled = isHome) {
         val now = System.currentTimeMillis()
@@ -315,7 +323,7 @@ fun PreviewInventoryApp() {
         override fun commit(temporaryFile: java.io.File) = temporaryFile
         override fun importTemporaryFile(input: java.io.InputStream) = java.io.File.createTempFile("preview", ".jpg")
         override fun isUsableManagedImage(file: java.io.File) = file.exists()
-        override fun delete(file: java.io.File) {}
+        override fun delete(file: java.io.File) = true
     }
 
     val fakeUseCases = ProductUseCases(

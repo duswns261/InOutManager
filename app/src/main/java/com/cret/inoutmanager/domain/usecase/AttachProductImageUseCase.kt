@@ -15,7 +15,7 @@ class AttachProductImageUseCase(
     private val repository: ProductRepository,
     private val imageStorage: ProductImageStorage,
 ) {
-    suspend operator fun invoke(product: Product, temporaryImageFile: File): Product {
+    suspend operator fun invoke(product: Product, temporaryImageFile: File): ProductImageMutationResult {
         val committedImageFile = try {
             imageStorage.commit(temporaryImageFile)
         } catch (e: Exception) {
@@ -31,18 +31,18 @@ class AttachProductImageUseCase(
             throw e
         }
 
-        cleanUpPreviousImage(previousImagePath = product.imagePath, newImageFile = committedImageFile)
+        val cleanupSucceeded = cleanUpPreviousImage(previousImagePath = product.imagePath, newImageFile = committedImageFile)
 
-        return updatedProduct
+        return ProductImageMutationResult(updatedProduct, cleanupSucceeded)
     }
 
     /**
      * DB update가 성공한 뒤에만 호출됩니다. 이전 이미지 정리가 실패해도 이미 성공한 DB 상태를
-     * 되돌리지 않도록 예외를 흡수합니다. 정리에 실패하면 고아 파일이 남을 수 있지만 제품 데이터는
-     * 영향을 받지 않습니다.
+     * 되돌리지 않도록 예외를 흡수하되, 실패 여부는 반환값으로 그대로 관찰할 수 있게 합니다.
+     * 정리에 실패하면 고아 파일이 남을 수 있지만 제품 데이터는 영향을 받지 않습니다.
      */
-    private fun cleanUpPreviousImage(previousImagePath: String?, newImageFile: File) {
-        if (previousImagePath.isNullOrBlank() || previousImagePath == newImageFile.absolutePath) return
-        runCatching { imageStorage.delete(File(previousImagePath)) }
+    private fun cleanUpPreviousImage(previousImagePath: String?, newImageFile: File): Boolean {
+        if (previousImagePath.isNullOrBlank() || previousImagePath == newImageFile.absolutePath) return true
+        return runCatching { imageStorage.delete(File(previousImagePath)) }.getOrDefault(false)
     }
 }

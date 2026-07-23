@@ -62,37 +62,54 @@ class FileProductImageStorageTest {
     }
 
     @Test
-    fun `delete removes a file inside the managed temporary directory`() {
+    fun `delete removes a file inside the managed temporary directory and returns true`() {
         val sut = storage()
         val temporaryFile = sut.createTemporaryFile()
         temporaryFile.writeText("x")
 
-        sut.delete(temporaryFile)
+        val result = sut.delete(temporaryFile)
 
         assertFalse(temporaryFile.exists())
+        assertTrue(result)
     }
 
     @Test
-    fun `delete removes a file inside the managed permanent directory`() {
+    fun `delete removes a file inside the managed permanent directory and returns true`() {
         val sut = storage()
         val temporaryFile = sut.createTemporaryFile()
         temporaryFile.writeText("x")
         val committedFile = sut.commit(temporaryFile)
 
-        sut.delete(committedFile)
+        val result = sut.delete(committedFile)
 
         assertFalse(committedFile.exists())
+        assertTrue(result)
     }
 
     @Test
-    fun `delete ignores a file outside the managed directories`() {
+    fun `delete ignores a file outside the managed directories and returns true as a no-op`() {
         val sut = storage()
         val externalFile = tempFolder.newFile("outside-managed-dirs.jpg")
         externalFile.writeText("do-not-touch")
 
-        sut.delete(externalFile)
+        val result = sut.delete(externalFile)
 
         assertTrue(externalFile.exists())
+        assertTrue(result)
+    }
+
+    @Test
+    fun `delete returns false without throwing when a managed file exists but cannot actually be deleted`() {
+        val sut = storage()
+        val temporaryFile = sut.createTemporaryFile()
+        // 빈 파일이 아닌 디렉터리를 관리 경로에 만들어 File#delete()가 false를 반환하는 상황을 재현합니다.
+        val undeletableDir = File(temporaryFile.parentFile, "undeletable-dir").apply { mkdirs() }
+        File(undeletableDir, "child.txt").writeText("blocks-delete")
+
+        val result = sut.delete(undeletableDir)
+
+        assertTrue("cleanup 실패를 성공처럼 숨기면 안 됩니다", !result)
+        assertTrue(undeletableDir.exists())
     }
 
     @Test
@@ -120,7 +137,7 @@ class FileProductImageStorageTest {
     }
 
     @Test
-    fun `delete does not throw when the managed permanent file has already been lost`() {
+    fun `delete returns true as a no-op when the managed permanent file has already been lost`() {
         val sut = storage()
         val temporaryFile = sut.createTemporaryFile()
         temporaryFile.writeText("x")
@@ -128,9 +145,10 @@ class FileProductImageStorageTest {
         committedFile.delete()
         assertFalse(committedFile.exists())
 
-        sut.delete(committedFile)
+        val result = sut.delete(committedFile)
 
         assertFalse(committedFile.exists())
+        assertTrue(result)
     }
 
     @Test

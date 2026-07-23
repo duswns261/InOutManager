@@ -29,7 +29,7 @@ class ImportProductImageUseCaseTest {
         }
 
         override fun isUsableManagedImage(file: File): Boolean = file.exists()
-        override fun delete(file: File) {}
+        override fun delete(file: File) = true
     }
 
     private class CountingStream(private val bytes: ByteArray) : InputStream() {

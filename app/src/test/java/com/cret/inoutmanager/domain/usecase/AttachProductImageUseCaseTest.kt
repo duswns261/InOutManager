@@ -31,6 +31,7 @@ class AttachProductImageUseCaseTest {
     private class FakeProductImageStorage(
         private val commitError: Throwable? = null,
         private val deleteError: Throwable? = null,
+        private val deleteResult: Boolean = true,
     ) : ProductImageStorage {
         val committed = mutableListOf<File>()
         val deleted = mutableListOf<File>()
@@ -47,9 +48,10 @@ class AttachProductImageUseCaseTest {
         override fun importTemporaryFile(input: InputStream): File = File.createTempFile("test", ".jpg")
         override fun isUsableManagedImage(file: File): Boolean = file.exists()
 
-        override fun delete(file: File) {
+        override fun delete(file: File): Boolean {
             deleted += file
             deleteError?.let { throw it }
+            return deleteResult
         }
     }
 
@@ -73,7 +75,8 @@ class AttachProductImageUseCaseTest {
 
         val result = sut(target, temporaryFile)
 
-        assertEquals(permanentFile.absolutePath, result.imagePath)
+        assertEquals(permanentFile.absolutePath, result.product.imagePath)
+        assertTrue(result.cleanupSucceeded)
         assertEquals(listOf(target.copy(imagePath = permanentFile.absolutePath)), repository.updated)
         assertTrue(imageStorage.deleted.isEmpty())
     }
@@ -91,7 +94,8 @@ class AttachProductImageUseCaseTest {
 
         val result = sut(target, temporaryFile)
 
-        assertEquals(newPermanentFile.absolutePath, result.imagePath)
+        assertEquals(newPermanentFile.absolutePath, result.product.imagePath)
+        assertTrue(result.cleanupSucceeded)
         assertEquals(listOf(target.copy(imagePath = newPermanentFile.absolutePath)), repository.updated)
         assertEquals(listOf(File(previousImagePath)), imageStorage.deleted)
     }
@@ -148,13 +152,14 @@ class AttachProductImageUseCaseTest {
         val temporaryFile = File.createTempFile("temp", ".jpg")
         val target = product(imagePath = samePath.absolutePath)
 
-        sut(target, temporaryFile)
+        val result = sut(target, temporaryFile)
 
         assertTrue(imageStorage.deleted.isEmpty())
+        assertTrue(result.cleanupSucceeded)
     }
 
     @Test
-    fun `invoke still returns the updated product when cleaning up the previous image fails`() = runTest {
+    fun `invoke still returns the updated product when cleaning up the previous image throws`() = runTest {
         val repository = FakeProductRepository()
         val imageStorage = FakeProductImageStorage(deleteError = RuntimeException("cleanup failed"))
         val newPermanentFile = File.createTempFile("new-permanent", ".jpg")
@@ -165,8 +170,26 @@ class AttachProductImageUseCaseTest {
 
         val result = sut(target, temporaryFile)
 
-        // 이전 파일 정리가 실패해도 이미 성공한 DB update 결과는 되돌리지 않는다.
-        assertEquals(newPermanentFile.absolutePath, result.imagePath)
+        // 이전 파일 정리가 실패해도 이미 성공한 DB update 결과는 되돌리지 않되, cleanup 실패는 관찰 가능해야 한다.
+        assertEquals(newPermanentFile.absolutePath, result.product.imagePath)
         assertEquals(listOf(target.copy(imagePath = newPermanentFile.absolutePath)), repository.updated)
+        assertTrue(!result.cleanupSucceeded)
+    }
+
+    @Test
+    fun `invoke reports cleanup failure when delete returns false without throwing`() = runTest {
+        val repository = FakeProductRepository()
+        val imageStorage = FakeProductImageStorage(deleteResult = false)
+        val newPermanentFile = File.createTempFile("new-permanent", ".jpg")
+        imageStorage.commitResult = { newPermanentFile }
+        val sut = AttachProductImageUseCase(repository, imageStorage)
+        val temporaryFile = File.createTempFile("temp", ".jpg")
+        val target = product(imagePath = "/data/product-images/old.jpg")
+
+        val result = sut(target, temporaryFile)
+
+        // File.delete() == false는 예외를 던지지 않으므로 이 경로가 조용히 성공 처리되지 않는지 별도로 검증한다.
+        assertEquals(newPermanentFile.absolutePath, result.product.imagePath)
+        assertTrue(!result.cleanupSucceeded)
     }
 }

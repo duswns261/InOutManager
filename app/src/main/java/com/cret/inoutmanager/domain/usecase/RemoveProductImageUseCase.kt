@@ -14,15 +14,17 @@ class RemoveProductImageUseCase(
     private val repository: ProductRepository,
     private val imageStorage: ProductImageStorage,
 ) {
-    suspend operator fun invoke(product: Product): Product {
+    suspend operator fun invoke(product: Product): ProductImageMutationResult {
         val previousImagePath = product.imagePath
-        if (previousImagePath.isNullOrBlank()) return product
+        if (previousImagePath.isNullOrBlank()) {
+            return ProductImageMutationResult(product, cleanupSucceeded = true)
+        }
 
         val updatedProduct = product.copy(imagePath = null)
         repository.update(updatedProduct)
 
-        runCatching { imageStorage.delete(File(previousImagePath)) }
+        val cleanupSucceeded = runCatching { imageStorage.delete(File(previousImagePath)) }.getOrDefault(false)
 
-        return updatedProduct
+        return ProductImageMutationResult(updatedProduct, cleanupSucceeded)
     }
 }

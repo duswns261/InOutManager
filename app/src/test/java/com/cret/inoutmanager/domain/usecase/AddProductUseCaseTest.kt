@@ -46,8 +46,9 @@ class AddProductUseCaseTest {
         override fun importTemporaryFile(input: InputStream): File = File.createTempFile("test", ".jpg")
         override fun isUsableManagedImage(file: File): Boolean = file.exists()
 
-        override fun delete(file: File) {
+        override fun delete(file: File): Boolean {
             deleted += file
+            return true
         }
     }
 

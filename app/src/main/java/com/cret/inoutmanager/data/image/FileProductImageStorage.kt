@@ -81,10 +81,10 @@ class FileProductImageStorage(
     override fun isUsableManagedImage(file: File): Boolean =
         isManaged(file) && file.exists() && canDecodeImage(file)
 
-    override fun delete(file: File) {
-        if (isManaged(file)) {
-            file.delete()
-        }
+    override fun delete(file: File): Boolean {
+        if (!isManaged(file)) return true
+        if (!file.exists()) return true
+        return file.delete()
     }
 
     private fun isManaged(file: File): Boolean {

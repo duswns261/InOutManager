@@ -34,8 +34,9 @@ class DeleteProductUseCaseTest {
         override fun commit(temporaryFile: File): File = temporaryFile
         override fun importTemporaryFile(input: InputStream): File = File.createTempFile("test", ".jpg")
         override fun isUsableManagedImage(file: File): Boolean = file.exists()
-        override fun delete(file: File) {
+        override fun delete(file: File): Boolean {
             deleted += file
+            return true
         }
     }
 
@@ -115,8 +116,9 @@ class DeleteProductUseCaseTest {
             override fun commit(temporaryFile: File): File = temporaryFile
             override fun importTemporaryFile(input: InputStream): File = File.createTempFile("test", ".jpg")
             override fun isUsableManagedImage(file: File): Boolean = file.exists()
-            override fun delete(file: File) {
+            override fun delete(file: File): Boolean {
                 callOrder += "storage"
+                return true
             }
         }
         val sut = DeleteProductUseCase(repository, imageStorage)

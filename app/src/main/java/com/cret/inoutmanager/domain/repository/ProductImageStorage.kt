@@ -30,7 +30,9 @@ interface ProductImageStorage {
 
     /**
      * 이 저장소가 관리하는 임시/영구 디렉터리 안의 파일만 삭제합니다.
-     * 관리 대상 밖의 파일이 전달되면 아무 동작도 하지 않습니다.
+     * 관리 대상 밖의 파일이나 이미 존재하지 않는 파일은 안전한 no-op으로 간주해 `true`를 반환합니다.
+     * 관리 대상 파일이 실제로 존재하는데 삭제에 실패하면 `false`를 반환합니다. 호출자는 이 결과로
+     * DB 변경 성공 여부와 정리(cleanup) 실패를 구분해야 하며, 삭제 실패를 성공처럼 숨기지 않습니다.
      */
-    fun delete(file: File)
+    fun delete(file: File): Boolean
 }

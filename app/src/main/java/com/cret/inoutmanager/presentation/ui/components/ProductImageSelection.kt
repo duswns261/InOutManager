@@ -18,6 +18,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,6 +69,11 @@ internal const val ProductImageSelectionRemoveOptionTag = "product-image-selecti
  * 새로 가져온 파일의 확정(신규 등록 임시 보관 또는 기존 제품 즉시 commit)은 [onImageAcquired]를
  * 통해 호출부가 결정합니다. [onRemoveRequested]가 주어지고 현재 이미지가 있을 때만 메뉴에
  * "사진 제거" 항목이 추가되며, 기존 제품 요약처럼 독립 삭제를 제공하지 않는 호출부는 생략합니다.
+ *
+ * Picker로 고른 이미지를 임시 파일로 복사하는 동안 [onImportStateChanged]로 진행 상태를
+ * 알려 호출부가 다이얼로그 dismiss·재선택을 잠글 수 있게 합니다. 복사가 끝나기 전에 이
+ * composable이 폐기되면(다이얼로그가 이미 닫힌 뒤) 늦게 도착한 성공 결과는 [onImageAcquired]를
+ * 호출하는 대신 [discardTemporaryImage]로 즉시 정리해 고아 파일과 폐기된 상태로의 쓰기를 막습니다.
  */
 @Composable
 fun ProductImageSelection(
@@ -81,6 +87,7 @@ fun ProductImageSelection(
     imageSize: Dp = ProductImageSelectionDefaultSize,
     enabled: Boolean = true,
     onRemoveRequested: (() -> Unit)? = null,
+    onImportStateChanged: (Boolean) -> Unit = {},
     onCameraOpened: () -> Unit = {},
     onCameraCaptureCompleted: () -> Unit = {},
     onCameraCaptureFailed: (CameraCaptureFailure) -> Unit = {},
@@ -89,6 +96,12 @@ fun ProductImageSelection(
     val context = LocalContext.current
     var showCamera by remember { mutableStateOf(false) }
     var showSourceMenu by remember { mutableStateOf(false) }
+    var isImporting by remember { mutableStateOf(false) }
+
+    val isComposed = remember { mutableStateOf(true) }
+    DisposableEffect(Unit) {
+        onDispose { isComposed.value = false }
+    }
 
     val hasImage = when (currentImage) {
         null -> false
@@ -124,13 +137,25 @@ fun ProductImageSelection(
         ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
+        isImporting = true
+        onImportStateChanged(true)
         importImage(
             { context.contentResolver.openInputStream(uri) ?: throw IOException("선택한 이미지를 열 수 없습니다") },
         ) { result ->
+            isImporting = false
+            onImportStateChanged(false)
             result.fold(
-                onSuccess = { file -> onImageAcquired(file, ProductImageOrigin.PICKER) },
+                onSuccess = { file ->
+                    if (isComposed.value) {
+                        onImageAcquired(file, ProductImageOrigin.PICKER)
+                    } else {
+                        discardTemporaryImage(file)
+                    }
+                },
                 onFailure = {
-                    Toast.makeText(context, "이미지를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    if (isComposed.value) {
+                        Toast.makeText(context, "이미지를 가져오지 못했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    }
                 },
             )
         }
@@ -147,7 +172,7 @@ fun ProductImageSelection(
         Box(modifier = Modifier.align(Alignment.BottomEnd)) {
             FilledIconButton(
                 onClick = { showSourceMenu = true },
-                enabled = enabled,
+                enabled = enabled && !isImporting,
                 modifier = Modifier
                     .size(ProductImageSelectionButtonSize)
                     .shadow(elevation = 2.dp, shape = CircleShape, clip = false)
@@ -213,7 +238,11 @@ fun ProductImageSelection(
             discardTemporaryFile = discardTemporaryImage,
             onPhotoConfirmed = { file ->
                 showCamera = false
-                onImageAcquired(file, ProductImageOrigin.CAMERA)
+                if (isComposed.value) {
+                    onImageAcquired(file, ProductImageOrigin.CAMERA)
+                } else {
+                    discardTemporaryImage(file)
+                }
             },
             onDismiss = { showCamera = false },
             onCaptureCompleted = onCameraCaptureCompleted,

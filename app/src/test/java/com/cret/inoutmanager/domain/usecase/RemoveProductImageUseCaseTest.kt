@@ -31,6 +31,7 @@ class RemoveProductImageUseCaseTest {
 
     private class FakeProductImageStorage(
         private val deleteError: Throwable? = null,
+        private val deleteResult: Boolean = true,
     ) : ProductImageStorage {
         val deleted = mutableListOf<File>()
 
@@ -39,9 +40,10 @@ class RemoveProductImageUseCaseTest {
         override fun importTemporaryFile(input: InputStream): File = File.createTempFile("test", ".jpg")
         override fun isUsableManagedImage(file: File): Boolean = file.exists()
 
-        override fun delete(file: File) {
+        override fun delete(file: File): Boolean {
             deleted += file
             deleteError?.let { throw it }
+            return deleteResult
         }
     }
 
@@ -63,7 +65,8 @@ class RemoveProductImageUseCaseTest {
 
         val result = sut(target)
 
-        assertNull(result.imagePath)
+        assertNull(result.product.imagePath)
+        assertTrue(result.cleanupSucceeded)
         assertEquals(listOf(target.copy(imagePath = null)), repository.updated)
         assertEquals(listOf(File(previousImagePath)), imageStorage.deleted)
     }
@@ -77,7 +80,8 @@ class RemoveProductImageUseCaseTest {
 
         val result = sut(target)
 
-        assertNull(result.imagePath)
+        assertNull(result.product.imagePath)
+        assertTrue(result.cleanupSucceeded)
         assertTrue(repository.updated.isEmpty())
         assertTrue(imageStorage.deleted.isEmpty())
     }
@@ -101,7 +105,7 @@ class RemoveProductImageUseCaseTest {
     }
 
     @Test
-    fun `invoke still returns the updated product when cleanup fails`() = runTest {
+    fun `invoke still returns the updated product when cleanup throws`() = runTest {
         val repository = FakeProductRepository()
         val imageStorage = FakeProductImageStorage(deleteError = RuntimeException("cleanup failed"))
         val sut = RemoveProductImageUseCase(repository, imageStorage)
@@ -109,7 +113,23 @@ class RemoveProductImageUseCaseTest {
 
         val result = sut(target)
 
-        assertNull(result.imagePath)
+        assertNull(result.product.imagePath)
         assertEquals(listOf(target.copy(imagePath = null)), repository.updated)
+        assertTrue(!result.cleanupSucceeded)
+    }
+
+    @Test
+    fun `invoke reports cleanup failure when delete returns false without throwing`() = runTest {
+        val repository = FakeProductRepository()
+        val imageStorage = FakeProductImageStorage(deleteResult = false)
+        val sut = RemoveProductImageUseCase(repository, imageStorage)
+        val target = product(imagePath = "/data/product-images/old.jpg")
+
+        val result = sut(target)
+
+        // File.delete() == false는 예외를 던지지 않으므로 이 경로가 조용히 성공 처리되지 않는지 별도로 검증한다.
+        assertNull(result.product.imagePath)
+        assertEquals(listOf(target.copy(imagePath = null)), repository.updated)
+        assertTrue(!result.cleanupSucceeded)
     }
 }

@@ -103,6 +103,8 @@ class InventoryViewModel @Inject constructor(
     /**
      * 기존 제품에 새 이미지를 최초로 추가하거나 교체합니다.
      * 저장 실패에는 카메라 출처일 때만 기존 SAVE_ERROR 촬영 실패 reporting을 적용합니다.
+     * 데이터 변경이 성공했다면 이전 관리 이미지 정리가 실패해도 [onResult]는 true를 전달하며,
+     * 정리 실패만 [InventoryUiState.imageCleanupWarning]으로 별도 관찰할 수 있습니다.
      */
     fun attachProductImage(
         product: Product,
@@ -112,7 +114,10 @@ class InventoryViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                useCases.attachProductImage(product, temporaryImageFile)
+                val result = useCases.attachProductImage(product, temporaryImageFile)
+                if (!result.cleanupSucceeded) {
+                    _uiState.update { it.copy(imageCleanupWarning = true) }
+                }
                 onResult(true)
             } catch (e: Exception) {
                 _uiState.update { it.copy(errorMessage = e.message) }
@@ -126,18 +131,27 @@ class InventoryViewModel @Inject constructor(
 
     /**
      * 기존 제품의 이미지를 독립적으로 제거해 이미지 없는 상태로 되돌립니다.
-     * DB update 실패 시 기존 이미지를 그대로 유지합니다.
+     * DB update 실패 시 기존 이미지를 그대로 유지합니다. [attachProductImage]와 동일하게
+     * 정리 실패는 데이터 변경 성공을 되돌리지 않고 [InventoryUiState.imageCleanupWarning]으로 전달됩니다.
      */
     fun removeProductImage(product: Product, onResult: (Boolean) -> Unit = {}) {
         viewModelScope.launch {
             try {
-                useCases.removeProductImage(product)
+                val result = useCases.removeProductImage(product)
+                if (!result.cleanupSucceeded) {
+                    _uiState.update { it.copy(imageCleanupWarning = true) }
+                }
                 onResult(true)
             } catch (e: Exception) {
                 _uiState.update { it.copy(errorMessage = e.message) }
                 onResult(false)
             }
         }
+    }
+
+    /** UI가 cleanup warning 안내를 표시한 뒤 재노출을 막기 위해 신호를 소비합니다. */
+    fun consumeImageCleanupWarning() {
+        _uiState.update { it.copy(imageCleanupWarning = false) }
     }
 
     // --- 촬영 흐름 Analytics/Crashlytics ---

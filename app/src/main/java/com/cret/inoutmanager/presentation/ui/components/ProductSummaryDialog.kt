@@ -65,10 +65,11 @@ fun ProductSummaryDialog(
     onCameraPermissionDenied: () -> Unit = {},
 ) {
     var isSaving by remember { mutableStateOf(false) }
+    var isImporting by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     fun dismissIfIdle() {
-        if (!isSaving) onDismiss()
+        if (!isSaving && !isImporting) onDismiss()
     }
 
     fun handleImageAcquired(file: File, origin: ProductImageOrigin) {
@@ -98,7 +99,7 @@ fun ProductSummaryDialog(
             modifier = Modifier.heightIn(max = 640.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
-                DialogHeader(title = product.name, onClose = ::dismissIfIdle, fontSize = 20.sp)
+                DialogHeader(title = product.name, onClose = ::dismissIfIdle, fontSize = 20.sp, expandable = true)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Column(
@@ -116,8 +117,9 @@ fun ProductSummaryDialog(
                         discardTemporaryImage = discardTemporaryImage,
                         importImage = importImage,
                         imageSize = SummaryImageSize,
-                        enabled = !isSaving,
+                        enabled = !isSaving && !isImporting,
                         onRemoveRequested = ::handleRemoveRequested,
+                        onImportStateChanged = { isImporting = it },
                         onCameraOpened = onCameraOpened,
                         onCameraCaptureCompleted = onCameraCaptureCompleted,
                         onCameraCaptureFailed = onCameraCaptureFailed,
@@ -139,7 +141,7 @@ fun ProductSummaryDialog(
                         textAlign = TextAlign.Center,
                     )
 
-                    if (isSaving) {
+                    if (isSaving || isImporting) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)

@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -65,14 +66,17 @@ class InventoryViewModelAnalyticsTest {
         }
     }
 
-    private class FakeProductImageStorage : ProductImageStorage {
+    private class FakeProductImageStorage(
+        private val deleteResult: Boolean = true,
+    ) : ProductImageStorage {
         val deleted = mutableListOf<File>()
         override fun createTemporaryFile(): File = File.createTempFile("test", ".jpg")
         override fun commit(temporaryFile: File): File = temporaryFile
         override fun importTemporaryFile(input: InputStream): File = File.createTempFile("test", ".jpg")
         override fun isUsableManagedImage(file: File): Boolean = file.exists()
-        override fun delete(file: File) {
+        override fun delete(file: File): Boolean {
             deleted += file
+            return deleteResult
         }
     }
 
@@ -329,6 +333,43 @@ class InventoryViewModelAnalyticsTest {
         assertEquals(emptyList<AnalyticsEvent>(), logger.loggedEvents)
         assertTrue(reporter.states.isEmpty())
         assertNotNull(sut.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun `attachProductImage still reports success when previous image cleanup fails, but flags a cleanup warning`() = runTest {
+        val imageStorage = FakeProductImageStorage(deleteResult = false)
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger(), imageStorage = imageStorage)
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5, imagePath = "/data/old.jpg")
+        val imageFile = File.createTempFile("test", ".jpg")
+        var result: Boolean? = null
+
+        sut.attachProductImage(
+            product = product,
+            temporaryImageFile = imageFile,
+            imageOrigin = ProductImageOrigin.PICKER,
+            onResult = { result = it },
+        )
+
+        assertEquals(true, result)
+        assertNull(sut.uiState.value.errorMessage)
+        assertTrue(sut.uiState.value.imageCleanupWarning)
+    }
+
+    @Test
+    fun `consumeImageCleanupWarning resets the warning flag`() = runTest {
+        val imageStorage = FakeProductImageStorage(deleteResult = false)
+        val sut = viewModel(FakeProductRepository(), FakeAnalyticsLogger(), imageStorage = imageStorage)
+        val product = Product(id = 1, name = "펜", location = "A-1", quantity = 5, imagePath = "/data/old.jpg")
+        sut.attachProductImage(
+            product = product,
+            temporaryImageFile = File.createTempFile("test", ".jpg"),
+            imageOrigin = ProductImageOrigin.PICKER,
+        )
+        assertTrue(sut.uiState.value.imageCleanupWarning)
+
+        sut.consumeImageCleanupWarning()
+
+        assertTrue(!sut.uiState.value.imageCleanupWarning)
     }
 
     @Test
