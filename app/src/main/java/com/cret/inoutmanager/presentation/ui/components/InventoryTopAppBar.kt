@@ -1,5 +1,6 @@
 package com.cret.inoutmanager.presentation.ui.components
 
+import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -30,13 +32,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
-import com.cret.inoutmanager.ui.theme.BrandAccent
-import com.cret.inoutmanager.ui.theme.BrandSurface
+import com.cret.inoutmanager.ui.theme.InOutManagerTheme
 
 private val InventoryTopAppBarTitleIconSpacing = 6.dp
 
@@ -91,7 +91,7 @@ fun InventoryTopAppBar(
                 DropdownMenu(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                 ) {
                     InventoryRoute.featureRoutes.forEach { route ->
                         val isSelected = route == currentFeature
@@ -104,7 +104,11 @@ fun InventoryTopAppBar(
                             },
                             trailingIcon = {
                                 if (isSelected) {
-                                    Icon(Icons.Default.Check, contentDescription = null, tint = BrandAccent)
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
                                 }
                             },
                             modifier = Modifier
@@ -125,40 +129,55 @@ fun InventoryTopAppBar(
                     onClick = onAddProductClick,
                     modifier = Modifier.testTag(InventoryTopAppBarAddButtonTag),
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "신규 제품 등록", tint = BrandAccent)
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "신규 제품 등록",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = BrandSurface),
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
     )
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Inbound - Light", showBackground = true)
+@Preview(name = "Inbound - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun InventoryTopAppBarInboundPreview() {
-    InventoryTopAppBar(
-        currentRoute = InventoryRoute.Inbound.route,
-        onRouteSelected = {},
-        onAddProductClick = {},
-    )
+    InOutManagerTheme {
+        InventoryTopAppBar(
+            currentRoute = InventoryRoute.Inbound.route,
+            onRouteSelected = {},
+            onAddProductClick = {},
+        )
+    }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Outbound - Light", showBackground = true)
+@Preview(name = "Outbound - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun InventoryTopAppBarOutboundPreview() {
-    InventoryTopAppBar(
-        currentRoute = InventoryRoute.Outbound.route,
-        onRouteSelected = {},
-        onAddProductClick = {},
-    )
+    InOutManagerTheme {
+        InventoryTopAppBar(
+            currentRoute = InventoryRoute.Outbound.route,
+            onRouteSelected = {},
+            onAddProductClick = {},
+        )
+    }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Status - Light", showBackground = true)
+@Preview(name = "Status - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun InventoryTopAppBarStatusPreview() {
-    InventoryTopAppBar(
-        currentRoute = InventoryRoute.Status.route,
-        onRouteSelected = {},
-        onAddProductClick = {},
-    )
+    InOutManagerTheme {
+        InventoryTopAppBar(
+            currentRoute = InventoryRoute.Status.route,
+            onRouteSelected = {},
+            onAddProductClick = {},
+        )
+    }
 }
