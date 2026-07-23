@@ -17,7 +17,7 @@
 
 | Event | 발생 시점 | Parameter | 코드 위치 |
 |---|---|---|---|
-| `product_registration_started` | Inbound 화면 FAB를 눌러 등록 dialog를 열기 직전 | `entry_point=inbound_fab` | `InventoryApp.kt`의 FAB `onClick` → `InventoryViewModel.logProductRegistrationStarted()` |
+| `product_registration_started` | 입고 화면 App Bar `+` 버튼을 눌러 등록 dialog를 열기 직전 | `entry_point=inbound_app_bar` | `InventoryTopAppBar.kt`의 등록 action `onClick` → `InventoryApp.kt` → `InventoryViewModel.logProductRegistrationStarted()` |
 | `product_created` | `AddProductUseCase`가 예외 없이 반환된 직후 | `has_image` (등록에 실제 첨부된 사진 유무), `quantity_range` (등록 수량 기준) | `InventoryViewModel.addProduct()` |
 | `product_photo_capture_started` | 카메라 권한 확인 후 촬영 화면(`ProductCameraDialog`)이 열릴 때 | 없음 | `Dialogs.kt`의 `openCamera()` → `InventoryViewModel.logPhotoCaptureStarted()` |
 | `product_photo_capture_completed` | 촬영 결과 확인 화면에서 사용자가 "사용하기"를 눌러 사진을 확정할 때 | 없음 | `ProductCameraDialog.kt`의 `onCaptureCompleted` → `InventoryViewModel.logPhotoCaptureCompleted()` |
@@ -33,7 +33,7 @@
 
 | 값 | 의미 |
 |---|---|
-| `inbound_fab` | 입고 화면의 등록 FAB에서 시작 (현재 UX에서 사용하는 유일한 진입점) |
+| `inbound_app_bar` | 입고 화면 App Bar의 등록 `+` 버튼에서 시작 (현재 UX에서 사용하는 유일한 진입점) |
 
 ### `has_image`
 
@@ -63,7 +63,7 @@
 
 ## 4. 중복 방지
 
-- `product_registration_started`, `outbound_started`는 각각 FAB `onClick`, 상품 선택 `onClick` 콜백 한 곳에서만 기록한다. Home 화면 이동이나 다른 재구성 경로에서는 기록하지 않는다.
+- `product_registration_started`, `outbound_started`는 각각 App Bar 등록 `+` `onClick`, 상품 선택 `onClick` 콜백 한 곳에서만 기록한다. Home 화면 이동이나 다른 재구성 경로에서는 기록하지 않는다.
 - `inventory_screen_viewed`는 `currentRoute`를 key로 하는 `LaunchedEffect`에서 기록하므로, 같은 route로 유지되는 동안의 Compose 재구성에서는 재기록되지 않는다.
 - 완료 이벤트는 UseCase가 실제로 반환된 뒤에만 기록되므로, 사용자가 dialog를 취소하거나 UseCase가 예외를 던지면 기록되지 않는다.
 - `product_photo_capture_started`는 카메라 화면이 열릴 때마다(최초 진입, 재촬영 재진입 포함) 기록되고, `product_photo_capture_completed`는 촬영 결과를 "사용하기"로 확정할 때만 기록된다. 재촬영으로 폐기된 촬영에는 completed가 기록되지 않는다.
@@ -76,8 +76,8 @@ adb shell setprop debug.firebase.analytics.app com.cret.inoutmanager
 
 1. 위 명령 실행 후 debug 앱을 재실행한다.
 2. Firebase Console → DebugView에서 기기를 선택한다.
-3. 입고 FAB 진입 → 등록 완료 → `product_registration_started`, `product_created`(`has_image=false`) 순서로 각 1회 수신되는지 확인한다.
-4. 입고 FAB 진입 → 사진 촬영 → 사용하기 → 등록 완료 → `product_registration_started`, `product_photo_capture_started`, `product_photo_capture_completed`, `product_created`(`has_image=true`) 순서로 각 1회 수신되는지 확인한다.
+3. 입고 App Bar `+` 진입 → 등록 완료 → `product_registration_started`, `product_created`(`has_image=false`) 순서로 각 1회 수신되는지 확인한다.
+4. 입고 App Bar `+` 진입 → 사진 촬영 → 사용하기 → 등록 완료 → `product_registration_started`, `product_photo_capture_started`, `product_photo_capture_completed`, `product_created`(`has_image=true`) 순서로 각 1회 수신되는지 확인한다.
 5. 카메라 권한을 거부한 뒤 → `product_photo_capture_failed`(`failure_reason=permission_denied`)가 수신되고, 이후 사진 없이 등록해 `product_created`(`has_image=false`)가 정상 수신되는지 확인한다.
 6. 출고 화면에서 상품 선택 → 수량 입력 후 출고 확인 → `outbound_started`, `outbound_completed` 순서로 각 1회 수신되는지 확인한다.
 7. 자재 현황 진입 → `inventory_screen_viewed` 수신을 확인한다. 상품을 길게 눌러 삭제를 확인하면 `product_deleted` 수신을 확인한다.

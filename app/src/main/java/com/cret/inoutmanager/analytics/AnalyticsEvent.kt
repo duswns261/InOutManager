@@ -89,7 +89,7 @@ enum class PhotoCaptureFailureReason(val value: String) {
 
 /** `product_registration_started`의 `entry_point` 허용 값입니다. */
 enum class EntryPoint(val value: String) {
-    INBOUND_FAB("inbound_fab"),
+    INBOUND_APP_BAR("inbound_app_bar"),
 }
 
 /** 개인정보 없이 수량을 구간화해 전달하기 위한 `quantity_range` 허용 값입니다. */

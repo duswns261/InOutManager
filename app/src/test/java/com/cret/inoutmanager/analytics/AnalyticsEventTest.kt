@@ -6,11 +6,11 @@ import org.junit.Test
 class AnalyticsEventTest {
 
     @Test
-    fun `product registration started has inbound fab entry point`() {
-        val event = AnalyticsEvent.ProductRegistrationStarted(entryPoint = EntryPoint.INBOUND_FAB)
+    fun `product registration started has inbound app bar entry point`() {
+        val event = AnalyticsEvent.ProductRegistrationStarted(entryPoint = EntryPoint.INBOUND_APP_BAR)
 
         assertEquals("product_registration_started", event.name)
-        assertEquals(mapOf("entry_point" to "inbound_fab"), event.params)
+        assertEquals(mapOf("entry_point" to "inbound_app_bar"), event.params)
     }
 
     @Test

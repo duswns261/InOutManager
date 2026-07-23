@@ -3,22 +3,14 @@ package com.cret.inoutmanager.presentation.ui
 import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import android.annotation.SuppressLint
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -27,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import com.cret.inoutmanager.analytics.PhotoCaptureFailureReason
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.domain.usecase.*
+import com.cret.inoutmanager.presentation.ui.components.InventoryTopAppBar
 import com.cret.inoutmanager.presentation.ui.components.NewProductDialog
 import com.cret.inoutmanager.presentation.ui.components.OutboundQuantityDialog
 import com.cret.inoutmanager.presentation.ui.components.ProductSummaryDialog
@@ -39,7 +32,6 @@ import com.cret.inoutmanager.ui.theme.BrandSurface
 import com.cret.inoutmanager.ui.theme.InOutManagerTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 
 private const val EXIT_CONFIRM_WINDOW_MS = 600L
 
@@ -101,91 +93,17 @@ fun InventoryApp(
     Scaffold(
         containerColor = BrandBackground,
         topBar = {
-            Column(
-                modifier = Modifier
-                    .background(BrandBackground)
-                    .statusBarsPadding()
-            ) {
-                if (!isHome) {
-                    var showFeatureSheet by remember { mutableStateOf(false) }
-                    val sheetState = rememberModalBottomSheetState()
-                    val scope = rememberCoroutineScope()
-                    val currentFeature = InventoryRoute.featureRoutes[InventoryRoute.indexOfFeature(currentRoute)]
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        AssistChip(
-                            onClick = { showFeatureSheet = true },
-                            label = { Text(text = currentFeature.title, fontWeight = FontWeight.Bold) },
-                            trailingIcon = {
-                                Icon(
-                                    Icons.Default.KeyboardArrowDown,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            },
-                            colors = AssistChipDefaults.assistChipColors(
-                                containerColor = BrandSurface,
-                                labelColor = BrandAccent,
-                                trailingIconContentColor = BrandAccent
-                            ),
-                            border = BorderStroke(1.dp, BrandAccent)
-                        )
-                    }
-
-                    if (showFeatureSheet) {
-                        ModalBottomSheet(
-                            onDismissRequest = { showFeatureSheet = false },
-                            sheetState = sheetState,
-                            containerColor = BrandSurface
-                        ) {
-                            InventoryRoute.featureRoutes.forEach { route ->
-                                val isSelected = route == currentFeature
-                                ListItem(
-                                    headlineContent = {
-                                        Text(
-                                            text = route.title,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                        )
-                                    },
-                                    trailingContent = {
-                                        if (isSelected) {
-                                            Icon(Icons.Default.Check, contentDescription = null, tint = BrandAccent)
-                                        }
-                                    },
-                                    colors = ListItemDefaults.colors(containerColor = BrandSurface),
-                                    modifier = Modifier.clickable {
-                                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                            showFeatureSheet = false
-                                            navigateToFeature(route.route)
-                                        }
-                                    }
-                                )
-                            }
-                            Spacer(modifier = Modifier.navigationBarsPadding())
-                        }
-                    }
-                }
-            }
-        },
-        floatingActionButton = {
-            if (currentRoute == InventoryRoute.Inbound.route) {
-                FloatingActionButton(
-                    onClick = {
+            if (!isHome) {
+                InventoryTopAppBar(
+                    currentRoute = currentRoute,
+                    onRouteSelected = ::navigateToFeature,
+                    onAddProductClick = {
                         showAddDialog = true
                         viewModel.logProductRegistrationStarted()
                     },
-                    modifier = Modifier.navigationBarsPadding(),
-                    containerColor = BrandAccent
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "신규 제품 등록")
-                }
+                )
             }
-        }
+        },
     ) { innerPadding ->
         Box(
             modifier = Modifier

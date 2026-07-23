@@ -503,14 +503,14 @@ class InventoryViewModelAnalyticsTest {
     }
 
     @Test
-    fun `logProductRegistrationStarted logs event once with inbound fab entry point`() = runTest {
+    fun `logProductRegistrationStarted logs event once with inbound app bar entry point`() = runTest {
         val logger = FakeAnalyticsLogger()
         val sut = viewModel(FakeProductRepository(), logger)
 
         sut.logProductRegistrationStarted()
 
         assertEquals(
-            listOf(AnalyticsEvent.ProductRegistrationStarted(entryPoint = EntryPoint.INBOUND_FAB)),
+            listOf(AnalyticsEvent.ProductRegistrationStarted(entryPoint = EntryPoint.INBOUND_APP_BAR)),
             logger.loggedEvents,
         )
     }
