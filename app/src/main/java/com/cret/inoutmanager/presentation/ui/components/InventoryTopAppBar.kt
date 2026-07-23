@@ -3,7 +3,9 @@ package com.cret.inoutmanager.presentation.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -28,12 +30,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
 import com.cret.inoutmanager.ui.theme.BrandAccent
 import com.cret.inoutmanager.ui.theme.BrandSurface
+
+private val InventoryTopAppBarTitleIconSpacing = 6.dp
 
 /** 화면 전환 메뉴를 여는 제목 anchor를 찾기 위한 테스트 전용 tag. */
 internal const val InventoryTopAppBarTitleTag = "inventory-top-app-bar-title"
@@ -79,12 +84,14 @@ fun InventoryTopAppBar(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(text = currentFeature.title, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(InventoryTopAppBarTitleIconSpacing))
                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
                 }
 
                 DropdownMenu(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
+                    containerColor = Color.White,
                 ) {
                     InventoryRoute.featureRoutes.forEach { route ->
                         val isSelected = route == currentFeature
