@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
+import com.cret.inoutmanager.ui.theme.BrandBackground
 import com.cret.inoutmanager.ui.theme.InOutManagerTheme
 
 private val InventoryTopAppBarTitleIconSpacing = 6.dp
@@ -138,7 +139,9 @@ fun InventoryTopAppBar(
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            // Scaffold의 콘텐츠 배경(BrandBackground)과 동일한 색을 써서 App Bar와 콘텐츠 사이 경계가
+            // 드러나지 않게 한다.
+            containerColor = BrandBackground,
         ),
     )
 }
