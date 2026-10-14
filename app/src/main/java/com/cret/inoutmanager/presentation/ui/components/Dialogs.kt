@@ -28,12 +28,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.cret.inoutmanager.presentation.model.ProductImageOrigin
@@ -186,7 +184,7 @@ fun NewProductDialog(
         confirmedImageOrigin = origin
     }
 
-    Dialog(onDismissRequest = ::dismissAndCleanUp) {
+    DialogContainer(onDismissRequest = ::dismissAndCleanUp) {
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = BrandSurface),
@@ -287,7 +285,7 @@ fun OutboundQuantityDialog(
     var inputQty by remember { mutableStateOf("") }
     val context = LocalContext.current
 
-    Dialog(onDismissRequest = onDismiss) {
+    DialogContainer(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = BrandSurface)
@@ -331,27 +329,4 @@ fun OutboundQuantityDialog(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewNewProductDialog() {
-    NewProductDialog(
-        onDismiss = {},
-        onConfirm = { _, _, _, _, _, _ -> },
-        createTemporaryImageFile = { File.createTempFile("preview", ".jpg") },
-        discardTemporaryImage = {},
-        importImage = { _, _ -> },
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewOutboundQuantityDialog() {
-    OutboundQuantityDialog(
-        productName = "테스트 제품",
-        currentQty = 50,
-        onDismiss = {},
-        onNext = {}
-    )
 }

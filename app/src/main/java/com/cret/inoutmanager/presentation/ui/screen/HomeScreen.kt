@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
@@ -118,22 +117,4 @@ private fun HomeMenuCard(
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = BrandAccent)
         }
     }
-}
-
-@Preview(name = "기본", showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-fun HomeScreenPreview() {
-    HomeScreen(onNavigate = {})
-}
-
-@Preview(name = "작은 높이", showBackground = true, widthDp = 360, heightDp = 320)
-@Composable
-fun HomeScreenSmallHeightPreview() {
-    HomeScreen(onNavigate = {})
-}
-
-@Preview(name = "큰 글꼴", showBackground = true, widthDp = 360, heightDp = 640, fontScale = 2f)
-@Composable
-fun HomeScreenLargeFontPreview() {
-    HomeScreen(onNavigate = {})
 }

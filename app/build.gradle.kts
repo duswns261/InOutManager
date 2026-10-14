@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.compose.screenshot)
 }
 
 android {
@@ -45,6 +46,9 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // screenshotTest source set을 사용하기 위한 실험 설정. gradle.properties의 동일 플래그와 함께 둔다.
+    experimentalProperties["android.experimental.enableScreenshotTest"] = true
 
     room {
         schemaDirectory("$projectDir/schemas")
@@ -109,4 +113,8 @@ dependencies {
     implementation(libs.firebase.analytics)
 
     testImplementation(libs.kotlinx.coroutines.test)
+
+    screenshotTestImplementation(platform(libs.androidx.compose.bom))
+    screenshotTestImplementation(libs.androidx.ui.tooling)
+    screenshotTestImplementation(libs.screenshot.validation.api)
 }

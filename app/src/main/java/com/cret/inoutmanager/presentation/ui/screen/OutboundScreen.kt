@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.domain.model.Product
@@ -109,17 +108,4 @@ fun OutboundScreen(
             }
         }
     }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
-@Composable
-fun OutboundScreenPreview() {
-    val sampleProducts = listOf(
-        Product(1, "아이폰 15", "A-1 구역", 25),
-        Product(2, "갤럭시 S24", "B-3 구역", 12)
-    )
-    OutboundScreen(
-        products = sampleProducts,
-        onOutboundClick = {}
-    )
 }

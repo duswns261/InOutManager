@@ -1,6 +1,5 @@
 package com.cret.inoutmanager.presentation.ui.components
 
-import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -33,11 +32,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
 import com.cret.inoutmanager.ui.theme.BrandBackground
-import com.cret.inoutmanager.ui.theme.InOutManagerTheme
 
 private val InventoryTopAppBarTitleIconSpacing = 6.dp
 
@@ -144,43 +141,4 @@ fun InventoryTopAppBar(
             containerColor = BrandBackground,
         ),
     )
-}
-
-@Preview(name = "Inbound - Light", showBackground = true)
-@Preview(name = "Inbound - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun InventoryTopAppBarInboundPreview() {
-    InOutManagerTheme {
-        InventoryTopAppBar(
-            currentRoute = InventoryRoute.Inbound.route,
-            onRouteSelected = {},
-            onAddProductClick = {},
-        )
-    }
-}
-
-@Preview(name = "Outbound - Light", showBackground = true)
-@Preview(name = "Outbound - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun InventoryTopAppBarOutboundPreview() {
-    InOutManagerTheme {
-        InventoryTopAppBar(
-            currentRoute = InventoryRoute.Outbound.route,
-            onRouteSelected = {},
-            onAddProductClick = {},
-        )
-    }
-}
-
-@Preview(name = "Status - Light", showBackground = true)
-@Preview(name = "Status - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun InventoryTopAppBarStatusPreview() {
-    InOutManagerTheme {
-        InventoryTopAppBar(
-            currentRoute = InventoryRoute.Status.route,
-            onRouteSelected = {},
-            onAddProductClick = {},
-        )
-    }
 }

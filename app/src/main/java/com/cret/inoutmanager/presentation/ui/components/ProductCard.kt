@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.domain.model.Product
@@ -46,11 +45,4 @@ fun ProductCard(product: Product, modifier: Modifier = Modifier) {
             Text(text = "${product.quantity}개", color = BrandAccent, fontWeight = FontWeight.Bold)
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProductCardPreview() {
-    val sampleProduct = Product(1, "프리뷰 제품 1", "A-1 창고", 82)
-    ProductCard(product = sampleProduct)
 }

@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -24,14 +23,4 @@ fun SummaryCard(title: String, value: String, modifier: Modifier = Modifier) {
             Text(text = value, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SummaryCardPreview() {
-    SummaryCard(
-        title = "총 제품 종류",
-        value = "15개",
-        modifier = Modifier.width(160.dp)
-    )
 }

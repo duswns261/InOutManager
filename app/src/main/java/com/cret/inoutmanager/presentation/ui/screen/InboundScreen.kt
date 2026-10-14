@@ -14,7 +14,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.presentation.ui.components.ProductCard
@@ -55,16 +54,4 @@ fun InboundScreen(products: List<Product>, onProductClick: (Product) -> Unit = {
             }
         }
     }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-fun InboundScreenPreview() {
-    val sampleProducts = listOf(
-        Product(1, "프리뷰 제품 1", "A-1 창고", 50),
-        Product(2, "프리뷰 제품 2", "B-2 창고", 10),
-        Product(3, "프리뷰 제품 3", "C-3 창고", 0)
-    )
-
-    InboundScreen(products = sampleProducts)
 }
