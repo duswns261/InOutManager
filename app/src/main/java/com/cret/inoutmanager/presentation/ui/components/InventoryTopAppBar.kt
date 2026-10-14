@@ -91,33 +91,11 @@ fun InventoryTopAppBar(
                     onDismissRequest = { menuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.surface,
                 ) {
-                    InventoryRoute.featureRoutes.forEach { route ->
-                        val isSelected = route == currentFeature
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = route.title,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                )
-                            },
-                            trailingIcon = {
-                                if (isSelected) {
-                                    Icon(
-                                        Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                    )
-                                }
-                            },
-                            modifier = Modifier
-                                .testTag(inventoryTopAppBarMenuItemTag(route.route))
-                                .semantics { if (isSelected) contentDescription = "${route.title}, 선택됨" },
-                            onClick = {
-                                menuExpanded = false
-                                if (route.route != currentRoute) onRouteSelected(route.route)
-                            },
-                        )
-                    }
+                    InventoryRouteMenuItems(
+                        currentRoute = currentRoute,
+                        onRouteSelected = onRouteSelected,
+                        onItemSelected = { menuExpanded = false },
+                    )
                 }
             }
         },
@@ -141,4 +119,49 @@ fun InventoryTopAppBar(
             containerColor = BrandBackground,
         ),
     )
+}
+
+/**
+ * 화면 전환 메뉴([InventoryTopAppBar]의 `DropdownMenu`)에 들어가는 입고 → 출고 → 자재 현황 항목입니다.
+ * 현재 화면 항목은 굵게 표시되고 체크 아이콘(`primary` role)이 붙으며, 선택 시 [onItemSelected]로 메뉴를
+ * 닫은 뒤 다른 화면이면 [onRouteSelected]를 호출합니다.
+ *
+ * 실제 메뉴와 스크린샷 테스트가 동일한 항목 구현을 공유하도록 분리했다. `DropdownMenu`가 사용하는
+ * `Popup`은 열림 애니메이션 때문에 Preview 0프레임에서 항목이 보이지 않으므로, 스크린샷에서는 이 항목을
+ * 메뉴와 같은 `surface` 표면 위에 직접 그려 기준 이미지를 남긴다.
+ */
+@Composable
+internal fun InventoryRouteMenuItems(
+    currentRoute: String?,
+    onRouteSelected: (String) -> Unit,
+    onItemSelected: () -> Unit,
+) {
+    val currentFeature = InventoryRoute.featureRoutes[InventoryRoute.indexOfFeature(currentRoute)]
+    InventoryRoute.featureRoutes.forEach { route ->
+        val isSelected = route == currentFeature
+        DropdownMenuItem(
+            text = {
+                Text(
+                    text = route.title,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                )
+            },
+            trailingIcon = {
+                if (isSelected) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            },
+            modifier = Modifier
+                .testTag(inventoryTopAppBarMenuItemTag(route.route))
+                .semantics { if (isSelected) contentDescription = "${route.title}, 선택됨" },
+            onClick = {
+                onItemSelected()
+                if (route.route != currentRoute) onRouteSelected(route.route)
+            },
+        )
+    }
 }
