@@ -1,163 +1,212 @@
 # AGENTS.md
 
-## 목적
+InOutManager는 소규모 비즈니스 또는 개인이 사물과 상품의 재고 상태를 관리하도록 돕는 Android 애플리케이션이다.
 
-InOutManager는 소규모 비즈니스 또는 개인이 사물과 상품의 재고 상태를 관리할 수 있도록 돕는 Android 애플리케이션이다.
-
-이 파일은 AI Agent의 루트 진입점이다. 이 문서는 상세 절차를 반복하지 않고, 작업 모드와 역할을 식별한 뒤 필요한 workflow로 라우팅한다.
-
-프로젝트는 Planner → Generator → Evaluator 역할을 분리한다.
-
-AI Agent는 자율적으로 전체 Issue를 끝까지 처리하는 개발자가 아니라, 명시된 역할과 승인 범위 안에서만 작업하는 제한된 협업자다.
+이 문서는 **모든 AI 도구(Claude Code, Codex 등)와 사람**이 공유하는 단일 정본이다. 프로젝트 사실(**Part A**)과
+AI 작업 규칙(**Part B**)을 함께 담는다. `CLAUDE.md` 등 도구별 파일은 이 문서를 가리키는 포인터일 뿐이다.
 
 ---
 
-## 1. 공통 Hard Rules
+## 0. 이 문서의 위치
 
-1. 작업 시작 시 먼저 `Issue Mode` 또는 `Direct Mode`를 식별한다.
-2. `Issue Mode`에서는 역할이 명시되지 않으면 Planner, Generator, Evaluator 역할을 임의로 선택하지 않는다.
-3. `Issue Mode`에서 코드·의존성·빌드 설정·DB schema·DI·Navigation 변경은 승인된 계획 범위 안에서만 수행한다.
-4. 승인된 계획 밖 변경이 필요하면 구현 또는 최종 판정을 중단하고 재승인을 요청한다.
-5. Evaluator는 코드, 계획, 구현 로그, 검증 보고서를 수정하지 않는다.
-6. 검증하지 못한 항목, 실패한 명령, 남은 위험을 숨기지 않는다.
-7. 문서의 사실원천이 충돌하면 Agent는 임의로 우선순위를 정하지 않고 작업을 중단해 충돌 내용을 보고한다.
-8. 문서 경로와 파일명은 `docs/ai/shared/path-registry.md`를 기준으로 한다.
-9. 현재 대화에서 작성하거나 설명한 파일 내용을 실제 파일 상태로 간주하지 않는다. 파일 내용이 판단이나 행동의 근거가 되는 경우 반드시 직접 읽어 현재 상태를 확인한다.
-10. 작업 시작, 커밋 또는 푸쉬 전 `git fetch --prune`으로 리모트 상태를 동기화하고, 현재 브랜치가 작업 목적에 맞는지 확인한다. 아래 중 하나라도 해당하면 작업을 멈추고 Human Owner의 확인을 받는다.
-    - 현재 브랜치의 upstream이 리모트에서 삭제되어 `[gone]` 상태다.
-    - 현재 브랜치가 작업 목적과 다르다.
-    - 로컬과 리모트 브랜치가 예상치 못하게 diverge되어 있다.
-    - upstream이 `[gone]`인 local issue branch에서 새 작업을 시작하려 한다.
-    - PR이 병합되어 원격 branch가 삭제된 local issue branch를 재사용하려 한다.
-    - 삭제 전 `main`에 포함된 commit인지 확인할 수 없다.
-    - local-only commit이 있어 삭제 또는 재사용 판단이 불명확하다.
-11. `git rm`, 파일 삭제, `.gitignore` 추가 전에 삭제 대상이 프로젝트 내 다른 파일(README, 문서, 코드)에서 참조되는지 확인한다. 참조가 발견되면 삭제 범위를 Human Owner와 확인한 뒤 진행한다.
+- 이 문서는 AI 작업의 **단일 진입점이자 규칙 정본**이다. 각 규칙은 **여기 한 곳에서만** 정의하고, 다른 문서는 참조만 한다.
+- **처음 온보딩**이면 Part A(§1~3)로 프로젝트를 파악하고, **실제 작업을 시작**한다면 Part B(§4~10)의 규칙을 따른다.
+- 상시 로드는 이 문서로 충분하다. 아래 "참조 문서"는 **해당 판단이 실제로 필요해지는 순간에만** 읽는다(불필요한 선(先)로딩 금지).
 
-세부 승인, 산출물, 검증, 완료 기준은 각 shared 문서와 역할별 workflow를 따른다.
+**참조 문서 (필요할 때만 읽기)**
+
+| 판단이 필요할 때 | 읽을 문서 |
+|---|---|
+| 계층·DI·Navigation·schema 경계 | `docs/project-management/architecture-rules.md` |
+| 완료·검증 세부 기준 | `docs/project-management/definition-of-done.md` |
+| Milestone·우선순위·선행 관계 | `docs/project-management/project-roadmap.md` |
+| Issue 본문 작성 구조 | `docs/project-management/issue-workflow.md` |
 
 ---
 
-## 2. 작업 모드 선택
+# Part A — 프로젝트 레퍼런스
 
-### 2.1 Issue Mode
+## 1. 기술 스택 & 환경
 
-다음 작업은 GitHub Issue를 기준으로 진행한다.
+- **언어·빌드**: Kotlin 2.2.10, Gradle Kotlin DSL + Version Catalog, JDK / JVM target **17**
+- **아키텍처**: Clean Architecture (Presentation · Domain · Data) + MVVM, 단방향 데이터 흐름(UDF)
+- **UI**: Jetpack Compose (Material Design 3), Navigation Compose
+- **데이터·비동기**: Room, Kotlin Coroutines & Flow
+- **DI**: Hilt
+- **관측(Observability)**: Firebase Crashlytics, Firebase Analytics
+- **SDK**: minSdk **26** · targetSdk / compileSdk **36**
+- **Namespace / applicationId**: `com.cret.inoutmanager`
 
-- 기능 추가 또는 사용자 동작 변경
-- 버그 수정
-- 아키텍처·계층 책임 변경
-- dependency, Gradle, build configuration 변경
-- Room Entity, DAO, database version, schema 변경
-- DI 또는 Navigation 변경
-- 테스트 전략·CI·공통 개발 규칙 변경
+## 2. 주요 의존성
 
-Issue Mode는 Planner → 승인 → Generator → Evaluator 흐름을 따른다.
+버전은 [`gradle/libs.versions.toml`](gradle/libs.versions.toml)가 사실원천이다.
 
-### 2.2 Direct Mode
+| 라이브러리 | 버전 |
+|---|---|
+| Room | 2.8.4 |
+| Compose BOM | 2024.09.00 |
+| Lifecycle / ViewModel Compose | 2.10.0 |
+| Hilt | 2.56 |
+| Kotlin / AGP | 2.2.10 / 9.2.1 |
 
-다음처럼 앱 동작, 공개 API, 빌드, 데이터 구조에 영향을 주지 않는 작업은 Direct Mode로 처리할 수 있다.
+## 3. 빌드 · 테스트 · 검증 명령
 
-- 오탈자, 문장, 주석, README 정정
-- Markdown 서식, 코드 포맷, import 정리
-- 파일 이동 없이 수행하는 비기능적 이름·표현 정리
+```bash
+./gradlew assembleDebug              # Debug APK 빌드
+./gradlew testDebugUnitTest          # 유닛 테스트
+./gradlew connectedDebugAndroidTest  # 계측 테스트 (실기기/에뮬레이터 필요)
+./gradlew lintDebug                  # Lint
+./gradlew installDebug               # 연결된 기기에 설치
+./gradlew clean                      # 클린 빌드
 
-Direct Mode에서는 GitHub Issue, Planner, 로컬 work item을 기본적으로 요구하지 않는다.
-
-다만 Direct Mode 작업 중 아래 변경이 필요해지면 즉시 Issue Mode로 전환한다.
-
-- 앱 동작 또는 사용자 경험 변경
-- 테스트 동작 또는 공개 API 변경
-- dependency, Gradle, DB schema, DI, Navigation 변경
-- 파일 이동, 계층 책임 변경, 여러 파일에 걸친 구조 변경
-
----
-
-## 3. 역할 호출 방식
-
-### 3.1 최소 호출
-
-Issue Mode에서 아래 세 가지가 명확하면 Agent는 역할별 사전 확인을 시작할 수 있다.
-
-1. 역할: Planner, Generator, Evaluator 중 하나
-2. 대상: GitHub Issue URL 또는 Issue 번호
-3. 목적: 분석·계획·구현·평가 중 수행할 작업
-
-자연어 호출 예시:
-
-```text
-너는 Planner야.
-Issue URL: <Issue URL>
-구현 전 계획을 작성해줘.
+# schema 영향 가능 변경 시
+git diff -- app/schemas
 ```
 
-### 3.2 정형 호출
+---
 
-여러 Issue, 여러 branch, IDE 간 인수인계, 작업 재개처럼 대상이 복잡한 경우에는 아래 형식을 권장한다.
+# Part B — AI 작업 규칙
+
+## 4. 작업 모드
+
+작업 시작 시 **먼저 모드를 식별**한다.
+
+- **Direct Mode** — 앱 동작·공개 API·빌드·데이터 구조에 영향이 없는 작업. GitHub Issue나 계획 없이 바로 처리 가능.
+  - 예: 오탈자·주석·문서 정정, 서식/포맷/import 정리, 파일 이동 없는 비기능적 표현 정리.
+- **Issue Mode** — 그 외 전부. 아래 변경은 반드시 Issue Mode.
+  - 기능/사용자 동작 변경, 버그 수정, 아키텍처·계층 변경
+  - dependency · Gradle · build 설정 변경
+  - Room Entity · DAO · DB version · schema 변경
+  - DI · Navigation 변경
+  - 테스트 전략 · CI · 공통 개발 규칙 변경
+
+> Direct Mode 중 위 목록에 해당하는 변경이 필요해지면 **즉시 Issue Mode로 전환**한다.
+
+## 5. Issue Mode 작업 흐름
+
+하나의 흐름을 3개 단계(phase)로 진행한다. 한 세션이 전 단계를 돌 수도, 단계별로 다른 Agent/세션이 이어받을 수도 있다.
 
 ```text
-ROLE: PLANNER | GENERATOR | EVALUATOR
-TASK: ANALYZE_AND_PLAN | IMPLEMENT | EVALUATE
-ISSUE: <GitHub Issue URL 또는 Issue 번호>
-BRANCH: <GitHub branch name 또는 URL>
-ARTIFACT_DIR: .ai/work-items/issue-{number}-{slug}/
+① PLAN ──승인──▶ ② IMPLEMENT ──▶ ③ REVIEW ──Pass──▶ merge
+                                         └─ Conditional/Fail ─▶ Human Owner 결정
 ```
 
-### 3.3 입력 부족
+핵심 원칙: **승인 없이 ②를 시작하지 않는다. ③는 ②의 설명이 아니라 실제 근거(diff·검증)로 판정한다.**
 
-역할 또는 대상 Issue가 없으면 Agent는 코드·구성·로컬 work item을 수정하지 않고 부족한 입력만 보고한다.
+### ① PLAN
 
-`BRANCH`, `ARTIFACT_DIR`가 생략되면 해당 역할 workflow의 기본 규칙을 따른다.
+코드·빌드·의존성·schema·DI·Navigation을 **수정하지 않는다.** 분석과 계획만 한다.
 
----
+1. 대상 Issue 본문을 읽는다. 본문이 비어 있으면 §10(Issue 본문 초안)으로 가고 계획은 중단한다.
+2. 문제·범위·제외범위·완료조건·검증계획을 파악한다.
+3. 현재 코드 상태와 영향 파일·계층을 분석한다(필요 시 `architecture-rules.md`).
+4. `work_branch`를 정한다 — 코드/의존성/빌드/DI/schema/Navigation 변경이면 `issue-{number}-{slug}`. main 직접 작업 여부가 애매하면 중단하고 Human Owner 확인.
+5. `.ai/work-items/issue-{number}-{slug}/plan.md`를 작성한다(§8 템플릿).
+6. 계획을 Human Owner에게 제시하고 **명시적 승인**을 받는다(§6).
 
-## 4. 공통 문서 확인
+### ② IMPLEMENT
 
-Issue Mode에서 모든 역할은 아래 문서를 읽는다.
+**승인된 `plan.md`를 파일에서 직접 읽어 확인한 뒤** 시작한다(대화 기억으로 판단 금지).
 
-1. 대상 GitHub Issue
-2. `docs/ai/shared/workflow-contract.md`
-3. `docs/ai/shared/path-registry.md`
-4. `docs/ai/shared/approval-rules.md`
+1. `work_branch`로 전환(없으면 main 기준 생성, 리모트에 있으면 pull).
+2. 커밋 단위는 "파일 하나"가 아니라 **"그 커밋까지만 적용해도 앱이 정상 동작하는 최소 단위"**.
+   - 독립 커밋 가능: dependency 추가, 필드/함수 추가(제거 없음), 독립 유틸 추가.
+   - 원자 커밋 필수: 필드/시그니처/ API 제거와 그 모든 참조·호출부를 함께.
+   - **커밋 전 빌드 통과 확인.** 깨진 상태로 커밋하지 않는다.
+3. 계획 대비 편차 발생 시 즉시 성격 판단:
+   - **범위 확장**(계획에 없는 파일 신설·삭제, 미승인 dependency/build/schema/DI/Navigation, 완료조건 기능에 영향) → **중단하고 재승인**(§6).
+   - **내부 구현 세부 변경**(외부 동작·완료조건 동일) → 계속하되 PR 본문에 기록.
+4. 구현으로 문서의 사실이 달라지고 그 문서가 **승인 범위 안**이면 함께 갱신. 범위 밖/공통 정책이면 중단·재승인.
+5. 검증을 실행한다(§7). 변경된 시그니처의 모든 호출부, 제거된 API의 모든 참조를 추가 확인.
+6. **GitHub PR을 생성**하고 본문에 실제 결과를 적는다: 변경 요약, (구조 변경 시) Architecture Notes / (없으면) `No architecture structure change.`, 완료조건별 결과, 실행한 build/test/lint/schema diff, **미실행 항목과 이유**, 잔여 위험, Follow-up 후보. `Closes #<번호>` 포함.
+7. PR URL을 `plan.md`에 덧붙인다.
 
-그 후 선택된 역할의 workflow만 읽는다.
+### ③ REVIEW (독립 평가)
 
-프로젝트 관리 문서, 역할별 템플릿, 로컬 work item은 각 역할 workflow가 지정한 범위만 읽는다.
+**코드·plan·PR을 수정하지 않는다.** Issue / 승인기록 / 실제 diff / 검증근거를 독립 비교해 판정한다.
 
----
+- 가능하면 ②와 다른 세션·모델·IDE에서 수행. 같은 Agent라면 자신의 구현 중 설명을 독립 근거로 쓰지 않는다.
+- 확인: ⓐ 완료조건이 근거로 충족 ⓑ 실제 변경이 승인 범위와 일치 ⓒ PR 본문·Architecture Notes가 실제 diff와 일치 ⓓ 필수 검증 성공 또는 합당한 대체근거 ⓔ 범위확장·규칙위반·회귀 없음. (세부는 `definition-of-done.md`)
 
-## 5. 역할 라우팅
-
-| 역할 | 처리하는 요청 | 시작 문서 |
+| 판정 | 조건 | 행동 |
 |---|---|---|
-| Planner | Issue 분석, 구현 계획, 범위·위험·변경 파일 분석 | `docs/ai/workflows/planner/workflow.md` |
-| Generator | 승인된 계획 기반 구현, 검증 실행, 구현 기록 | `docs/ai/workflows/generator/workflow.md` |
-| Evaluator | 구현 결과, PR diff, 검증 근거의 독립 평가 | `docs/ai/workflows/evaluator/workflow.md` |
+| **Pass** | 위 ⓐ~ⓔ 모두 충족 | `gh pr merge --merge --delete-branch`로 병합 후, `git fetch --prune` → `main`이 ff-only 가능하면 `git pull --ff-only`로 동기화(diverge/local-only/`[gone]`이면 중단·보고) |
+| **Conditional Pass** | 핵심은 충족, 비핵심 검증 미실행/잔여 위험 | 병합 금지. **Human Owner 병합 전 체크리스트**를 `- [ ]` task list로 PR에 명시 |
+| **Fail** | 승인기록 없음 / 범위 불일치 / 완료조건 미충족 / build 실패·schema 미확인 / 근거 부족 | 병합 금지. 수정 항목과 재평가 조건을 PR에 명시 |
 
-역할별 입력, work item 접근, 산출물, 중단 조건, 판정 기준은 해당 workflow가 단일 사실원천이다.
+## 6. 승인 게이트
 
----
+- **사실원천은 `plan.md`의 `approval.status`.** Planner가 작성 시 `pending`, Human Owner의 명시적 승인으로 `approved`.
+- **유효한 승인**: ⓐ 대상 Issue 식별 ⓑ 승인할 plan/요약 식별 ⓒ Human Owner가 진행 의사를 명확히 표현 ⓓ `approval.status`가 `approved`로 갱신.
+  - 유효 예: "plan v1 승인, 명시된 파일 범위로 구현해." / "계획대로 진행해."
+  - 무효 예: "좋아 보여." / "괜찮은 것 같아." / "더 생각해볼게."
+- **GitHub Issue comment는 선택**이다. 범위 변경·설계 결정·blocker·재승인처럼 장기 근거가 필요한 경우에만 남기고, 있으면 `approval_reference`에 URL 기록.
+- **재승인 필요**(기존 승인 무효): 변경 파일 추가/삭제, 미승인 dependency/build 추가, 완료조건·제외범위 변경, schema/DI/Navigation 영향 추가, 구현 방법의 실질적 변경, Issue 범위 확장, 핵심 검증 방법 변경.
+  - 절차: 중단 → 사유·영향 기록 → plan_version +1 & status `pending` → (필요 시 Issue comment) → 명시적 재승인 → 재개.
 
-## 6. 영구 근거 원칙
+## 7. 검증 & 완료
 
-`.ai/work-items/`는 로컬 Agent 작업 기록이며 기본적으로 Git 추적 대상이 아니다.
+변경 위험에 따라 **§3의 명령**을 선택 실행하고, **실제 output은 PR/CI에 남긴다.**
 
-Issue Mode의 장기 근거는 GitHub에 남긴다.
+- build 실패 상태로 완료 선언 금지. schema 영향 가능한데 `git diff -- app/schemas` 미확인 시 완료 선언 금지.
+- 실행 못한 검증은 **`Not Run` + 이유**를 반드시 기록한다.
+- 완료 상태 용어: `Verified`(Pass) / `Conditionally Verified`(핵심 충족·미실행 또는 잔여위험) / `Failed`. 세부 체크리스트는 `definition-of-done.md`.
 
-- 계획 요약과 명시적 승인: GitHub Issue
-- 실제 변경과 실행 결과: Pull Request와 CI
-- 독립 평가와 병합 권고: Pull Request review 또는 comment
+## 8. 산출물 · 근거 · 경로
 
-세부 기록 규칙은 `workflow-contract.md`와 `approval-rules.md`를 따른다.
-
----
-
-## 7. 완료 선언
-
-`Verified`, `Conditionally Verified`, `Failed`의 의미와 완료 기준은 다음 문서에서 관리한다.
+**로컬 산출물은 `plan.md` 하나로 충분하다.** 구현·검증·평가 기록은 **PR 본문(영구 근거)**에 남긴다.
 
 ```text
-docs/project-management/definition-of-done.md
-docs/ai/workflows/evaluator/workflow.md
+.ai/work-items/issue-{number}-{slug}/plan.md      # Git 추적 안 함 (.gitignore)
 ```
 
-Agent는 검증 근거 없이 완료 또는 병합 가능을 선언하지 않는다.
+| 근거 | 저장 위치 |
+|---|---|
+| 계획 + 승인 상태 | 로컬 `plan.md` |
+| 실제 변경·검증 결과·미실행 사유·잔여 위험 | **PR 본문** |
+| 범위 변경·설계 결정·재승인 | GitHub Issue comment (해당 시) |
+| 최종 판정·병합 권고 | PR review / comment |
+
+**경로 주의**: work item은 **저장소 루트의 `.ai/work-items/`** 에 둔다 — `docs/` 아래가 아니다(혼동 주의). 이 폴더는 `.gitignore`로 Git 추적하지 않는다.
+**slug 규칙**: 소문자·숫자·하이픈, 2~6단어, Issue 의도가 드러나게. 진행 중 디렉터리명은 Issue 제목이 바뀌어도 바꾸지 않는다.
+
+### `plan.md` 템플릿 (슬림)
+
+```yaml
+issue: { number: , title: , url: , base_branch: main, work_branch: issue-{number}-{slug} }
+approval: { status: pending, plan_version: 1, approval_reference: null }
+```
+```text
+## 1. 문제 / 목표 / 이미 반영됨 / 남은 작업
+## 2. 변경할 파일(목적)        ## 3. 변경하지 않을 파일(이유)
+## 4. 설계 영향 — Dependency / Room schema / DI / Navigation / 계층책임 (Yes·No + 근거)
+## 5. 완료조건 매핑 — 조건 | 구현방법 | 검증방법
+## 6. 검증 계획 — 실행할 gradle 명령 + 수동확인 체크리스트
+## 7. 위험 / Follow-up 후보
+```
+
+## 9. Hard Rules (정본 — 여기서만 정의)
+
+1. 작업 전 **모드(Direct/Issue) 식별**. Issue Mode에서 역할/단계가 불명확하면 임의 선택하지 않고 부족한 입력을 보고한다.
+2. 코드·의존성·빌드·schema·DI·Navigation 변경은 **승인된 계획 범위 안에서만**. 벗어나면 중단·재승인(§6).
+3. REVIEW 단계는 코드·plan·PR을 수정하지 않는다.
+4. 검증 못한 항목·실패한 명령·잔여 위험을 **숨기지 않는다.**
+5. 사실원천이 충돌하면 임의로 우선순위를 정하지 말고 **중단하고 충돌 내용을 보고**한다.
+6. **파일을 근거로 판단하기 전 반드시 직접 읽어 현재 상태를 확인**한다. 대화에서 작성·설명한 내용은 파일의 현재 상태가 아니다.
+7. 작업 시작·커밋·푸시 전 `git fetch --prune`로 동기화하고 현재 브랜치가 목적에 맞는지 확인한다. 아래 중 하나라도 해당하면 **멈추고 Human Owner 확인**:
+   - upstream이 `[gone]`인 브랜치에서 새 작업 시작 / 병합되어 삭제된 issue 브랜치 재사용
+   - 현재 브랜치가 작업 목적과 다름 / 로컬·리모트가 예기치 않게 diverge
+   - 삭제 전 `main` 포함 여부 확인 불가 / local-only commit으로 판단 불명확
+8. `git rm`·파일 삭제·`.gitignore` 추가 전, 삭제 대상이 다른 파일(README·문서·코드)에서 **참조되는지 확인**. 참조가 있으면 범위를 Human Owner와 확인.
+9. **검증 근거 없이 완료·병합 가능을 선언하지 않는다.**
+
+## 10. Issue 본문 초안 (제목만 있고 본문이 빈 경우)
+
+`plan.md`는 작성하지 않는다. `project-roadmap.md`·`architecture-rules.md`·`issue-workflow.md`를 읽고 →
+(a) 검증 가능한 변경 목표가 드러나는 **title 후보 1~3개**(충분하면 "유지" 명시) → (b) `issue-workflow.md §2` 구조의 **body 초안**을 **대화 텍스트로** 제시한다(로컬 저장 안 함). 포함 여부가 불분명한 범위는 **"결정 필요"**로 표시하고 임의 확정하지 않는다. Human Owner가 GitHub에 반영하면 PLAN(§5①)을 재개한다.
+
+---
+
+> 이 문서는 2026-10-14에 기존 다층 거버넌스 문서(`AGENTS.md` + `docs/ai/shared/*` + `docs/ai/workflows/*`)를 하나로 통합·슬림화하고,
+> 같은 날 `CLAUDE.md`의 프로젝트 사실(빌드·기술 스택·의존성)을 Part A로 흡수한 결과다.
+> 통합 전 원본은 `docs/_archive/ai-governance-backup-2026-10-14/`에 보관돼 있다.
