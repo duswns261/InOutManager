@@ -170,6 +170,19 @@ git diff -- app/schemas
 **경로 주의**: work item은 **저장소 루트의 `.ai/work-items/`** 에 둔다 — `docs/` 아래가 아니다(혼동 주의). 이 폴더는 `.gitignore`로 Git 추적하지 않는다.
 **slug 규칙**: 소문자·숫자·하이픈, 2~6단어, Issue 의도가 드러나게. 진행 중 디렉터리명은 Issue 제목이 바뀌어도 바꾸지 않는다.
 
+**`plan.md` 위치 규칙**: `plan.md`의 **기본 보관 위치는 원래 프로젝트 체크아웃**의 `.ai/work-items/issue-{number}-{slug}/`다. 구현을 별도 git worktree에서 격리해 진행하더라도 `plan.md`는 원래 체크아웃에 두는 것을 기본으로 한다. 부득이 worktree-local에 둘 때는 **작성 전에 사유와 절대 경로를 알리고 Human Owner 확인**을 받는다. **승인을 요청하기 전 `plan.md`의 실제 절대 경로를 확인**한다(`git worktree list`와 대조).
+
+**사용하지 않는 경로** (타이핑 오타 방지 — 아래 경로로 work item·규칙 문서를 만들지 않는다):
+
+```text
+docs/ai/work-items/
+docs/ai/workflow/
+docs/ai/work-item/
+docs/ai/requset-rules.md
+docs/ai/IMPLEMENTATION_PLAN_TEMPLATE.md
+docs/ai/VERIFICATION_REPORT_TEMPLATE.md
+```
+
 ### `plan.md` 템플릿 (슬림)
 
 ```yaml
