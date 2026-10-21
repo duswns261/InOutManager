@@ -244,7 +244,7 @@ Room schema는 데이터 구조 변경 여부를 판단하는 중요한 기준�
 - transitive dependency에 우연히 의존하지 않는다.
 - dependency 추가가 필요한 경우 구현 계획에 파일, 이유, 검증 방법을 적는다.
 - dependency 변경이 Issue 범위 밖이면 구현하지 않고 follow-up으로 제안한다.
-- build configuration 변경은 verification report에 반드시 포함한다.
+- build configuration 변경은 PR 본문의 검증 결과에 반드시 포함한다(`AGENTS.md` §8).
 
 ---
 

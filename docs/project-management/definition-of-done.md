@@ -23,7 +23,7 @@
 ## 2. AI Agent Issue Mode 추가 기준
 
 - [ ] local `plan.md`가 존재하고 승인 범위를 담는다(로컬 산출물의 사실원천).
-- [ ] 승인 상태의 사실원천은 `plan.md`의 `approval.status`이며, 범위 변경·재승인은 GitHub Issue comment에 기록됐다(`AGENTS.md` §6).
+- [ ] 승인 상태의 사실원천은 `plan.md`의 `approval.status`이며, 범위 변경·재승인 등 장기 근거가 필요한 경우(해당 시)에 한해 GitHub Issue comment에 기록됐다(`AGENTS.md` §6, comment는 선택).
 - [ ] 승인된 계획 범위를 벗어난 변경이 없다.
 - [ ] 로컬 산출물은 `plan.md` 하나로 충분하며, 구현·검증 기록은 PR 본문에 남겼다(별도 `implementation-log.md`/`verification-report.md`는 불필요, `AGENTS.md` §8 산출물·근거·경로).
 - [ ] PR 또는 CI에 실제 검증 결과와 미실행 사유가 남아 있다.
