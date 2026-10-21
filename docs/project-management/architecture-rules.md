@@ -244,7 +244,7 @@ Room schema는 데이터 구조 변경 여부를 판단하는 중요한 기준�
 - transitive dependency에 우연히 의존하지 않는다.
 - dependency 추가가 필요한 경우 구현 계획에 파일, 이유, 검증 방법을 적는다.
 - dependency 변경이 Issue 범위 밖이면 구현하지 않고 follow-up으로 제안한다.
-- build configuration 변경은 verification report에 반드시 포함한다.
+- build configuration 변경은 PR 본문의 검증 결과에 반드시 포함한다(`AGENTS.md` §8).
 
 ---
 
@@ -254,6 +254,6 @@ Room schema는 데이터 구조 변경 여부를 판단하는 중요한 기준�
 - 후속 Issue와 Backlog는 `docs/project-management/project-roadmap.md`에서 관리한다.
 - 공통 완료 기준은 `docs/project-management/definition-of-done.md`에서 관리한다.
 - AI Agent 작업 기준은 `AGENTS.md`에서 관리한다.
-- AI Agent 단계별 작업 프로토콜과 양식은 `docs/ai/`에서 관리한다.
+- AI Agent 단계별 작업 프로토콜·규칙·양식도 `AGENTS.md`(단일 정본)에서 관리한다. 통합 전 구 가이드(`docs/ai/*`)는 `docs/_archive/ai-governance-backup-2026-10-14/`에 보관돼 있다.
 - 아키텍처 규칙 변경이 발생하면 이 문서를 함께 갱신한다.
 - 단일 PR 구현 세부사항은 아키텍처 규칙에 기록하지 않는다.

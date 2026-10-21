@@ -1,36 +1,12 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with this repository.
+이 저장소의 **AI 작업 규칙과 프로젝트 레퍼런스는 모두 [`AGENTS.md`](AGENTS.md)를 단일 정본**으로 한다.
+Claude Code를 포함한 모든 AI 도구(Codex 등)와 사람이 같은 문서를 읽도록, 내용을 `AGENTS.md`로 일원화했다.
 
-## Build Commands
+→ **[AGENTS.md](AGENTS.md)** 를 참고할 것.
 
-```bash
-./gradlew assembleDebug              # Build debug APK
-./gradlew testDebugUnitTest          # Run unit tests
-./gradlew connectedDebugAndroidTest  # Run instrumented tests on device
-./gradlew lintDebug                  # Run lint
-./gradlew installDebug               # Install on connected device
-./gradlew clean                      # Clean build
-```
+- 기술 스택 · SDK · 의존성 · 빌드/테스트 명령: `AGENTS.md` **Part A (§1~3)**
+- 작업 모드 · 흐름 · 승인 · 검증 · Hard Rules: `AGENTS.md` **Part B (§4~10)**
 
-- **minSdk:** 26 | **targetSdk/compileSdk:** 36 | **JVM target:** 11
-- **Namespace:** `com.cret.inoutmanager`
-
-## Tech Stack
-
-Kotlin, Jetpack Compose (Material Design 3), MVVM, Room, Coroutines/Flow, Hilt DI
-
-## Key Dependencies
-
-Defined in [gradle/libs.versions.toml](gradle/libs.versions.toml):
-
-- **Room** 2.8.4
-- **Compose BOM** 2024.09.00
-- **Lifecycle / ViewModel Compose** 2.10.0
-- **Hilt** 2.56
-- **Kotlin** 2.2.10, **AGP** 9.2.1
-
-## AI Workflow
-
-AI agent workflow, roles (Planner / Generator / Evaluator), Issue Mode, Direct Mode,
-and all governance rules are defined in `AGENTS.md`.
+> 이 파일은 의도적으로 얇게 유지한다. 내용을 여기에 다시 적으면 `AGENTS.md`와 어긋나(drift) 도구마다 다른 사실을 읽게 되므로,
+> 규칙·사실은 `AGENTS.md`에만 추가한다.
