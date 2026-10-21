@@ -254,6 +254,6 @@ Room schema는 데이터 구조 변경 여부를 판단하는 중요한 기준�
 - 후속 Issue와 Backlog는 `docs/project-management/project-roadmap.md`에서 관리한다.
 - 공통 완료 기준은 `docs/project-management/definition-of-done.md`에서 관리한다.
 - AI Agent 작업 기준은 `AGENTS.md`에서 관리한다.
-- AI Agent 단계별 작업 프로토콜과 양식은 `docs/ai/`에서 관리한다.
+- AI Agent 단계별 작업 프로토콜·규칙·양식도 `AGENTS.md`(단일 정본)에서 관리한다. 통합 전 구 가이드(`docs/ai/*`)는 `docs/_archive/ai-governance-backup-2026-10-14/`에 보관돼 있다.
 - 아키텍처 규칙 변경이 발생하면 이 문서를 함께 갱신한다.
 - 단일 PR 구현 세부사항은 아키텍처 규칙에 기록하지 않는다.
