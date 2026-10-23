@@ -266,6 +266,7 @@ Product Imaging보다 먼저 수행한다.
 - Issue #32: App Bar 기반 재고 화면 전환 및 제품 등록 진입점 개편
 - Issue #33: 입고·출고·자재 현황 제품 검색 및 수량순 정렬
 - Issue #34: HomeScreen 안내 문구 제거 및 주요 기능 버튼 중앙 배치
+- Issue #42: Compose Preview 기반 스크린샷 회귀 테스트 도입
 - Issue #39: Material 3 semantic color role 기반 라이트·다크 테마 정비
 
 ### 목표
@@ -321,7 +322,8 @@ Product/Room schema와 재고 비즈니스 규칙 변경은 이 Milestone에 포
 Domain/Data 변경은 외부 이미지를 앱 관리 파일로 가져오고 기존 제품에 연결하는
 파일 생명주기 경계에 필요한 최소 범위만 허용한다.
 검색은 로컬 표시 목록에서 수행하며 Room FTS나 서버 검색을 도입하지 않는다.
-Issue #39는 #29~#34에서 확정된 UI 전체를 대상으로 하므로 #34 이후에 진행한다.
+Issue #42(스크린샷 회귀 테스트)는 #34로 UI가 확정된 뒤, #39 전에 진행한다. 현재 UI를 기준 이미지로 먼저 기록해 두면 #39의 테마 변경이 before/after 이미지 diff로 검증된다.
+Issue #39는 #29~#34에서 확정된 UI 전체를 대상으로 하므로 #34(및 기준선 기록용 #42) 이후에 진행한다.
 로고·앱 아이콘·타이포그래피·shape를 포함한 브랜드 전면 재설계와 Material You
 dynamic color 기본 활성화는 포함하지 않는다.
 ```

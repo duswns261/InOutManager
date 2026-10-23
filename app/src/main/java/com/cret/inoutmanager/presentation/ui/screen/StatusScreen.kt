@@ -1,5 +1,7 @@
 package com.cret.inoutmanager.presentation.ui.screens
 
+
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.domain.model.Product
@@ -24,8 +25,6 @@ import com.cret.inoutmanager.presentation.ui.components.ProductSearchBar
 import com.cret.inoutmanager.presentation.ui.components.SummaryCard
 import com.cret.inoutmanager.presentation.ui.search.filterAndSortProducts
 import com.cret.inoutmanager.ui.theme.BrandSurface
-
-import androidx.compose.foundation.ExperimentalFoundationApi
 
 /** 검색 결과 없음 안내 문구를 찾기 위한 테스트 전용 tag. */
 internal const val StatusEmptySearchResultTag = "status-empty-search-result"
@@ -110,18 +109,4 @@ fun StatusScreen(
             containerColor = BrandSurface
         )
     }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-fun StatusScreenPreview() {
-    val sampleProducts = listOf(
-        Product(1, "갤럭시 S24", "창고 A", 100),
-        Product(2, "아이폰 15", "창고 B", 50)
-    )
-
-    StatusScreen(
-        products = sampleProducts,
-        onDeleteRequest = {}
-        )
 }

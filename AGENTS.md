@@ -59,9 +59,22 @@ AI 작업 규칙(**Part B**)을 함께 담는다. `CLAUDE.md` 등 도구별 파�
 ./gradlew installDebug               # 연결된 기기에 설치
 ./gradlew clean                      # 클린 빌드
 
+# 스크린샷 회귀 테스트 (JVM 실행, 실기기 불필요) — 상세는 아래 "스크린샷 회귀 테스트" 절
+./gradlew updateDebugScreenshotTest    # 기준 이미지(golden) 기록/갱신
+./gradlew validateDebugScreenshotTest  # golden과 비교 검증
+
 # schema 영향 가능 변경 시
 git diff -- app/schemas
 ```
+
+### 스크린샷 회귀 테스트
+
+Compose Preview 기반 스크린샷 회귀 테스트로 색상·대비·잘림·겹침 같은 시각적 회귀를 자동 감지한다. `com.android.compose.screenshot` 플러그인을 쓰며 실기기·에뮬레이터 없이 JVM에서 실행된다.
+
+- **테스트 위치**: `app/src/screenshotTest/kotlin/.../presentation/screenshot/`의 `@PreviewTest @Preview` 함수. production source의 `@Preview`는 이 소스셋으로 이전됐다(`InventoryApp`의 ViewModel 의존 Preview는 제외).
+- **기준 이미지(golden)**: `app/src/screenshotTestDebug/reference/` 아래 PNG. **이것만 커밋**하고 `app/build/` 아래 rendered/actual/diff/report 산출물은 커밋하지 않는다.
+- **갱신 절차**: UI를 의도적으로 바꿨으면 `updateDebugScreenshotTest`로 golden을 다시 기록하고, **생성 이미지를 반드시 육안으로 검토한 뒤** 커밋한다(잘못된 golden을 기준 삼으면 영원히 통과한다). `validate` 실패 시 HTML report(`app/build/reports/screenshotTest/preview/debug/index.html`)와 diff 이미지(`app/build/outputs/screenshotTest-results/preview/debug/diffs/`)로 reference/actual/diff를 확인한다.
+- **Dialog·메뉴 한계**: Compose `Dialog`와 `DropdownMenu`는 별도 윈도우(`Popup`)에 렌더링돼 Preview surface에 바로 캡처되지 않는다. `DialogContainer`(`LocalRenderDialogContentInline`)는 스크린샷에서만 다이얼로그 내용을 인라인으로 그리고, 화면 전환 메뉴는 항목을 `InventoryRouteMenuItems`로 추출해 실제 `DropdownMenu`와 공유한 뒤 같은 `surface` 위에 그린다. 따라서 이들 golden은 **내용만** 담고 scrim·중앙 배치·Popup 위치는 담지 않는다. 앱 실행 경로 동작은 기본값으로 기존과 동일하다.
 
 ---
 
@@ -149,6 +162,7 @@ git diff -- app/schemas
 변경 위험에 따라 **§3의 명령**을 선택 실행하고, **실제 output은 PR/CI에 남긴다.**
 
 - build 실패 상태로 완료 선언 금지. schema 영향 가능한데 `git diff -- app/schemas` 미확인 시 완료 선언 금지.
+- UI 변경 시 §3 "스크린샷 회귀 테스트"(`validateDebugScreenshotTest`)를 실행하고, 실패를 미해결로 둔 채 완료 선언하지 않는다.
 - 실행 못한 검증은 **`Not Run` + 이유**를 반드시 기록한다.
 - 완료 상태 용어: `Verified`(Pass) / `Conditionally Verified`(핵심 충족·미실행 또는 잔여위험) / `Failed`. 세부 체크리스트는 `definition-of-done.md`.
 

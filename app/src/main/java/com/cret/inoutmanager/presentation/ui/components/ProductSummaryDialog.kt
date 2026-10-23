@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,10 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.presentation.model.ProductImageOrigin
 import com.cret.inoutmanager.ui.theme.BrandAccent
@@ -92,7 +90,7 @@ fun ProductSummaryDialog(
         }
     }
 
-    Dialog(onDismissRequest = ::dismissIfIdle) {
+    DialogContainer(onDismissRequest = ::dismissIfIdle) {
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = BrandSurface),
@@ -153,18 +151,4 @@ fun ProductSummaryDialog(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun PreviewProductSummaryDialog() {
-    ProductSummaryDialog(
-        product = Product(id = 1, name = "프리뷰 제품", location = "A-1 창고", quantity = 42),
-        onDismiss = {},
-        attachImage = { _, _, onResult -> onResult(true) },
-        removeImage = { onResult -> onResult(true) },
-        createTemporaryImageFile = { File.createTempFile("preview", ".jpg") },
-        discardTemporaryImage = {},
-        importImage = { _, _ -> },
-    )
 }
