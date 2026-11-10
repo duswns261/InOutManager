@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,8 +36,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.cret.inoutmanager.presentation.model.ProductImageOrigin
-import com.cret.inoutmanager.ui.theme.BrandAccent
-import com.cret.inoutmanager.ui.theme.BrandSurface
 import java.io.File
 import java.io.InputStream
 
@@ -135,7 +134,7 @@ internal fun DialogHeader(
         ) {
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 4.dp,
                 modifier = Modifier.padding(horizontal = 16.dp),
             ) {
@@ -187,7 +186,7 @@ fun NewProductDialog(
     DialogContainer(onDismissRequest = ::dismissAndCleanUp) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = BrandSurface),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             modifier = Modifier.heightIn(max = 640.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
@@ -267,7 +266,7 @@ fun NewProductDialog(
                         },
                         enabled = !isSubmitting && !isImporting,
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandAccent)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) { Text("등록") }
                 }
             }
@@ -288,12 +287,12 @@ fun OutboundQuantityDialog(
     DialogContainer(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = BrandSurface)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text("출고 수량 입력", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("$productName (현재고: $currentQty)", fontSize = 14.sp, color = Color.Gray)
+                Text("$productName (현재고: $currentQty)", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = inputQty,
@@ -323,7 +322,7 @@ fun OutboundQuantityDialog(
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandAccent)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) { Text("출고 완료") }
                 }
             }

@@ -6,6 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import android.annotation.SuppressLint
 import androidx.compose.ui.Modifier
@@ -26,9 +27,6 @@ import com.cret.inoutmanager.presentation.ui.components.ProductSummaryDialog
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryNavGraph
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
 import com.cret.inoutmanager.presentation.viewmodel.InventoryViewModel
-import com.cret.inoutmanager.ui.theme.BrandAccent
-import com.cret.inoutmanager.ui.theme.BrandBackground
-import com.cret.inoutmanager.ui.theme.BrandSurface
 import com.cret.inoutmanager.ui.theme.InOutManagerTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -91,7 +89,7 @@ fun InventoryApp(
     }
 
     Scaffold(
-        containerColor = BrandBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             if (!isHome) {
                 InventoryTopAppBar(
@@ -109,7 +107,7 @@ fun InventoryApp(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(BrandBackground)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             InventoryNavGraph(
                 navController = navController,
@@ -208,13 +206,13 @@ fun InventoryApp(
                             showConfirmDialog = false
                             selectedProductForOutbound = null
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandAccent)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) { Text("확인") }
                 },
                 dismissButton = {
                     OutlinedButton(onClick = { showConfirmDialog = false }) { Text("취소") }
                 },
-                containerColor = BrandSurface
+                containerColor = MaterialTheme.colorScheme.surface
             )
         }
     }

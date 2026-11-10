@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -182,7 +183,7 @@ fun ProductImageSelection(
                         contentDescription = if (hasImage) "제품 이미지 변경" else "제품 이미지 추가"
                     },
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = ProductImageSelectionButtonIconColor,
                 ),
             ) {
@@ -198,7 +199,7 @@ fun ProductImageSelection(
                 expanded = showSourceMenu,
                 onDismissRequest = { showSourceMenu = false },
                 shape = RoundedCornerShape(ProductImageSelectionMenuCornerRadius),
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface,
             ) {
                 DropdownMenuItem(
                     text = { Text("앨범에서 사진 선택") },

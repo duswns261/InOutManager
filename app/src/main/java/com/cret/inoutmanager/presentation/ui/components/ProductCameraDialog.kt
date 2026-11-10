@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,8 +26,6 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil3.compose.AsyncImage
-import com.cret.inoutmanager.ui.theme.BrandAccent
-import com.cret.inoutmanager.ui.theme.BrandSurface
 import java.io.File
 
 /** [ProductCameraDialog] 촬영 실패의 원인입니다. 권한 처리는 호출부 책임이라 포함하지 않습니다. */
@@ -65,6 +64,8 @@ fun ProductCameraDialog(
         onDismissRequest = ::dismissAndCleanUp,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
+        // 카메라 라이브 뷰파인더는 영상 가독성을 위해 테마와 무관하게 검은 배경 + 흰색 닫기 아이콘을
+        // 쓰는 의도적 예외다(Issue #39 범위에서 그대로 유지).
         Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
             when (step) {
                 CameraDialogStep.PREVIEW -> CameraPreviewContent(
@@ -282,7 +283,7 @@ private fun CameraPreviewContent(
             },
             enabled = cameraReady && !isCapturing && boundImageCapture != null,
             modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
         ) {
             Text("촬영")
         }
@@ -304,7 +305,7 @@ private fun CameraReviewContent(
                 .weight(1f),
             contentScale = ContentScale.Fit,
         )
-        Surface(color = BrandSurface) {
+        Surface(color = MaterialTheme.colorScheme.surface) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -317,7 +318,7 @@ private fun CameraReviewContent(
                 Button(
                     onClick = onConfirm,
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandAccent),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 ) {
                     Text("사용하기")
                 }
