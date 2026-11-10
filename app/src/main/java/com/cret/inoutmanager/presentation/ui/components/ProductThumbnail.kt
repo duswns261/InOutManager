@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -25,14 +25,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.cret.inoutmanager.R
-import com.cret.inoutmanager.ui.theme.BrandAccent
 
 private val ThumbnailSize = 64.dp
 private val ThumbnailCornerRadius = 8.dp
 private const val PlaceholderIconSizeRatio = 0.5f
 private val PlaceholderIconMaxSize = 56.dp
-private val PlaceholderBackground = lerp(BrandAccent, Color.White, 0.35f)
-private val PlaceholderIconTint = Color(0xFFFFFFFF)
 
 /** 테스트가 Coil 요청의 최종 상태(성공/실패)에 도달했는지 결정적으로 기다릴 수 있게 노출하는 테스트 전용 tag. */
 internal const val ProductThumbnailSettledTag = "product-thumbnail-settled"
@@ -110,7 +107,7 @@ private fun ThumbnailPlaceholder(size: Dp) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(PlaceholderBackground),
+            .background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -119,7 +116,7 @@ private fun ThumbnailPlaceholder(size: Dp) {
             modifier = Modifier
                 .size(iconSize)
                 .testTag(ProductThumbnailPlaceholderIconTag),
-            tint = PlaceholderIconTint,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
         )
     }
 }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -31,8 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.presentation.model.ProductImageOrigin
-import com.cret.inoutmanager.ui.theme.BrandAccent
-import com.cret.inoutmanager.ui.theme.BrandSurface
 import java.io.File
 import java.io.InputStream
 
@@ -93,7 +92,7 @@ fun ProductSummaryDialog(
     DialogContainer(onDismissRequest = ::dismissIfIdle) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = BrandSurface),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             modifier = Modifier.heightIn(max = 640.dp),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
@@ -135,7 +134,7 @@ fun ProductSummaryDialog(
                         text = "현재 수량: ${product.quantity}개",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = BrandAccent,
+                        color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.Center,
                     )
 

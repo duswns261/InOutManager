@@ -1,5 +1,6 @@
 package com.cret.inoutmanager.presentation.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -34,7 +35,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
-import com.cret.inoutmanager.ui.theme.BrandBackground
 
 private val InventoryTopAppBarTitleIconSpacing = 6.dp
 
@@ -90,6 +90,9 @@ fun InventoryTopAppBar(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.surface,
+                    // 메뉴 표면이 App Bar/콘텐츠 배경과 가까운 명도라 경계가 묻힌다.
+                    // outline으로 실선 경계를 둬 두 테마 모두에서 메뉴 영역을 구분한다.
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 ) {
                     InventoryRouteMenuItems(
                         currentRoute = currentRoute,
@@ -114,9 +117,9 @@ fun InventoryTopAppBar(
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            // Scaffold의 콘텐츠 배경(BrandBackground)과 동일한 색을 써서 App Bar와 콘텐츠 사이 경계가
-            // 드러나지 않게 한다.
-            containerColor = BrandBackground,
+            // Scaffold의 콘텐츠 배경(colorScheme.background)과 같은 role을 써서 App Bar와 콘텐츠 사이
+            // 경계가 드러나지 않게 한다.
+            containerColor = MaterialTheme.colorScheme.background,
         ),
     )
 }

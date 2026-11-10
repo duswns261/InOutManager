@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,9 +24,6 @@ import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.presentation.ui.components.ProductSearchBar
 import com.cret.inoutmanager.presentation.ui.components.ProductThumbnail
 import com.cret.inoutmanager.presentation.ui.search.filterAndSortProducts
-import com.cret.inoutmanager.ui.theme.BrandAccentDark
-import com.cret.inoutmanager.ui.theme.BrandChipBackground
-import com.cret.inoutmanager.ui.theme.BrandSurface
 
 /** 검색 결과 없음 안내 문구를 찾기 위한 테스트 전용 tag. */
 internal const val OutboundEmptySearchResultTag = "outbound-empty-search-result"
@@ -60,7 +58,7 @@ fun OutboundScreen(
                         onClick = { onOutboundClick(product) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = BrandSurface),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Row(
@@ -82,7 +80,7 @@ fun OutboundScreen(
                                 Text(
                                     text = "현재 재고: ${product.quantity}개",
                                     fontSize = 12.sp,
-                                    color = Color.Gray,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
@@ -91,13 +89,13 @@ fun OutboundScreen(
                             Box(
                                 modifier = Modifier
                                     .widthIn(max = 96.dp)
-                                    .background(BrandChipBackground, RoundedCornerShape(4.dp))
+                                    .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(4.dp))
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
                                 Text(
                                     text = product.location,
                                     fontSize = 10.sp,
-                                    color = BrandAccentDark,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )

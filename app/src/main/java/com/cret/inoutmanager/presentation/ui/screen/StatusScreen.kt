@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,7 +25,6 @@ import com.cret.inoutmanager.presentation.ui.components.ProductCard
 import com.cret.inoutmanager.presentation.ui.components.ProductSearchBar
 import com.cret.inoutmanager.presentation.ui.components.SummaryCard
 import com.cret.inoutmanager.presentation.ui.search.filterAndSortProducts
-import com.cret.inoutmanager.ui.theme.BrandSurface
 
 /** 검색 결과 없음 안내 문구를 찾기 위한 테스트 전용 tag. */
 internal const val StatusEmptySearchResultTag = "status-empty-search-result"
@@ -52,7 +52,7 @@ fun StatusScreen(
         Spacer(modifier = Modifier.height(16.dp))
         ProductSearchBar(query = query, onQueryChange = { query = it })
         Spacer(modifier = Modifier.height(16.dp))
-        Text("전체 제품 현황", fontSize = 14.sp, color = Color.Gray)
+        Text("전체 제품 현황", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(8.dp))
 
         if (displayProducts.isEmpty()) {
@@ -96,7 +96,7 @@ fun StatusScreen(
                         showDeleteDialog = false
                         productToDelete = null
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
                     Text("삭제")
                 }
@@ -106,7 +106,7 @@ fun StatusScreen(
                     Text("취소")
                 }
             },
-            containerColor = BrandSurface
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 }

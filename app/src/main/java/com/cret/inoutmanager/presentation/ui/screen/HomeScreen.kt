@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -20,9 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
-import com.cret.inoutmanager.ui.theme.BrandAccent
-import com.cret.inoutmanager.ui.theme.BrandBackground
-import com.cret.inoutmanager.ui.theme.BrandSurface
 
 /** Home 전체 viewport의 bounds를 조회하기 위한 테스트 전용 tag. */
 internal const val HomeScreenViewportTag = "home-screen-viewport"
@@ -47,7 +45,7 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(BrandBackground)
+            .background(MaterialTheme.colorScheme.background)
             .testTag(HomeScreenViewportTag),
     ) {
         val viewportHeight = maxHeight
@@ -100,7 +98,7 @@ private fun HomeMenuCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = BrandSurface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
@@ -111,10 +109,10 @@ private fun HomeMenuCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = subtitle, fontSize = 12.sp, color = Color.Gray)
+                Text(text = subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = BrandAccent)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         }
     }
 }
