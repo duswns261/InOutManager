@@ -1,5 +1,6 @@
 package com.cret.inoutmanager.presentation.screenshot
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -14,10 +15,12 @@ import com.cret.inoutmanager.domain.model.Product
 import com.cret.inoutmanager.presentation.ui.components.InventoryRouteMenuItems
 import com.cret.inoutmanager.presentation.ui.components.InventoryTopAppBar
 import com.cret.inoutmanager.presentation.ui.components.ProductCard
+import com.cret.inoutmanager.presentation.ui.components.ProductImageSelection
 import com.cret.inoutmanager.presentation.ui.components.ProductThumbnail
 import com.cret.inoutmanager.presentation.ui.components.SummaryCard
 import com.cret.inoutmanager.presentation.ui.navigation.InventoryRoute
 import com.cret.inoutmanager.ui.theme.InOutManagerTheme
+import java.io.File
 
 @PreviewTest
 @LightDarkPreviews
@@ -124,6 +127,8 @@ private fun RouteSwitchMenuOpenScreenshot() {
             color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(4.dp),
             shadowElevation = 3.dp,
+            // 실제 DropdownMenu와 같은 outline 경계를 재현한다.
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         ) {
             Column(modifier = Modifier.width(200.dp).padding(vertical = 8.dp)) {
                 InventoryRouteMenuItems(
@@ -132,6 +137,31 @@ private fun RouteSwitchMenuOpenScreenshot() {
                     onItemSelected = {},
                 )
             }
+        }
+    }
+}
+
+/**
+ * 이미지 선택 영역의 + 버튼(표면·아이콘·경계)을 라이트/다크로 고정한다.
+ * 이 버튼의 아이콘과 경계는 하드코딩 색으로 남아 다크에서 거의 보이지 않던 적이 있어(Issue #39),
+ * role 이관이 유지되는지 기준 이미지로 지킨다. 메뉴는 `Popup`이라 Preview에 캡처되지 않으므로
+ * 닫힌 상태의 버튼만 담는다.
+ */
+@PreviewTest
+@LightDarkPreviews
+@Composable
+private fun ProductImageSelectionScreenshot() {
+    InOutManagerTheme {
+        Surface(color = MaterialTheme.colorScheme.surface) {
+            ProductImageSelection(
+                currentImage = null,
+                productName = "제품명",
+                onImageAcquired = { _, _ -> },
+                createTemporaryImageFile = { File("preview.jpg") },
+                discardTemporaryImage = {},
+                importImage = { _, _ -> },
+                modifier = Modifier.padding(16.dp),
+            )
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.cret.inoutmanager.presentation.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -89,6 +90,9 @@ fun InventoryTopAppBar(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.surface,
+                    // 메뉴 표면이 App Bar/콘텐츠 배경과 가까운 명도라 경계가 묻힌다.
+                    // outline으로 실선 경계를 둬 두 테마 모두에서 메뉴 영역을 구분한다.
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 ) {
                     InventoryRouteMenuItems(
                         currentRoute = currentRoute,

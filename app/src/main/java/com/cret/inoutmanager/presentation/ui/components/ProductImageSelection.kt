@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -27,7 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -46,8 +46,6 @@ private val ProductImageSelectionDefaultSize = 160.dp
 private val ProductImageSelectionCornerRadius = 16.dp
 private val ProductImageSelectionButtonSize = 40.dp
 private val ProductImageSelectionButtonIconSize = 20.dp
-private val ProductImageSelectionButtonBorderColor = Color(0xFFE0E0E0)
-private val ProductImageSelectionButtonIconColor = Color(0xFF3A3A3A)
 private val ProductImageSelectionMenuCornerRadius = 16.dp
 
 /** 이미지 선택 + 버튼과 앨범/카메라/제거 메뉴를 여는 진입점을 찾기 위한 테스트 전용 tag. */
@@ -177,21 +175,22 @@ fun ProductImageSelection(
                 modifier = Modifier
                     .size(ProductImageSelectionButtonSize)
                     .shadow(elevation = 2.dp, shape = CircleShape, clip = false)
-                    .border(width = 1.dp, color = ProductImageSelectionButtonBorderColor, shape = CircleShape)
+                    // 경계·아이콘 모두 표면과 3:1 이상을 유지하는 role로 둬야 다크에서 버튼이 사라지지 않는다.
+                    .border(width = 1.dp, color = MaterialTheme.colorScheme.outline, shape = CircleShape)
                     .testTag(ProductImageSelectionButtonTag)
                     .semantics {
                         contentDescription = if (hasImage) "제품 이미지 변경" else "제품 이미지 추가"
                     },
                 colors = IconButtonDefaults.filledIconButtonColors(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = ProductImageSelectionButtonIconColor,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_photo_camera_24),
                     contentDescription = null,
                     modifier = Modifier.size(ProductImageSelectionButtonIconSize),
-                    tint = ProductImageSelectionButtonIconColor,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -200,6 +199,9 @@ fun ProductImageSelection(
                 onDismissRequest = { showSourceMenu = false },
                 shape = RoundedCornerShape(ProductImageSelectionMenuCornerRadius),
                 containerColor = MaterialTheme.colorScheme.surface,
+                // 메뉴 표면과 뒤 다이얼로그 표면이 같은 role이라 다크에서 경계가 묻힌다.
+                // outline으로 실선 경계를 둬 누를 수 있는 영역을 두 테마 모두에서 구분한다.
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             ) {
                 DropdownMenuItem(
                     text = { Text("앨범에서 사진 선택") },
